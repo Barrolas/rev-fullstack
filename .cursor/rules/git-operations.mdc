@@ -1,0 +1,33 @@
+---
+description: Restricciones de operaciones Git � solo commits, sin push ni merge
+alwaysApply: true
+---
+
+# Operaciones Git permitidas
+
+## Permitido
+
+- `git status`, `git diff`, `git log`, `git branch`
+- `git add` de archivos relevantes al cambio at�mico
+- `git commit` con formato `[ TIPO ]: Detalles del commit`
+
+## Prohibido sin solicitud expl�cita del usuario
+
+- `git push` (incluido `push -u`, `--force`, tags)
+- `git merge`, `git rebase`, `git pull`
+- Crear PRs o mergear PRs
+- Modificar `git config`
+
+## Flujo de commit
+
+1. Verificar cambios con `git status` y `git diff`.
+2. Agrupar solo archivos de la unidad l�gica actual.
+3. Redactar mensaje con formato REV.
+4. Ejecutar commit.
+5. Confirmar con `git status` post-commit.
+
+## Cu�ndo commitear
+
+- Cuando el usuario lo pida expl�citamente.
+- Al cerrar una fase o unidad at�mica acordada en el plan de desarrollo.
+- Nunca hacer commit vac�o ni incluir secretos (`.env`, credenciales, tokens).

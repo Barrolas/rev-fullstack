@@ -1,0 +1,29 @@
+---
+description: Convenciones React/TypeScript para dashboard despachador REV
+globs: "frontend/**/*.{ts,tsx,css}"
+alwaysApply: false
+---
+
+# Frontend REV
+
+## Stack
+
+- Vite + React 18 + TypeScript
+- Consumir **solo el BFF** (`bff-rev`), nunca microservicios directos.
+
+## Panel despachador
+
+- Lista/mapa de incidentes activos.
+- Detalle consolidado: incidente + riesgo territorial + recursos.
+- Indicador visual cuando `degraded: true` (modo fallback activo).
+
+## Auth
+
+- Login v�a keycloak-adapter ? JWT en header `Authorization: Bearer <token>`.
+- Gateway valida token y rol `Despachador` (o `Admin`).
+
+## Estilo
+
+- Componentes funcionales con hooks.
+- Tipos TypeScript para respuestas del BFF.
+- Sin librer�as UI pesadas en MVP; CSS modules o Tailwind si se a�ade despu�s.

@@ -1,0 +1,31 @@
+---
+description: Convenciones Docker y docker-compose para REV
+globs: "**/{Dockerfile,docker-compose*.yml,docker/**}"
+alwaysApply: false
+---
+
+# Docker REV
+
+## Im�genes
+
+- Multi-stage: build Maven ? runtime `eclipse-temurin:21-jre-alpine`.
+- Un Dockerfile por servicio Spring Boot.
+
+## docker-compose
+
+- 3 instancias PostgreSQL: `postgres-incidentes`, `postgres-zonas` (PostGIS), `postgres-recursos`.
+- Keycloak con realm `rev` pre-importado en `docker/keycloak/`.
+- Perfiles: `dev` (local) y `prod` (referencia).
+
+## Orden de arranque
+
+1. PostgreSQL + Keycloak
+2. eureka-server
+3. spring-boot-admin
+4. Microservicios de negocio
+5. bff-rev ? keycloak-adapter ? api-gateway
+6. frontend
+
+## Secretos
+
+- Variables en `.env.example`; nunca commitear `.env` real.

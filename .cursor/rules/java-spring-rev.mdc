@@ -1,0 +1,52 @@
+---
+description: Convenciones Java/Spring Boot para microservicios REV
+globs: "**/*.java"
+alwaysApply: false
+---
+
+# Java / Spring � REV
+
+## Capas por microservicio
+
+```
+controller ? service ? repository ? entity
+```
+
+- `@RestControllerAdvice` para excepciones en cada MS.
+- springdoc-openapi en cada servicio expuesto.
+- Actuator con health expuesto; Circuit Breaker health en BFF.
+
+## Persistencia
+
+- PostgreSQL por servicio; Flyway en `src/main/resources/db/migration/`.
+- PostGIS solo en ms-zonas-riesgo.
+- UUID para IDs de incidentes y anonimizaci�n (IEEE P7002).
+
+## Resiliencia (BFF)
+
+```java
+@CircuitBreaker(name = "zonasRiesgo", fallbackMethod = "zonasRiesgoFallback")
+```
+
+Siempre implementar `fallbackMethod` con respuesta degradada, no solo la anotaci�n.
+
+## Convenciones
+
+- Lombok permitido; preferir `@RequiredArgsConstructor` sobre `@Autowired` en campos.
+- DTOs separados de entidades JPA.
+- Tests JUnit 5 en flujos cr�ticos (transiciones estado, asignaciones, fallbacks).
+
+## Puertos fijos (dev)
+
+| Servicio | Puerto |
+|----------|--------|
+| eureka-server | 8761 |
+| api-gateway | 8080 |
+| keycloak-adapter | 8088 |
+| spring-boot-admin | 8099 |
+| bff-rev | 8085 |
+| ms-incidentes | 8081 |
+| ms-zonas-riesgo | 8082 |
+| ms-recursos | 8083 |
+
+Servicios de negocio pueden usar `server.port=0` con Eureka; en Docker usar puertos fijos.

@@ -1,0 +1,54 @@
+---
+description: Contexto arquitect�nico y convenciones del proyecto REV
+alwaysApply: true
+---
+
+# REV � Red de Emergencia Valle
+
+## Dominio
+
+Plataforma de gesti�n de emergencias/incendios para Municipalidad de Valle del Sol.
+Lema: *Conectividad que salva vidas*.
+
+## Stack
+
+- Java 21, Spring Boot 4.0.x, Spring Cloud 2025.1.x
+- Netflix Eureka, Spring Cloud Gateway, Resilience4j
+- PostgreSQL 16 + PostGIS (BD aislada por microservicio)
+- Keycloak + keycloak-adapter, Spring Boot Admin
+- React + Vite + TypeScript (frontend)
+- Docker + docker-compose
+
+## Estructura monorepo
+
+```
+rev-fullstack/
+??? businessdomain/     ? ms-incidentes, ms-zonas-riesgo, ms-recursos
+??? infraestructuredomain/ ? eureka-server, api-gateway, keycloak-adapter, spring-boot-admin, bff-rev
+??? frontend/rev-dashboard/
+??? archetypes/
+??? docs/
+```
+
+## Paquete base Java
+
+`cl.duocuc.rev.<modulo>`
+
+## Patrones obligatorios
+
+| Patr�n | M�dulo |
+|--------|--------|
+| Factory Method | ms-incidentes (estados de incidente) |
+| Adapter | ms-zonas-riesgo (FakeWeatherAdapter) |
+| Facade | bff-rev (orquestaci�n para React) |
+| Circuit Breaker + fallback | bff-rev (Resilience4j) |
+
+## Comunicaci�n inter-servicios
+
+- WebClient + `@LoadBalanced` v�a Eureka (no Feign).
+- Nombres Eureka en MAY�SCULAS: `MS-INCIDENTES`, `BFF-REV`, `KEYCLOAK-ADAPTER`.
+
+## Referencia
+
+Proyecto ejemplo: paymentchainparent (estructura Maven y patrones Spring Cloud).
+Adaptar dominio REV; no copiar H2 ni inconsistencias de versiones del ejemplo.

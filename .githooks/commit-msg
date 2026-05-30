@@ -1,0 +1,21 @@
+#!/bin/sh
+# Valida formato de commit REV: [ TIPO ]: Detalles del commit
+
+commit_msg_file=$1
+commit_msg=$(cat "$commit_msg_file")
+
+# Permitir merges autom�ticos de Git
+if echo "$commit_msg" | grep -qE '^Merge '; then
+  exit 0
+fi
+
+# Formato: [ TIPO ]: Detalles (TIPO = FEAT|FIX|REFACTOR|DOCS|TEST|INFRA|BUILD|CHORE)
+if ! echo "$commit_msg" | head -n1 | grep -qE '^\[ (FEAT|FIX|REFACTOR|DOCS|TEST|INFRA|BUILD|CHORE) \]: .+'; then
+  echo "ERROR: Formato de commit invalido." >&2
+  echo "Use: [ TIPO ]: Detalles del commit" >&2
+  echo "Tipos: FEAT, FIX, REFACTOR, DOCS, TEST, INFRA, BUILD, CHORE" >&2
+  echo "Ejemplo: [ FEAT ]: Agregar ms-incidentes con Factory Method" >&2
+  exit 1
+fi
+
+exit 0

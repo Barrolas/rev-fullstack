@@ -1,0 +1,56 @@
+---
+description: Convenci�n de commits at�micos REV con formato [ TIPO ]: Detalles
+alwaysApply: true
+---
+
+# Commits at�micos REV
+
+## Formato obligatorio
+
+```
+[ TIPO ]: Detalles del commit
+```
+
+- `TIPO` en MAY�SCULAS, sin espacios extra dentro de los corchetes.
+- Detalles en espa�ol, imperativo, claro y espec�fico.
+- Una sola unidad l�gica por commit.
+
+## Tipos permitidos
+
+| Tipo | Uso |
+|------|-----|
+| `FEAT` | Nueva funcionalidad o endpoint |
+| `FIX` | Correcci�n de bug |
+| `REFACTOR` | Cambio interno sin alterar comportamiento |
+| `DOCS` | Documentaci�n, README, comentarios de arquitectura |
+| `TEST` | Pruebas unitarias o de integraci�n |
+| `INFRA` | Eureka, Gateway, Keycloak, Docker, CI |
+| `BUILD` | Maven, dependencias, plugins, archetypes |
+| `CHORE` | Configuraci�n, .gitignore, reglas Cursor, limpieza |
+
+## Ejemplos
+
+```
+[ FEAT ]: Implementar Factory Method para transiciones de estado en ms-incidentes
+[ INFRA ]: Agregar eureka-server con registro en puerto 8761
+[ FIX ]: Validar georreferenciaci�n antes de pasar a En Progreso
+[ DOCS ]: Documentar orden de arranque local en README
+```
+
+## Reglas de atomicidad
+
+- Un commit = un m�dulo, una feature, un fix o una tarea de config.
+- No mezclar `FEAT` + `REFACTOR` + `DOCS` en el mismo commit.
+- Si un cambio toca varios m�dulos por la misma raz�n (ej. parent POM), puede ser un solo commit `BUILD`.
+- Antes de commitear: `git status` + `git diff` para verificar alcance m�nimo.
+
+## Cuerpo opcional
+
+Para commits complejos, a�adir cuerpo separado por l�nea en blanco:
+
+```
+[ FEAT ]: Agregar Circuit Breaker con fallback en bff-rev
+
+- Fallback de zonas-riesgo con riesgo DESCONOCIDO
+- Flag degraded cuando ms-recursos no responde
+```
