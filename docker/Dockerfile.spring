@@ -1,0 +1,19 @@
+# Multi-stage build para microservicios Spring Boot REV
+# Uso: docker build --build-arg MODULE=infraestructuredomain/eureka-server -t rev-eureka .
+
+FROM eclipse-temurin:21-jdk-alpine AS build
+WORKDIR /app
+COPY pom.xml .
+COPY businessdomain businessdomain
+COPY infraestructuredomain infraestructuredomain
+ARG MODULE
+RUN apk add --no-cache maven
+RUN mvn -pl ${MODULE} -am package -DskipTests
+
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
+ARG MODULE
+ARG JAR_NAME
+COPY --from=build /app/${MODULE}/target/${JAR_NAME} app.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]

@@ -1,0 +1,49 @@
+services:
+  postgres-incidentes:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: rev_incidentes
+      POSTGRES_USER: rev
+      POSTGRES_PASSWORD: rev123
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_incidentes:/var/lib/postgresql/data
+
+  postgres-zonas:
+    image: postgis/postgis:16-3.4-alpine
+    environment:
+      POSTGRES_DB: rev_zonas
+      POSTGRES_USER: rev
+      POSTGRES_PASSWORD: rev123
+    ports:
+      - "5433:5432"
+    volumes:
+      - pg_zonas:/var/lib/postgresql/data
+
+  postgres-recursos:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: rev_recursos
+      POSTGRES_USER: rev
+      POSTGRES_PASSWORD: rev123
+    ports:
+      - "5434:5432"
+    volumes:
+      - pg_recursos:/var/lib/postgresql/data
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0
+    command: start-dev --import-realm
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8090:8080"
+    volumes:
+      - ./docker/keycloak/rev-realm.json:/opt/keycloak/data/import/rev-realm.json
+
+volumes:
+  pg_incidentes:
+  pg_zonas:
+  pg_recursos:
