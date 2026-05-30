@@ -25,11 +25,11 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
     @Override
     public GatewayFilter apply(Config config) {
         return new OrderedGatewayFilter((exchange, chain) -> {
-            if (!exchange.getRequest().getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
+            String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+            if (authHeader == null || authHeader.isBlank()) {
                 throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing Authorization header");
             }
 
-            String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
             String[] parts = authHeader.split(" ");
             if (parts.length != 2 || !"Bearer".equals(parts[0])) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bad Authorization structure");
