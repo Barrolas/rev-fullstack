@@ -1,5 +1,6 @@
 package cl.duocuc.rev.bff.client;
 
+import cl.duocuc.rev.bff.dto.IncidenteCreateRequest;
 import cl.duocuc.rev.bff.dto.IncidenteDto;
 import java.util.List;
 import java.util.UUID;
@@ -32,6 +33,15 @@ public class IncidenteClientService {
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<>() {
                 });
+    }
+
+    public Mono<IncidenteDto> crear(IncidenteCreateRequest request) {
+        return webClient()
+                .post()
+                .uri("/incidentes")
+                .bodyValue(request)
+                .retrieve()
+                .bodyToMono(IncidenteDto.class);
     }
 
     private WebClient webClient() {

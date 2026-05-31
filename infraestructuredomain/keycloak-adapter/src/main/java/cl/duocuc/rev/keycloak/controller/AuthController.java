@@ -70,7 +70,9 @@ public class AuthController {
     }
 
     @PostMapping(value = "/login", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> login(@RequestParam String username, @RequestParam String password) {
+    public ResponseEntity<String> login(
+            @RequestParam("username") String username,
+            @RequestParam("password") String password) {
         return ResponseEntity.ok(keycloakRestService.login(username, password));
     }
 

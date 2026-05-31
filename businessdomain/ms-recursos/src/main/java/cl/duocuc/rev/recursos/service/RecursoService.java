@@ -3,10 +3,13 @@ package cl.duocuc.rev.recursos.service;
 import cl.duocuc.rev.recursos.dto.AsignacionResponse;
 import cl.duocuc.rev.recursos.dto.AsignarRequest;
 import cl.duocuc.rev.recursos.dto.BrigadaDto;
+import cl.duocuc.rev.recursos.dto.BrigadaRequest;
 import cl.duocuc.rev.recursos.dto.HerramientaDto;
+import cl.duocuc.rev.recursos.dto.HerramientaRequest;
 import cl.duocuc.rev.recursos.dto.RecursoAsignadoDto;
 import cl.duocuc.rev.recursos.dto.RecursosDisponiblesResponse;
 import cl.duocuc.rev.recursos.dto.VehiculoDto;
+import cl.duocuc.rev.recursos.dto.VehiculoRequest;
 import cl.duocuc.rev.recursos.entity.Asignacion;
 import cl.duocuc.rev.recursos.entity.Brigada;
 import cl.duocuc.rev.recursos.entity.Herramienta;
@@ -106,6 +109,60 @@ public class RecursoService {
             response.setVehiculoId(request.getVehiculoId());
         }
         return response;
+    }
+
+    @Transactional
+    public BrigadaDto crearBrigada(BrigadaRequest request) {
+        if (request.getNombre() == null || request.getNombre().isBlank()) {
+            throw new BusinessRuleException(
+                    "NOMBRE_REQUERIDO", "El nombre de la brigada es obligatorio", HttpStatus.BAD_REQUEST);
+        }
+        if (request.getCapacidad() == null || request.getCapacidad() <= 0) {
+            throw new BusinessRuleException(
+                    "CAPACIDAD_INVALIDA", "La capacidad debe ser mayor a cero", HttpStatus.BAD_REQUEST);
+        }
+        Brigada brigada = Brigada.builder()
+                .nombre(request.getNombre().trim())
+                .capacidad(request.getCapacidad())
+                .estado(EstadoRecurso.DISPONIBLE)
+                .build();
+        return toBrigadaDto(brigadaRepository.save(brigada));
+    }
+
+    @Transactional
+    public VehiculoDto crearVehiculo(VehiculoRequest request) {
+        if (request.getPatente() == null || request.getPatente().isBlank()) {
+            throw new BusinessRuleException(
+                    "PATENTE_REQUERIDA", "La patente es obligatoria", HttpStatus.BAD_REQUEST);
+        }
+        if (request.getTipo() == null || request.getTipo().isBlank()) {
+            throw new BusinessRuleException(
+                    "TIPO_REQUERIDO", "El tipo de vehiculo es obligatorio", HttpStatus.BAD_REQUEST);
+        }
+        Vehiculo vehiculo = Vehiculo.builder()
+                .patente(request.getPatente().trim().toUpperCase())
+                .tipo(request.getTipo().trim().toUpperCase())
+                .estado(EstadoRecurso.DISPONIBLE)
+                .build();
+        return toVehiculoDto(vehiculoRepository.save(vehiculo));
+    }
+
+    @Transactional
+    public HerramientaDto crearHerramienta(HerramientaRequest request) {
+        if (request.getNombre() == null || request.getNombre().isBlank()) {
+            throw new BusinessRuleException(
+                    "NOMBRE_REQUERIDO", "El nombre de la herramienta es obligatorio", HttpStatus.BAD_REQUEST);
+        }
+        if (request.getCantidadTotal() == null || request.getCantidadTotal() <= 0) {
+            throw new BusinessRuleException(
+                    "CANTIDAD_INVALIDA", "La cantidad total debe ser mayor a cero", HttpStatus.BAD_REQUEST);
+        }
+        Herramienta herramienta = Herramienta.builder()
+                .nombre(request.getNombre().trim())
+                .cantidadTotal(request.getCantidadTotal())
+                .cantidadDisponible(request.getCantidadTotal())
+                .build();
+        return toHerramientaDto(herramientaRepository.save(herramienta));
     }
 
     @Transactional

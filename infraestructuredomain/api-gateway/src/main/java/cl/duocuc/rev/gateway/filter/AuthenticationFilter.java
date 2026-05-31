@@ -1,6 +1,8 @@
 package cl.duocuc.rev.gateway.filter;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.OrderedGatewayFilter;
@@ -9,6 +11,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ResponseStatusException;
 
 @Slf4j
@@ -16,10 +19,12 @@ import org.springframework.web.server.ResponseStatusException;
 public class AuthenticationFilter extends AbstractGatewayFilterFactory<AuthenticationFilter.Config> {
 
     private final WebClient.Builder webClientBuilder;
+    private final ObjectMapper objectMapper;
 
-    public AuthenticationFilter(WebClient.Builder webClientBuilder) {
+    public AuthenticationFilter(WebClient.Builder webClientBuilder, ObjectMapper objectMapper) {
         super(Config.class);
         this.webClientBuilder = webClientBuilder;
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -38,28 +43,43 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
             return webClientBuilder.build()
                     .get()
                     .uri("http://KEYCLOAK-ADAPTER/roles")
-                    .header(HttpHeaders.AUTHORIZATION, parts[1])
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + parts[1])
                     .retrieve()
-                    .bodyToMono(JsonNode.class)
-                    .map(response -> {
-                        if (response == null || response.isEmpty()) {
-                            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Roles missing");
-                        }
-                        boolean authorized = response.has("Despachador") || response.has("Admin");
-                        if (!authorized) {
-                            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Role Despachador or Admin required");
-                        }
-                        return exchange;
-                    })
+                    .bodyToMono(String.class)
+                    .map(json -> parseRoles(json, exchange))
                     .onErrorMap(error -> {
                         if (error instanceof ResponseStatusException rse) {
                             return rse;
+                        }
+                        if (error instanceof WebClientResponseException wcre) {
+                            if (wcre.getStatusCode().is4xxClientError()) {
+                                log.warn("Gateway auth rejected: {}", wcre.getMessage());
+                                return new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token invalid or expired", error);
+                            }
                         }
                         log.error("Gateway auth error: {}", error.getMessage());
                         return new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Auth service unavailable", error);
                     })
                     .flatMap(chain::filter);
         }, 1);
+    }
+
+    private org.springframework.web.server.ServerWebExchange parseRoles(String json, org.springframework.web.server.ServerWebExchange exchange) {
+        try {
+            JsonNode response = objectMapper.readTree(json);
+            if (response == null || response.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Roles missing");
+            }
+            boolean authorized = response.has("Despachador")
+                    || response.has("Admin")
+                    || response.has("Brigadista");
+            if (!authorized) {
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Role Despachador, Admin or Brigadista required");
+            }
+            return exchange;
+        } catch (JsonProcessingException ex) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid roles response", ex);
+        }
     }
 
     public static class Config {

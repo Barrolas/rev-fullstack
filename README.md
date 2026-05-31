@@ -23,10 +23,50 @@ archetypes/              Maven archetype para nuevos MS
 
 ## Arranque rapido
 
-### 1. Infraestructura Docker
+### Stack completo con backend en Docker (recomendado)
+
+Abre **Docker Desktop** y desde la raiz del repo:
 
 ```powershell
-docker compose up -d
+.\scripts\dev-up.ps1 -DockerApps
+```
+
+Compila JARs (automatico si faltan) y levanta PostgreSQL, Keycloak y microservicios Spring en contenedores. El frontend sigue en Vite local.
+
+Tras cambios en Java:
+
+```powershell
+.\scripts\dev-down.ps1
+.\scripts\dev-up.ps1 -DockerApps -Build
+```
+
+### Desarrollo con Maven local (debug en IDE)
+
+```powershell
+.\scripts\dev-up.ps1
+```
+
+Opciones:
+
+```powershell
+.\scripts\dev-up.ps1 -DockerApps          # backend en contenedores
+.\scripts\dev-up.ps1 -DockerApps -Build   # recompilar JARs antes
+.\scripts\dev-up.ps1 -SkipDocker          # solo Maven + frontend
+.\scripts\dev-up.ps1 -SkipBackend         # solo Docker (+ frontend)
+.\scripts\dev-up.ps1 -SkipFrontend        # sin Vite
+.\scripts\dev-down.ps1                    # baja contenedores Docker
+.\scripts\dev-down.ps1 -StopDevPorts      # baja Docker + libera puertos dev
+.\scripts\dev-down.ps1 -RemoveVolumes     # resetea datos Postgres local
+```
+
+Atajos equivalentes: `run-all.ps1`, `stop-rev.ps1`, `start-rev.ps1` (solo Docker).
+
+Ver [docs/guia-entorno-local.md](docs/guia-entorno-local.md).
+
+### 1. Infraestructura Docker sola
+
+```powershell
+docker compose -p rev up -d
 # o: .\scripts\start-rev.ps1
 ```
 

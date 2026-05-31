@@ -1,6 +1,9 @@
 {
   "realm": "rev",
   "enabled": true,
+  "verifyEmail": false,
+  "loginWithEmailAllowed": true,
+  "registrationEmailAsUsername": false,
   "roles": {
     "realm": [
       { "name": "Despachador" },
@@ -12,11 +15,44 @@
     {
       "username": "despachador",
       "enabled": true,
+      "email": "despachador@valle.local",
       "emailVerified": true,
       "firstName": "Ana",
       "lastName": "Despacho",
-      "credentials": [{ "type": "password", "value": "rev123", "temporary": false }],
+      "requiredActions": [],
+      "credentials": [
+        { "type": "password", "value": "rev123", "temporary": false }
+      ],
       "realmRoles": ["Despachador"]
+    },
+    {
+      "username": "brigadista",
+      "enabled": true,
+      "email": "brigadista@valle.local",
+      "emailVerified": true,
+      "firstName": "Luis",
+      "lastName": "Brigada",
+      "requiredActions": [],
+      "credentials": [
+        { "type": "password", "value": "rev123", "temporary": false }
+      ],
+      "realmRoles": ["Brigadista"]
+    },
+    {
+      "username": "admin",
+      "enabled": true,
+      "email": "admin@valle.local",
+      "emailVerified": true,
+      "firstName": "Carlos",
+      "lastName": "Admin",
+      "requiredActions": [],
+      "credentials": [
+        { "type": "password", "value": "rev123", "temporary": false }
+      ],
+      "realmRoles": ["Admin"],
+      "clientRoles": {
+        "realm-management": ["realm-admin"]
+      }
     }
   ],
   "clients": [

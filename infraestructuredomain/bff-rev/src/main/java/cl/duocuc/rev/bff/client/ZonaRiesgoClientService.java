@@ -1,7 +1,10 @@
 package cl.duocuc.rev.bff.client;
 
+import cl.duocuc.rev.bff.dto.ZonaDto;
 import cl.duocuc.rev.bff.dto.ZonaRiesgoDto;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -13,6 +16,15 @@ public class ZonaRiesgoClientService {
     private static final String BASE_URL = "http://MS-ZONAS-RIESGO";
 
     private final WebClient.Builder webClientBuilder;
+
+    public Mono<List<ZonaDto>> listar() {
+        return webClient()
+                .get()
+                .uri("/zonas")
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<>() {
+                });
+    }
 
     public Mono<ZonaRiesgoDto> evaluar(double lat, double lng) {
         return webClient()

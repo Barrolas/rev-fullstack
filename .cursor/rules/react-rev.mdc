@@ -9,21 +9,25 @@ alwaysApply: false
 ## Stack
 
 - Vite + React 18 + TypeScript
+- Bootstrap 5 + react-bootstrap (grids Container/Row/Col)
+- react-router-dom para navegacion
 - Consumir **solo el BFF** (`bff-rev`), nunca microservicios directos.
 
 ## Panel despachador
 
-- Lista/mapa de incidentes activos.
+Vistas: login, dashboard incidentes, detalle, registrar incidente, zonas de riesgo, recursos.
+
 - Detalle consolidado: incidente + riesgo territorial + recursos.
 - Indicador visual cuando `degraded: true` (modo fallback activo).
 
 ## Auth
 
-- Login v�a keycloak-adapter ? JWT en header `Authorization: Bearer <token>`.
+- Login via keycloak-adapter -> JWT en header `Authorization: Bearer <token>`.
 - Gateway valida token y rol `Despachador` (o `Admin`).
 
 ## Estilo
 
+- Paleta REV en `src/theme.css` (variables CSS + override Bootstrap).
 - Componentes funcionales con hooks.
 - Tipos TypeScript para respuestas del BFF.
-- Sin librer�as UI pesadas en MVP; CSS modules o Tailwind si se a�ade despu�s.
+- Validacion de formularios antes de POST al BFF.

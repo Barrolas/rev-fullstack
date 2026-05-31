@@ -2,8 +2,14 @@ package cl.duocuc.rev.recursos.controller;
 
 import cl.duocuc.rev.recursos.dto.AsignacionResponse;
 import cl.duocuc.rev.recursos.dto.AsignarRequest;
-import cl.duocuc.rev.recursos.dto.RecursosDisponiblesResponse;
+import cl.duocuc.rev.recursos.dto.BrigadaDto;
+import cl.duocuc.rev.recursos.dto.BrigadaRequest;
+import cl.duocuc.rev.recursos.dto.HerramientaDto;
+import cl.duocuc.rev.recursos.dto.HerramientaRequest;
 import cl.duocuc.rev.recursos.dto.RecursoAsignadoDto;
+import cl.duocuc.rev.recursos.dto.RecursosDisponiblesResponse;
+import cl.duocuc.rev.recursos.dto.VehiculoDto;
+import cl.duocuc.rev.recursos.dto.VehiculoRequest;
 import cl.duocuc.rev.recursos.service.RecursoService;
 import java.util.List;
 import java.util.UUID;
@@ -45,5 +51,23 @@ public class RecursoController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void desasignar(@PathVariable Long id) {
         recursoService.desasignar(id);
+    }
+
+    @PostMapping("/brigadas")
+    @ResponseStatus(HttpStatus.CREATED)
+    public BrigadaDto crearBrigada(@RequestBody BrigadaRequest request) {
+        return recursoService.crearBrigada(request);
+    }
+
+    @PostMapping("/vehiculos")
+    @ResponseStatus(HttpStatus.CREATED)
+    public VehiculoDto crearVehiculo(@RequestBody VehiculoRequest request) {
+        return recursoService.crearVehiculo(request);
+    }
+
+    @PostMapping("/herramientas")
+    @ResponseStatus(HttpStatus.CREATED)
+    public HerramientaDto crearHerramienta(@RequestBody HerramientaRequest request) {
+        return recursoService.crearHerramienta(request);
     }
 }

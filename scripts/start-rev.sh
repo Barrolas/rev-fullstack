@@ -2,8 +2,6 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
-echo "=== REV: levantando infraestructura Docker ==="
-docker compose up -d
-echo ""
-echo "Orden de arranque: eureka -> admin -> MS -> bff -> keycloak-adapter -> gateway -> frontend"
-echo "Keycloak: http://localhost:8090 (admin/admin)"
+echo "=== REV: use dev-up.ps1 en Windows (PowerShell) ==="
+echo "En Linux/macOS: docker compose -p rev up -d && mvn spring-boot:run por modulo"
+docker compose -p rev up -d

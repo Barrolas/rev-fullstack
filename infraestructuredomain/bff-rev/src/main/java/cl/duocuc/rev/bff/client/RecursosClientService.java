@@ -1,5 +1,8 @@
 package cl.duocuc.rev.bff.client;
 
+import cl.duocuc.rev.bff.dto.AsignacionDto;
+import cl.duocuc.rev.bff.dto.AsignarRecursoRequest;
+import cl.duocuc.rev.bff.dto.RecursosDisponiblesDto;
 import cl.duocuc.rev.bff.dto.RecursoDto;
 import java.util.List;
 import java.util.UUID;
@@ -24,6 +27,23 @@ public class RecursosClientService {
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<>() {
                 });
+    }
+
+    public Mono<RecursosDisponiblesDto> listarDisponibles() {
+        return webClient()
+                .get()
+                .uri("/recursos/disponibles")
+                .retrieve()
+                .bodyToMono(RecursosDisponiblesDto.class);
+    }
+
+    public Mono<AsignacionDto> asignar(AsignarRecursoRequest request) {
+        return webClient()
+                .post()
+                .uri("/recursos/asignar")
+                .bodyValue(request)
+                .retrieve()
+                .bodyToMono(AsignacionDto.class);
     }
 
     private WebClient webClient() {
