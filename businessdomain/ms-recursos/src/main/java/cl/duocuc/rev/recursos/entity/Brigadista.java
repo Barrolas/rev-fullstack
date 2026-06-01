@@ -16,13 +16,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "brigadas")
+@Table(name = "brigadistas")
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Brigada {
+public class Brigadista {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,13 +31,16 @@ public class Brigada {
     @Column(nullable = false, length = 100)
     private String nombre;
 
-    @Column(nullable = false)
-    private Integer capacidad;
+    @Column(nullable = false, length = 100)
+    private String apellido;
+
+    @Column(length = 12)
+    private String rut;
+
+    @Column(length = 80)
+    private String especialidad;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private EstadoRecurso estado;
-
-    @Column(name = "vehiculo_id")
-    private Long vehiculoId;
 }

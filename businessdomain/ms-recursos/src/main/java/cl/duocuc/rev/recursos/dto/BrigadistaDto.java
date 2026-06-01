@@ -6,10 +6,11 @@ import lombok.Data;
 
 @Data
 @Builder
-public class BrigadaDto {
+public class BrigadistaDto {
     private Long id;
     private String nombre;
-    private Integer capacidad;
+    private String apellido;
+    private String rut;
+    private String especialidad;
     private EstadoRecurso estado;
-    private Long vehiculoId;
 }
