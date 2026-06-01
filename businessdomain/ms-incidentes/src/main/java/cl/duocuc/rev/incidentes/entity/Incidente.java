@@ -69,6 +69,9 @@ public class Incidente {
     @Column(name = "reportante_uuid", nullable = false)
     private UUID reportanteUuid;
 
+    @Column(name = "incidente_canonico_id")
+    private UUID incidenteCanonicoId;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 

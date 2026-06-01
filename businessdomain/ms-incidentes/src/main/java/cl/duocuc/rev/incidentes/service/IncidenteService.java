@@ -29,6 +29,7 @@ public class IncidenteService {
     private final IncidentStateFactory stateFactory;
     private final FolioService folioService;
     private final AdjuntoService adjuntoService;
+    private final CorrelacionService correlacionService;
 
     public List<IncidenteResponse> listar() {
         return incidenteRepository.findAll().stream().map(this::toResponse).toList();
@@ -48,6 +49,7 @@ public class IncidenteService {
                 .descripcion(request.getDescripcion())
                 .lat(request.getLat())
                 .lng(request.getLng())
+                .direccionReferencia(trimToNull(request.getDireccionReferencia()))
                 .anonimo(false)
                 .origenReporte(OrigenReporte.INTERNO)
                 .estado(EstadoIncidente.REPORTADO)
@@ -55,7 +57,9 @@ public class IncidenteService {
                 .createdAt(now)
                 .updatedAt(now)
                 .build();
-        return toResponse(incidenteRepository.save(incidente));
+        Incidente guardado = incidenteRepository.save(incidente);
+        correlacionService.evaluarNuevoIncidente(guardado.getId());
+        return toResponse(guardado);
     }
 
     @Transactional
@@ -84,7 +88,9 @@ public class IncidenteService {
                 .updatedAt(now)
                 .build();
 
-        return toResponse(incidenteRepository.save(incidente));
+        Incidente guardado = incidenteRepository.save(incidente);
+        correlacionService.evaluarNuevoIncidente(guardado.getId());
+        return toResponse(guardado);
     }
 
     @Transactional
