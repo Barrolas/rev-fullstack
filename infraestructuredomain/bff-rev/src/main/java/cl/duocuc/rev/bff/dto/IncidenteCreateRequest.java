@@ -9,4 +9,5 @@ public class IncidenteCreateRequest {
     private String descripcion;
     private Double lat;
     private Double lng;
+    private String direccionReferencia;
 }

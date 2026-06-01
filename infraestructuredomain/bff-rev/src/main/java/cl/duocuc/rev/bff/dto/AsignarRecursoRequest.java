@@ -9,4 +9,5 @@ public class AsignarRecursoRequest {
     private UUID incidenteId;
     private Long brigadaId;
     private Long vehiculoId;
+    private Boolean usarComposicionBrigada;
 }

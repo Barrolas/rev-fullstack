@@ -25,6 +25,7 @@ public class RecursosDisponiblesDto {
         private String nombre;
         private Integer capacidad;
         private String estado;
+        private Long vehiculoId;
     }
 
     @Data
