@@ -1,4 +1,4 @@
-import type { RecursosDisponibles } from '../api';
+import type { RecursosCatalogo, RecursosDisponibles } from '../api';
 
 export type RecursoAvailabilityFilter = 'ALL' | 'DISPONIBLE' | 'ASIGNADO';
 export type RecursoTab = 'brigadas' | 'vehiculos' | 'herramientas';
@@ -33,7 +33,7 @@ export function formatRecursoEstado(estado: string): string {
   return estado.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-export function computeRecursosStats(data: RecursosDisponibles) {
+export function computeRecursosStats(data: RecursosDisponibles | RecursosCatalogo) {
   const brigadasDisp = data.brigadas.filter((b) => b.estado === 'DISPONIBLE').length;
   const vehiculosDisp = data.vehiculos.filter((v) => v.estado === 'DISPONIBLE').length;
   const herramientasBajas = data.herramientas.filter(
@@ -56,6 +56,11 @@ export function computeRecursosStats(data: RecursosDisponibles) {
     disponiblesTotal: brigadasDisp + vehiculosDisp,
     enUsoTotal: data.brigadas.filter((b) => b.estado === 'ASIGNADO').length
       + data.vehiculos.filter((v) => v.estado === 'ASIGNADO').length,
+    brigadistasTotal: 'brigadistas' in data ? data.brigadistas.length : 0,
+    brigadistasDisp:
+      'brigadistas' in data
+        ? data.brigadistas.filter((b) => b.estado === 'DISPONIBLE').length
+        : 0,
   };
 }
 

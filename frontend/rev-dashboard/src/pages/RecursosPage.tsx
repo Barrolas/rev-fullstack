@@ -1,8 +1,10 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { fetchRecursos } from '../api';
+import { fetchRecursosCatalogo } from '../api';
+import RecursosAdminPanel from '../components/recursos/RecursosAdminPanel';
 import RecursosFilters from '../components/recursos/RecursosFilters';
+import RecursosModuleTabs, { type RecursosModuleView } from '../components/recursos/RecursosModuleTabs';
 import {
   RecursosDesktopGrid,
   RecursosSummaryRail,
@@ -14,6 +16,7 @@ import Topbar from '../components/layout/Topbar';
 import KpiCard from '../components/primitives/KpiCard';
 import StateView from '../components/primitives/StateView';
 import { useApiQuery } from '../hooks/useApiQuery';
+import { useAuth } from '../hooks/useAuth';
 import {
   computeRecursosStats,
   countFilteredRecursos,
@@ -24,8 +27,10 @@ import {
 } from '../utils/recursosUtils';
 
 export default function RecursosPage() {
-  const fetchFn = useCallback(() => fetchRecursos(), []);
+  const { canManageIncidents } = useAuth();
+  const fetchFn = useCallback(() => fetchRecursosCatalogo(), []);
   const { data, loading, error, refetch } = useApiQuery({ fetchFn });
+  const [moduleView, setModuleView] = useState<RecursosModuleView>('inventario');
   const [filters, setFilters] = useState<RecursosFiltersState>(DEFAULT_RECURSOS_FILTERS);
   const [activeTab, setActiveTab] = useState<'brigadas' | 'vehiculos' | 'herramientas'>('brigadas');
 
@@ -118,12 +123,20 @@ export default function RecursosPage() {
     <>
       <Topbar
         title="Recursos de emergencia"
-        subtitle="Brigadas, vehículos y herramientas"
+        subtitle="Administración y despacho de brigadas"
         breadcrumbs={[{ label: 'Inicio', to: '/inicio' }, { label: 'Recursos' }]}
       />
       <AppPage>
         <ModuleHub kpis={kpiSection} toolbar={toolbar} rail={rail}>
           <div className="rev-recursos-layout">
+            {canManageIncidents && (
+              <RecursosModuleTabs active={moduleView} onChange={setModuleView} />
+            )}
+
+            {moduleView === 'administracion' && canManageIncidents && data ? (
+              <RecursosAdminPanel catalogo={data} onRefresh={refetch} />
+            ) : (
+              <>
             <RecursosFilters
               filters={filters}
               resultCount={resultCount}
@@ -134,6 +147,7 @@ export default function RecursosPage() {
             />
             <StateView
               state={viewState}
+              loadingMessage="Cargando recursos disponibles…"
               errorMessage={error}
               onRetry={refetch}
               emptyTitle="Sin recursos"
@@ -169,6 +183,8 @@ export default function RecursosPage() {
                 )
               )}
             </StateView>
+              </>
+            )}
           </div>
         </ModuleHub>
       </AppPage>

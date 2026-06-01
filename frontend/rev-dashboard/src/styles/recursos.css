@@ -415,3 +415,45 @@
     grid-template-columns: 1fr;
   }
 }
+
+.rev-recursos-module-tabs {
+  display: flex;
+  gap: var(--rev-space-2, 0.5rem);
+  flex-wrap: wrap;
+  margin-bottom: var(--rev-space-2, 0.5rem);
+}
+
+.rev-recursos-module-tabs__btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.45rem 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--rev-radius-md, 8px);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--rev-text-muted, #94a3b8);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.rev-recursos-module-tabs__btn--active {
+  border-color: var(--rev-cyan, #22d3ee);
+  background: rgba(34, 211, 238, 0.12);
+  color: var(--rev-cyan, #22d3ee);
+}
+
+.rev-recursos-admin .rev-card {
+  background: var(--rev-bg-secondary);
+}
+
+.rev-composicion-checklist {
+  max-height: 12rem;
+  overflow-y: auto;
+  padding: 0.5rem;
+  border: 1px solid var(--rev-border);
+  border-radius: var(--rev-radius-md, 8px);
+}
+
+.rev-despacho-preview .list-group-item {
+  padding-top: 0.2rem;
+  padding-bottom: 0.2rem;
+}
