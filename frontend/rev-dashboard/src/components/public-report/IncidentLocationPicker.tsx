@@ -1,17 +1,16 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { MapContainer, Marker, TileLayer, useMapEvents } from 'react-leaflet';
 import L, { LeafletMouseEvent } from 'leaflet';
-import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
-import markerIcon from 'leaflet/dist/images/marker-icon.png';
-import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+import { revIncidentMarkerIcon } from '../../utils/revIncidentMapMarker';
+import {
+  gpsFallbackLabel,
+  NominatimSearchResult,
+  reverseGeocode,
+  searchAddress,
+} from '../../utils/nominatim';
+import MapViewController from './MapViewController';
 
 const VALLE_CENTER: [number, number] = [-33.452, -70.664];
-
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: markerIcon2x,
-  iconUrl: markerIcon,
-  shadowUrl: markerShadow,
-});
 
 export interface LocationValue {
   lat: number | null;
@@ -23,12 +22,6 @@ interface IncidentLocationPickerProps {
   value: LocationValue;
   onChange: (value: LocationValue) => void;
   disabled?: boolean;
-}
-
-interface NominatimResult {
-  lat: string;
-  lon: string;
-  display_name: string;
 }
 
 function MapClickHandler({
@@ -52,11 +45,14 @@ export default function IncidentLocationPicker({
   onChange,
   disabled = false,
 }: IncidentLocationPickerProps) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<NominatimResult[]>([]);
+  const [searchQuery, setSearchQuery] = useState(value.direccionReferencia);
+  const [searchResults, setSearchResults] = useState<NominatimSearchResult[]>([]);
   const [searching, setSearching] = useState(false);
   const [geoLoading, setGeoLoading] = useState(false);
+  const [resolvingAddress, setResolvingAddress] = useState(false);
   const [geoError, setGeoError] = useState('');
+  const [flyToCenter, setFlyToCenter] = useState<[number, number] | null>(null);
+  const reverseAbortRef = useRef<AbortController | null>(null);
 
   const mapCenter = useMemo<[number, number]>(() => {
     if (value.lat != null && value.lng != null) {
@@ -65,15 +61,44 @@ export default function IncidentLocationPicker({
     return VALLE_CENTER;
   }, [value.lat, value.lng]);
 
-  const updateCoords = useCallback(
-    (lat: number, lng: number) => {
+  const applyLocation = useCallback(
+    async (lat: number, lng: number, options?: { flyTo?: boolean }) => {
+      const roundedLat = Number(lat.toFixed(6));
+      const roundedLng = Number(lng.toFixed(6));
+
+      reverseAbortRef.current?.abort();
+      const controller = new AbortController();
+      reverseAbortRef.current = controller;
+
+      setResolvingAddress(true);
+      let direccion = '';
+      try {
+        const label = await reverseGeocode(roundedLat, roundedLng, controller.signal);
+        direccion = label ?? gpsFallbackLabel(roundedLat, roundedLng);
+      } catch (err) {
+        if ((err as Error).name !== 'AbortError') {
+          direccion = gpsFallbackLabel(roundedLat, roundedLng);
+        } else {
+          return;
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setResolvingAddress(false);
+        }
+      }
+
+      setSearchQuery(direccion);
       onChange({
-        ...value,
-        lat: Number(lat.toFixed(6)),
-        lng: Number(lng.toFixed(6)),
+        lat: roundedLat,
+        lng: roundedLng,
+        direccionReferencia: direccion,
       });
+
+      if (options?.flyTo) {
+        setFlyToCenter([roundedLat, roundedLng]);
+      }
     },
-    [onChange, value],
+    [onChange],
   );
 
   const useMyLocation = () => {
@@ -85,8 +110,9 @@ export default function IncidentLocationPicker({
     setGeoError('');
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        updateCoords(pos.coords.latitude, pos.coords.longitude);
-        setGeoLoading(false);
+        void applyLocation(pos.coords.latitude, pos.coords.longitude, { flyTo: true }).finally(
+          () => setGeoLoading(false),
+        );
       },
       () => {
         setGeoError('No se pudo obtener su ubicación. Use el mapa o busque una dirección.');
@@ -106,17 +132,7 @@ export default function IncidentLocationPicker({
     const timer = window.setTimeout(async () => {
       setSearching(true);
       try {
-        const params = new URLSearchParams({
-          q: `${searchQuery.trim()}, Valle del Sol, Chile`,
-          format: 'json',
-          limit: '5',
-        });
-        const res = await fetch(`https://nominatim.openstreetmap.org/search?${params}`, {
-          signal: controller.signal,
-          headers: { Accept: 'application/json' },
-        });
-        if (!res.ok) return;
-        const data = (await res.json()) as NominatimResult[];
+        const data = await searchAddress(searchQuery, controller.signal);
         setSearchResults(data);
       } catch {
         /* búsqueda cancelada o fallida */
@@ -131,17 +147,27 @@ export default function IncidentLocationPicker({
     };
   }, [searchQuery]);
 
-  const selectSearchResult = (result: NominatimResult) => {
+  useEffect(
+    () => () => {
+      reverseAbortRef.current?.abort();
+    },
+    [],
+  );
+
+  const selectSearchResult = (result: NominatimSearchResult) => {
     const lat = parseFloat(result.lat);
     const lng = parseFloat(result.lon);
+    setSearchQuery(result.display_name);
     onChange({
       lat,
       lng,
       direccionReferencia: result.display_name,
     });
     setSearchResults([]);
-    setSearchQuery(result.display_name);
+    setFlyToCenter([lat, lng]);
   };
+
+  const busy = geoLoading || resolvingAddress;
 
   return (
     <div className="rev-public-location">
@@ -150,10 +176,14 @@ export default function IncidentLocationPicker({
           type="button"
           className="rev-login__dev-chip"
           onClick={useMyLocation}
-          disabled={disabled || geoLoading}
+          disabled={disabled || busy}
         >
-          <i className={`bi ${geoLoading ? 'bi-arrow-repeat' : 'bi-geo-alt'} me-1`} />
-          {geoLoading ? 'Obteniendo…' : 'Usar mi ubicación'}
+          <i className={`bi ${busy ? 'bi-arrow-repeat' : 'bi-geo-alt'} me-1`} />
+          {geoLoading
+            ? 'Obteniendo ubicación…'
+            : resolvingAddress
+              ? 'Buscando dirección…'
+              : 'Usar mi ubicación'}
         </button>
         {value.lat != null && value.lng != null && (
           <span className="small text-muted align-self-center">
@@ -201,21 +231,35 @@ export default function IncidentLocationPicker({
       </div>
 
       <div className="rev-public-location__map mb-2">
-        <MapContainer center={mapCenter} zoom={14} scrollWheelZoom={!disabled} className="rev-public-map">
+        <p className="rev-public-location__map-hint small text-muted mb-1">
+          <i className="bi bi-cursor me-1" aria-hidden="true" />
+          Toque el mapa o arrastre el pin para indicar el punto del incidente
+        </p>
+        <MapContainer
+          center={mapCenter}
+          zoom={14}
+          scrollWheelZoom={!disabled}
+          className={`rev-public-map${disabled ? ' rev-public-map--disabled' : ''}`}
+        >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-          <MapClickHandler onSelect={updateCoords} disabled={disabled} />
+          {flyToCenter && <MapViewController center={flyToCenter} zoom={17} fly />}
+          <MapClickHandler
+            onSelect={(lat, lng) => void applyLocation(lat, lng)}
+            disabled={disabled || busy}
+          />
           {value.lat != null && value.lng != null && (
             <Marker
               position={[value.lat, value.lng]}
-              draggable={!disabled}
+              icon={revIncidentMarkerIcon}
+              draggable={!disabled && !busy}
               eventHandlers={{
                 dragend: (e: L.DragEndEvent) => {
                   const marker = e.target as L.Marker;
                   const { lat, lng } = marker.getLatLng();
-                  updateCoords(lat, lng);
+                  void applyLocation(lat, lng);
                 },
               }}
             />
@@ -233,12 +277,15 @@ export default function IncidentLocationPicker({
           rows={2}
           placeholder="Indique calle, sector, punto de referencia o marque en el mapa"
           value={value.direccionReferencia}
-          onChange={(e) => onChange({ ...value, direccionReferencia: e.target.value })}
+          onChange={(e) => {
+            setSearchQuery(e.target.value);
+            onChange({ ...value, direccionReferencia: e.target.value });
+          }}
           disabled={disabled}
           required
         />
         <p className="small text-muted mt-1 mb-0">
-          Marque el punto en el mapa, use GPS o escriba una referencia clara dentro del valle.
+          Al usar GPS o marcar en el mapa se completa una dirección de referencia automáticamente.
         </p>
       </div>
     </div>

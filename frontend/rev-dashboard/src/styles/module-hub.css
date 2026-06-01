@@ -130,6 +130,20 @@
   line-height: 1.4;
 }
 
+/* Espera inicial gateway + BFF tras login */
+.rev-backend-ready {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: min(50vh, 24rem);
+  padding: var(--rev-space-4);
+}
+
+.rev-backend-ready .rev-state-view {
+  width: 100%;
+  max-width: 28rem;
+}
+
 /* State views */
 .rev-state-view {
   display: flex;

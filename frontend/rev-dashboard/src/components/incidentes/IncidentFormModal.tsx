@@ -18,12 +18,14 @@ export default function IncidentFormModal() {
       show={incidentModalOpen}
       onHide={closeIncidentModal}
       title="Registrar incidente"
-      size="lg"
+      size="xl"
     >
-      <IncidentFormFields
-        onSuccess={handleSuccess}
-        onCancel={closeIncidentModal}
-      />
+      <div className="rev-incident-form-modal">
+        <IncidentFormFields
+          onSuccess={handleSuccess}
+          onCancel={closeIncidentModal}
+        />
+      </div>
     </RevModal>
   );
 }

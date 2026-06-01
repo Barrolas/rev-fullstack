@@ -1,7 +1,8 @@
 import { getToken } from '../api';
 import { decodeJwtPayload, getPrimaryRole } from '../utils/jwt';
 
-const KEYCLOAK_ADMIN_URL = 'http://localhost:8090/admin/rev/console';
+const KEYCLOAK_BASE = (import.meta.env.VITE_KEYCLOAK_URL || 'http://localhost:18090').replace(/\/$/, '');
+const KEYCLOAK_ADMIN_URL = `${KEYCLOAK_BASE}/admin/rev/console`;
 
 export function useAuth() {
   const token = getToken();

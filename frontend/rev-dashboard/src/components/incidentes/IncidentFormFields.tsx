@@ -1,19 +1,19 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useMemo, useState } from 'react';
 import { Alert, Button, Col, Form, Row } from 'react-bootstrap';
 import { createIncidente, createPublicIncidente } from '../../api';
+import IncidentLocationPicker, { LocationValue } from '../public-report/IncidentLocationPicker';
 
 interface FormErrors {
   tipo?: string;
   descripcion?: string;
-  lat?: string;
-  lng?: string;
+  ubicacion?: string;
 }
 
 interface IncidentFormFieldsProps {
   onSuccess: (incidentId?: string) => void;
   onCancel?: () => void;
   submitLabel?: string;
-  /** Reporte ciudadano sin autenticación */
+  /** Reporte ciudadano sin autenticaci?n */
   publicMode?: boolean;
   className?: string;
 }
@@ -27,36 +27,29 @@ export default function IncidentFormFields({
 }: IncidentFormFieldsProps) {
   const [tipo, setTipo] = useState('');
   const [descripcion, setDescripcion] = useState('');
-  const [lat, setLat] = useState('');
-  const [lng, setLng] = useState('');
+  const [location, setLocation] = useState<LocationValue>({
+    lat: null,
+    lng: null,
+    direccionReferencia: '',
+  });
   const [errors, setErrors] = useState<FormErrors>({});
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  const [geoLoading, setGeoLoading] = useState(false);
-
-  const useMyLocation = () => {
-    if (!navigator.geolocation) return;
-    setGeoLoading(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setLat(pos.coords.latitude.toFixed(4));
-        setLng(pos.coords.longitude.toFixed(4));
-        setGeoLoading(false);
-      },
-      () => setGeoLoading(false),
-      { enableHighAccuracy: true, timeout: 10000 },
-    );
-  };
+  const hasLocation = useMemo(() => {
+    const hasCoords = location.lat != null && location.lng != null;
+    return hasCoords || location.direccionReferencia.trim().length > 0;
+  }, [location]);
 
   const validate = (): FormErrors => {
     const e: FormErrors = {};
     if (!tipo.trim()) e.tipo = 'El tipo es obligatorio';
     if (!descripcion.trim()) e.descripcion = 'La descripcion es obligatoria';
-    const latNum = parseFloat(lat);
-    const lngNum = parseFloat(lng);
-    if (!lat.trim() || Number.isNaN(latNum)) e.lat = 'Indique la ubicación';
-    if (!lng.trim() || Number.isNaN(lngNum)) e.lng = 'Indique la ubicación';
+    if (!hasLocation) {
+      e.ubicacion = 'Indique ubicacion en el mapa, busque una direccion o use su ubicacion';
+    } else if (location.lat == null || location.lng == null) {
+      e.ubicacion = 'Marque el punto en el mapa o seleccione un resultado de busqueda';
+    }
     return e;
   };
 
@@ -72,8 +65,9 @@ export default function IncidentFormFields({
       const payload = {
         tipo: tipo.trim(),
         descripcion: descripcion.trim(),
-        lat: parseFloat(lat),
-        lng: parseFloat(lng),
+        lat: location.lat!,
+        lng: location.lng!,
+        direccionReferencia: location.direccionReferencia.trim() || undefined,
       };
       if (publicMode) {
         const result = await createPublicIncidente(payload);
@@ -122,62 +116,36 @@ export default function IncidentFormFields({
         />
         <Form.Control.Feedback type="invalid">{errors.descripcion}</Form.Control.Feedback>
       </Form.Group>
-      <Row>
-        <Col md={6}>
-          <Form.Group className="mb-3">
-            <Form.Label>{publicMode ? 'Ubicación norte-sur *' : 'Referencia norte-sur *'}</Form.Label>
-            <Form.Control
-              type="number"
-              step="any"
-              placeholder="-33.45"
-              value={lat}
-              onChange={(e) => setLat(e.target.value)}
-              isInvalid={!!errors.lat}
-              required
-            />
-            <Form.Control.Feedback type="invalid">{errors.lat}</Form.Control.Feedback>
-          </Form.Group>
-        </Col>
-        <Col md={6}>
-          <Form.Group className="mb-3">
-            <Form.Label>{publicMode ? 'Ubicación este-oeste *' : 'Referencia este-oeste *'}</Form.Label>
-            <Form.Control
-              type="number"
-              step="any"
-              placeholder="-70.66"
-              value={lng}
-              onChange={(e) => setLng(e.target.value)}
-              isInvalid={!!errors.lng}
-              required
-            />
-            <Form.Control.Feedback type="invalid">{errors.lng}</Form.Control.Feedback>
-          </Form.Group>
-        </Col>
-      </Row>
+
+      <Form.Group className="mb-3">
+        <Form.Label className="d-flex align-items-center gap-2">
+          <i className="bi bi-geo-alt" aria-hidden="true" />
+          Ubicacion del incidente *
+        </Form.Label>
+        <IncidentLocationPicker
+          value={location}
+          onChange={setLocation}
+          disabled={submitting}
+        />
+        {errors.ubicacion && (
+          <div className="invalid-feedback d-block">{errors.ubicacion}</div>
+        )}
+      </Form.Group>
+
       <Alert variant="secondary" className="small rev-alert rev-alert--info">
         {publicMode ? (
           <>
-            Indique dónde ocurre la emergencia. Si puede, use el botón de ubicación para mayor
-            precisión dentro del territorio municipal.
+            Indique donde ocurre la emergencia. Use el mapa, la busqueda de direccion o su
+            ubicacion actual para mayor precision dentro del territorio municipal.
           </>
         ) : (
-          <>Valle del Sol: ingrese la ubicación dentro del territorio municipal.</>
+          <>
+            Valle del Sol: marque el punto en el mapa, busque la direccion o use su ubicacion.
+            Las coordenadas se registran para despacho y evaluacion de riesgo territorial.
+          </>
         )}
       </Alert>
-      {publicMode && (
-        <div className="mb-3">
-          <Button
-            type="button"
-            variant="outline-secondary"
-            size="sm"
-            onClick={useMyLocation}
-            disabled={geoLoading || submitting}
-          >
-            <i className={`bi ${geoLoading ? 'bi-arrow-repeat' : 'bi-geo-alt'} me-1`} />
-            {geoLoading ? 'Obteniendo ubicación…' : 'Usar mi ubicación'}
-          </Button>
-        </div>
-      )}
+
       {error && <Alert variant="danger" className="rev-alert rev-alert--error">{error}</Alert>}
       <div className="d-flex gap-2 justify-content-end">
         {onCancel && (

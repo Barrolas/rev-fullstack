@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useRef, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { submitPublicReport, PublicReportPayload, PublicReportResult } from '../../api';
 import IncidentLocationPicker, { LocationValue } from './IncidentLocationPicker';
 import IncidentMediaCapture, { MediaCaptureValue } from './IncidentMediaCapture';
@@ -77,6 +77,35 @@ export default function PublicReportForm({ onSuccess, onGoToLogin }: PublicRepor
       script.remove();
     };
   }, []);
+
+  const hasValidLocation = useMemo(() => {
+    const hasCoords = location.lat != null && location.lng != null;
+    return hasCoords || location.direccionReferencia.trim().length > 0;
+  }, [location]);
+
+  const missingForSubmit = useMemo(() => {
+    const missing: string[] = [];
+    if (!tipo.trim()) missing.push('tipo de emergencia');
+    if (!descripcion.trim()) missing.push('descripción');
+    if (!hasValidLocation) missing.push('ubicación (mapa, GPS o referencia)');
+    if (!identity.anonimo && identity.registrarme) {
+      if (!identity.registroUsername.trim() || !identity.registroPassword.trim()) {
+        missing.push('usuario y clave de registro');
+      }
+    }
+    return missing;
+  }, [tipo, descripcion, hasValidLocation, identity]);
+
+  const canSubmit = consent;
+
+  const submitDisabledReason = useMemo(() => {
+    if (submitting) return null;
+    if (!consent) return 'Debe autorizar el tratamiento de datos para enviar el reporte.';
+    if (missingForSubmit.length > 0) {
+      return `Antes de enviar complete: ${missingForSubmit.join(', ')}.`;
+    }
+    return null;
+  }, [submitting, consent, missingForSubmit]);
 
   const validate = (): string | null => {
     if (!tipo.trim()) return 'Seleccione el tipo de emergencia.';
@@ -254,19 +283,37 @@ export default function PublicReportForm({ onSuccess, onGoToLogin }: PublicRepor
         <ReporterIdentitySection value={identity} onChange={setIdentity} disabled={submitting} />
       </div>
 
-      <label className="rev-public-identity__check d-flex align-items-start gap-2 mb-3">
+      <label
+        className={`rev-public-identity__check d-flex align-items-start gap-2${consent ? ' mb-3' : ' mb-2'}`}
+      >
         <input
           type="checkbox"
           checked={consent}
-          onChange={(e) => setConsent(e.target.checked)}
+          onChange={(e) => {
+            setConsent(e.target.checked);
+            if (e.target.checked) setError('');
+          }}
           disabled={submitting}
           required
+          aria-required="true"
         />
         <span className="small">
           Autorizo el tratamiento de los datos de este reporte para coordinar la respuesta de
-          emergencia municipal, conforme a la normativa vigente.
+          emergencia municipal, conforme a la normativa vigente.{' '}
+          <strong className="text-warning">(obligatorio)</strong>
         </span>
       </label>
+      {!consent && !submitting && (
+        <p className="small text-muted mb-3" id="consent-hint">
+          Marque esta casilla para habilitar el envío del reporte.
+        </p>
+      )}
+      {consent && missingForSubmit.length > 0 && !submitting && (
+        <p className="small text-warning mb-3" id="form-pending-hint" role="status">
+          <i className="bi bi-info-circle me-1" aria-hidden="true" />
+          Falta completar: {missingForSubmit.join(', ')}.
+        </p>
+      )}
 
       {TURNSTILE_SITE_KEY && TURNSTILE_SITE_KEY !== 'disabled' && (
         <div ref={turnstileRef} className="mb-3" />
@@ -290,7 +337,15 @@ export default function PublicReportForm({ onSuccess, onGoToLogin }: PublicRepor
         </div>
       )}
 
-      <button type="submit" className="rev-login__submit w-100" disabled={submitting}>
+      <button
+        type="submit"
+        className="rev-login__submit w-100"
+        disabled={submitting || !canSubmit}
+        title={submitDisabledReason ?? undefined}
+        aria-describedby={
+          !consent ? 'consent-hint' : missingForSubmit.length > 0 ? 'form-pending-hint' : undefined
+        }
+      >
         {submitting ? (
           <>
             <span className="rev-login__spinner" aria-hidden="true" />

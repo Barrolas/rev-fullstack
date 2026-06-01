@@ -826,6 +826,75 @@ html.rev-boot-done .rev-login__shell {
   border-radius: 10px;
   border: 1px solid var(--login-border);
   z-index: 0;
+  cursor: crosshair;
+}
+
+.rev-public-map--disabled {
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+
+.rev-public-location__map-hint {
+  margin-bottom: 0.35rem;
+}
+
+/* Marcador SVG REV (DivIcon) — sin márgenes extra: Leaflet ya aplica iconAnchor */
+.rev-map-marker.leaflet-div-icon {
+  background: transparent !important;
+  border: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 36px !important;
+  height: 48px !important;
+  box-sizing: content-box;
+}
+
+.rev-map-marker__wrap {
+  position: relative;
+  width: 36px;
+  height: 48px;
+  pointer-events: none;
+}
+
+.rev-map-marker__svg {
+  display: block;
+  filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.45));
+}
+
+.rev-map-marker__pulse {
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;
+  border-radius: 50%;
+  background: rgba(249, 115, 22, 0.45);
+  animation: rev-map-marker-pulse 1.8s ease-out infinite;
+  pointer-events: none;
+}
+
+@keyframes rev-map-marker-pulse {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.85;
+  }
+  70% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+.leaflet-marker-icon.rev-map-marker {
+  cursor: grab;
+}
+
+.leaflet-marker-dragging .rev-map-marker {
+  cursor: grabbing;
 }
 
 .rev-public-location__results {
