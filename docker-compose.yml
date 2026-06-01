@@ -15,7 +15,7 @@ services:
       POSTGRES_USER: rev
       POSTGRES_PASSWORD: rev123
     ports:
-      - "5432:5432"
+      - "${REV_PG_INCIDENTES_PORT:-15432}:5432"
     volumes:
       - pg_incidentes:/var/lib/postgresql/data
     healthcheck:
@@ -31,7 +31,7 @@ services:
       POSTGRES_USER: rev
       POSTGRES_PASSWORD: rev123
     ports:
-      - "5433:5432"
+      - "${REV_PG_ZONAS_PORT:-15433}:5432"
     volumes:
       - pg_zonas:/var/lib/postgresql/data
     healthcheck:
@@ -47,7 +47,7 @@ services:
       POSTGRES_USER: rev
       POSTGRES_PASSWORD: rev123
     ports:
-      - "5434:5432"
+      - "${REV_PG_RECURSOS_PORT:-15434}:5432"
     volumes:
       - pg_recursos:/var/lib/postgresql/data
     healthcheck:
@@ -63,7 +63,7 @@ services:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
     ports:
-      - "8090:8080"
+      - "${REV_KEYCLOAK_PORT:-18090}:8080"
     volumes:
       - ./docker/keycloak/rev-realm.json:/opt/keycloak/data/import/rev-realm.json
 
@@ -73,7 +73,7 @@ services:
     profiles: ["apps"]
     container_name: rev-eureka
     ports:
-      - "8761:8761"
+      - "${REV_EUREKA_PORT:-18761}:8761"
     volumes:
       - ./infraestructuredomain/eureka-server/target/eureka-server-${REV_VERSION:-1.0-SNAPSHOT}.jar:/opt/app.jar:ro
 
@@ -82,7 +82,7 @@ services:
     profiles: ["apps"]
     container_name: rev-spring-boot-admin
     ports:
-      - "8099:8099"
+      - "${REV_SBA_PORT:-18099}:8099"
     volumes:
       - ./infraestructuredomain/spring-boot-admin/target/spring-boot-admin-${REV_VERSION:-1.0-SNAPSHOT}.jar:/opt/app.jar:ro
     depends_on:
@@ -94,8 +94,9 @@ services:
     profiles: ["apps"]
     container_name: rev-ms-incidentes
     ports:
-      - "8081:8081"
+      - "${REV_MS_INCIDENTES_PORT:-18081}:8081"
     environment:
+      SPRING_PROFILES_ACTIVE: docker
       REV_STORAGE_PATH: /data/incidente-adjuntos
     volumes:
       - ./businessdomain/ms-incidentes/target/ms-incidentes-${REV_VERSION:-1.0-SNAPSHOT}.jar:/opt/app.jar:ro
@@ -111,7 +112,7 @@ services:
     profiles: ["apps"]
     container_name: rev-ms-zonas
     ports:
-      - "8082:8082"
+      - "${REV_MS_ZONAS_PORT:-18082}:8082"
     volumes:
       - ./businessdomain/ms-zonas-riesgo/target/ms-zonas-riesgo-${REV_VERSION:-1.0-SNAPSHOT}.jar:/opt/app.jar:ro
     depends_on:
@@ -125,7 +126,7 @@ services:
     profiles: ["apps"]
     container_name: rev-ms-recursos
     ports:
-      - "8083:8083"
+      - "${REV_MS_RECURSOS_PORT:-18083}:8083"
     volumes:
       - ./businessdomain/ms-recursos/target/ms-recursos-${REV_VERSION:-1.0-SNAPSHOT}.jar:/opt/app.jar:ro
     depends_on:
@@ -139,7 +140,7 @@ services:
     profiles: ["apps"]
     container_name: rev-bff
     ports:
-      - "8085:8085"
+      - "${REV_BFF_PORT:-18085}:8085"
     volumes:
       - ./infraestructuredomain/bff-rev/target/bff-rev-${REV_VERSION:-1.0-SNAPSHOT}.jar:/opt/app.jar:ro
     depends_on:
@@ -157,7 +158,10 @@ services:
     profiles: ["apps"]
     container_name: rev-keycloak-adapter
     ports:
-      - "8088:8088"
+      - "${REV_KEYCLOAK_ADAPTER_PORT:-18088}:8088"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      KEYCLOAK_URL: http://keycloak:8080
     volumes:
       - ./infraestructuredomain/keycloak-adapter/target/keycloak-adapter-${REV_VERSION:-1.0-SNAPSHOT}.jar:/opt/app.jar:ro
     depends_on:
@@ -171,7 +175,7 @@ services:
     profiles: ["apps"]
     container_name: rev-api-gateway
     ports:
-      - "8080:8080"
+      - "${REV_GATEWAY_PORT:-18080}:8080"
     volumes:
       - ./infraestructuredomain/api-gateway/target/api-gateway-${REV_VERSION:-1.0-SNAPSHOT}.jar:/opt/app.jar:ro
     depends_on:

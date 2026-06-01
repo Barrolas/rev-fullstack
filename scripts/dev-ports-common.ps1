@@ -3,7 +3,57 @@
 # - Docker Compose acotado al proyecto rev (nunca rm/prune global)
 
 $script:RevComposeProject = 'rev'
-$script:RevDevPorts = @(8761, 8080, 8081, 8082, 8083, 8085, 8088, 8099, 5173)
+$script:RevPortMap = @{}
+$script:RevDevPorts = @()
+$script:RevLegacyDevPorts = @()
+
+function Get-RevEnvInt {
+  param(
+    [Parameter(Mandatory)][string]$Name,
+    [Parameter(Mandatory)][int]$Default
+  )
+  $raw = [Environment]::GetEnvironmentVariable($Name)
+  if ($raw -and $raw -match '^\d+$') {
+    return [int]$raw
+  }
+  return $Default
+}
+
+function Initialize-RevDevPortMap {
+  $script:RevPortMap = @{
+    Frontend        = (Get-RevEnvInt 'REV_FRONTEND_PORT' 15173)
+    Gateway         = (Get-RevEnvInt 'REV_GATEWAY_PORT' 18080)
+    Eureka          = (Get-RevEnvInt 'REV_EUREKA_PORT' 18761)
+    MsIncidentes    = (Get-RevEnvInt 'REV_MS_INCIDENTES_PORT' 18081)
+    MsZonas         = (Get-RevEnvInt 'REV_MS_ZONAS_PORT' 18082)
+    MsRecursos      = (Get-RevEnvInt 'REV_MS_RECURSOS_PORT' 18083)
+    Bff             = (Get-RevEnvInt 'REV_BFF_PORT' 18085)
+    KeycloakAdapter = (Get-RevEnvInt 'REV_KEYCLOAK_ADAPTER_PORT' 18088)
+    Keycloak        = (Get-RevEnvInt 'REV_KEYCLOAK_PORT' 18090)
+    Sba             = (Get-RevEnvInt 'REV_SBA_PORT' 18099)
+    PgIncidentes    = (Get-RevEnvInt 'REV_PG_INCIDENTES_PORT' 15432)
+    PgZonas         = (Get-RevEnvInt 'REV_PG_ZONAS_PORT' 15433)
+    PgRecursos      = (Get-RevEnvInt 'REV_PG_RECURSOS_PORT' 15434)
+  }
+  $script:RevDevPorts = @(
+    $script:RevPortMap.Eureka,
+    $script:RevPortMap.Gateway,
+    $script:RevPortMap.MsIncidentes,
+    $script:RevPortMap.MsZonas,
+    $script:RevPortMap.MsRecursos,
+    $script:RevPortMap.Bff,
+    $script:RevPortMap.KeycloakAdapter,
+    $script:RevPortMap.Sba,
+    $script:RevPortMap.Frontend
+  )
+  # Puertos historicos REV (pre 18xxx) — Maven/Vite/containers viejos tras migracion
+  $script:RevLegacyDevPorts = @(8761, 8080, 8081, 8082, 8083, 8085, 8088, 8099, 8090, 5173)
+}
+
+function Get-RevKeycloakBaseUrl {
+  if ($env:KEYCLOAK_URL) { return $env:KEYCLOAK_URL.TrimEnd('/') }
+  return "http://localhost:$($script:RevPortMap.Keycloak)"
+}
 
 function Invoke-DockerQuiet {
   param([Parameter(Mandatory)][string[]]$Arguments)
@@ -70,6 +120,31 @@ function Write-WarningIfPortsStillListen {
       Write-Host "  Use .\scripts\dev-down.ps1 o reinicie el contenedor REV en Docker Desktop." -ForegroundColor Yellow
     }
   }
+}
+
+function Stop-RevProjectContainers {
+  $names = Get-DockerLines -Arguments @(
+    'ps', '-a', '--filter', 'label=com.docker.compose.project=rev', '--format', '{{.Names}}'
+  )
+  if (-not $names -or $names.Count -eq 0) {
+    return
+  }
+  Write-Host 'Contenedores REV aun activos; forzando stop/rm...' -ForegroundColor Yellow
+  foreach ($name in $names) {
+    if (-not $name) { continue }
+    Write-Host "  $name" -ForegroundColor DarkYellow
+    $null = Invoke-DockerQuiet -Arguments @('stop', $name)
+    $null = Invoke-DockerQuiet -Arguments @('rm', '-f', $name)
+  }
+}
+
+function Get-RevDevPortsForCleanup {
+  param([switch]$IncludeLegacy)
+  $ports = @($script:RevDevPorts)
+  if ($IncludeLegacy) {
+    $ports += $script:RevLegacyDevPorts
+  }
+  return @($ports | Sort-Object -Unique)
 }
 
 function Assert-DockerNotGlobalDestructive {
@@ -184,7 +259,7 @@ function Wait-TcpPort {
 
 function Wait-KeycloakAdminReady {
   param(
-    [string]$KeycloakBase = 'http://localhost:8090',
+    [string]$KeycloakBase = (Get-RevKeycloakBaseUrl),
     [int]$TimeoutSec = 120
   )
   Write-Host 'Esperando API admin de Keycloak...' -ForegroundColor DarkGray
@@ -208,17 +283,17 @@ function Wait-KeycloakAdminReady {
 }
 
 function Wait-RevInfraReady {
-  Wait-TcpPort -Port 5432 -TimeoutSec 90 -Label "PostgreSQL incidentes (5432)" | Out-Null
-  Wait-TcpPort -Port 5433 -TimeoutSec 90 -Label "PostgreSQL zonas PostGIS (5433)" | Out-Null
-  Wait-TcpPort -Port 5434 -TimeoutSec 90 -Label "PostgreSQL recursos (5434)" | Out-Null
-  Wait-TcpPort -Port 8090 -TimeoutSec 120 -Label "Keycloak (8090)" | Out-Null
+  Wait-TcpPort -Port $script:RevPortMap.PgIncidentes -TimeoutSec 90 -Label "PostgreSQL incidentes ($($script:RevPortMap.PgIncidentes))" | Out-Null
+  Wait-TcpPort -Port $script:RevPortMap.PgZonas -TimeoutSec 90 -Label "PostgreSQL zonas PostGIS ($($script:RevPortMap.PgZonas))" | Out-Null
+  Wait-TcpPort -Port $script:RevPortMap.PgRecursos -TimeoutSec 90 -Label "PostgreSQL recursos ($($script:RevPortMap.PgRecursos))" | Out-Null
+  Wait-TcpPort -Port $script:RevPortMap.Keycloak -TimeoutSec 120 -Label "Keycloak ($($script:RevPortMap.Keycloak))" | Out-Null
   if (Wait-KeycloakAdminReady) {
     Initialize-RevKeycloakDevUsers
   }
 }
 
 function Initialize-RevKeycloakDevUsers {
-  param([string]$KeycloakBase = 'http://localhost:8090')
+  param([string]$KeycloakBase = (Get-RevKeycloakBaseUrl))
   $devUsers = @(
     @{ Username = 'despachador'; Password = 'rev123'; Email = 'despachador@valle.local'; FirstName = 'Ana'; LastName = 'Despacho'; RealmRoles = @('Despachador') },
     @{ Username = 'brigadista'; Password = 'rev123'; Email = 'brigadista@valle.local'; FirstName = 'Luis'; LastName = 'Brigada'; RealmRoles = @('Brigadista') },
@@ -231,7 +306,7 @@ function Initialize-RevKeycloakDevUsers {
 
 function Initialize-RevKeycloakDevUser {
   param(
-    [string]$KeycloakBase = 'http://localhost:8090',
+    [string]$KeycloakBase = (Get-RevKeycloakBaseUrl),
     [string]$Username = 'despachador',
     [string]$Password = 'rev123',
     [string]$Email = 'despachador@valle.local',
@@ -352,21 +427,22 @@ function Initialize-RevKeycloakDevUser {
 
 function Wait-RevGatewayReachable {
   param([int]$TimeoutSec = 180)
-  Write-Host "Esperando api-gateway en 8080 (max. $TimeoutSec s)..." -ForegroundColor Cyan
+  $gatewayPort = $script:RevPortMap.Gateway
+  Write-Host "Esperando api-gateway en $gatewayPort (max. $TimeoutSec s)..." -ForegroundColor Cyan
   $deadline = (Get-Date).AddSeconds($TimeoutSec)
   $start = Get-Date
   $lastProgressSec = -1
   while ((Get-Date) -lt $deadline) {
-    $open = Test-NetConnection -ComputerName localhost -Port 8080 `
+    $open = Test-NetConnection -ComputerName localhost -Port $gatewayPort `
       -WarningAction SilentlyContinue -InformationLevel Quiet
     if ($open) {
-      Write-Host "api-gateway listo (127.0.0.1:8080)." -ForegroundColor Green
+      Write-Host "api-gateway listo (127.0.0.1:$gatewayPort)." -ForegroundColor Green
       return
     }
     $elapsed = [int]((Get-Date) - $start).TotalSeconds
     if ($elapsed -ge 15 -and ($elapsed - $lastProgressSec) -ge 15) {
       $lastProgressSec = $elapsed
-      Write-Host "  ... ${elapsed}s - revise ventana 'api-gateway (:8080)'." -ForegroundColor DarkYellow
+      Write-Host "  ... ${elapsed}s - revise ventana 'api-gateway (:$gatewayPort)'." -ForegroundColor DarkYellow
     }
     Start-Sleep -Seconds 3
   }
@@ -431,12 +507,12 @@ function Invoke-RevMavenPackage {
 }
 
 function Wait-RevAppsReady {
-  Wait-TcpPort -Port 8761 -TimeoutSec 180 -Label 'Eureka (8761)' | Out-Null
-  Wait-TcpPort -Port 8081 -TimeoutSec 180 -Label 'MS Incidentes (8081)' | Out-Null
-  Wait-TcpPort -Port 8082 -TimeoutSec 180 -Label 'MS Zonas (8082)' | Out-Null
-  Wait-TcpPort -Port 8083 -TimeoutSec 180 -Label 'MS Recursos (8083)' | Out-Null
-  Wait-TcpPort -Port 8085 -TimeoutSec 180 -Label 'BFF (8085)' | Out-Null
-  Wait-TcpPort -Port 8088 -TimeoutSec 180 -Label 'Keycloak adapter (8088)' | Out-Null
+  Wait-TcpPort -Port $script:RevPortMap.Eureka -TimeoutSec 180 -Label "Eureka ($($script:RevPortMap.Eureka))" | Out-Null
+  Wait-TcpPort -Port $script:RevPortMap.MsIncidentes -TimeoutSec 180 -Label "MS Incidentes ($($script:RevPortMap.MsIncidentes))" | Out-Null
+  Wait-TcpPort -Port $script:RevPortMap.MsZonas -TimeoutSec 180 -Label "MS Zonas ($($script:RevPortMap.MsZonas))" | Out-Null
+  Wait-TcpPort -Port $script:RevPortMap.MsRecursos -TimeoutSec 180 -Label "MS Recursos ($($script:RevPortMap.MsRecursos))" | Out-Null
+  Wait-TcpPort -Port $script:RevPortMap.Bff -TimeoutSec 180 -Label "BFF ($($script:RevPortMap.Bff))" | Out-Null
+  Wait-TcpPort -Port $script:RevPortMap.KeycloakAdapter -TimeoutSec 180 -Label "Keycloak adapter ($($script:RevPortMap.KeycloakAdapter))" | Out-Null
   Wait-RevGatewayReachable -TimeoutSec 240
 }
 

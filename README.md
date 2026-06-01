@@ -130,12 +130,14 @@ Más opciones: [docs/guia-entorno-local.md](docs/guia-entorno-local.md).
 
 | Servicio | URL |
 |----------|-----|
-| **Frontend** | http://localhost:5173 |
-| **Portal público** | http://localhost:5173/portal |
-| **API Gateway** | http://localhost:8080 |
-| **Eureka** | http://localhost:8761 |
-| **Keycloak** | http://localhost:8090 |
-| **Spring Boot Admin** | http://localhost:8099 |
+| **Frontend** | http://localhost:15173 |
+| **Login / reporte público** | http://localhost:15173/login |
+| **API Gateway** | http://localhost:18080 |
+| **Eureka** | http://localhost:18761 |
+| **Keycloak** | http://localhost:18090 |
+| **Spring Boot Admin** | http://localhost:18099 |
+
+Puertos en rango **15xxx/18xxx** para convivir con Rakin IA (8070, 8084, 5432). Ver `.env.example`.
 
 ### Credenciales dev
 

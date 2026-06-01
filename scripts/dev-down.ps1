@@ -7,7 +7,7 @@
   No ejecuta docker compose down.
 
 .PARAMETER StopDevPorts
-  Cierra procesos en puertos 8761,8080-8083,8085,8088,8099,5173 (Maven/Vite). No mata Docker Desktop.
+  Cierra procesos Maven/Vite en puertos REV (18xxx y legacy 8080-8099). No mata Docker Desktop.
 
 .PARAMETER RemoveVolumes
   Pasa -v a compose down (elimina datos Postgres/Keycloak locales).
@@ -23,6 +23,9 @@ $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'dev-ports-common.ps1')
 
 $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+Import-DotEnv (Join-Path $RepoRoot '.env')
+Initialize-RevDevPortMap
+
 $ComposeFile = Join-Path $RepoRoot 'docker-compose.yml'
 
 if (-not $SkipDocker) {
@@ -31,7 +34,7 @@ if (-not $SkipDocker) {
   } elseif (-not (Test-Path $ComposeFile)) {
     Write-Warning "No se encontro $ComposeFile ; se omite compose down."
   } else {
-    Write-Host 'Bajando contenedores REV (infra y perfil apps si estaba activo)...' -ForegroundColor Cyan
+    Write-Host 'Bajando contenedores REV (infra + perfil apps)...' -ForegroundColor Cyan
     Push-Location $RepoRoot
     try {
       $downArgs = @('down', '--remove-orphans')
@@ -39,10 +42,12 @@ if (-not $SkipDocker) {
         $downArgs += '-v'
         Write-Host '  (con -v: se eliminan volumenes locales de Postgres)' -ForegroundColor DarkYellow
       }
-      $exitCode = Invoke-RevCompose -ComposeFile $ComposeFile -Arguments $downArgs
+      # Perfil apps obligatorio: sin el, rev-eureka, rev-api-gateway, etc. quedan corriendo.
+      $exitCode = Invoke-RevCompose -ComposeFile $ComposeFile -Profiles @('apps') -Arguments $downArgs
       if ($exitCode -ne 0) {
         Write-Warning "compose down codigo $exitCode"
       }
+      Stop-RevProjectContainers
       Write-Host 'Limpiando redes del proyecto rev...' -ForegroundColor Cyan
       Remove-RevProjectNetworksIfUnused
     } finally {
@@ -54,8 +59,10 @@ if (-not $SkipDocker) {
 }
 
 if ($StopDevPorts) {
-  Write-Host 'StopDevPorts: liberando puertos de desarrollo...' -ForegroundColor Cyan
-  Stop-ProcessOnLocalPort -Ports $script:RevDevPorts
+  Write-Host 'StopDevPorts: liberando puertos Maven/Vite (actual + legacy)...' -ForegroundColor Cyan
+  $ports = Get-RevDevPortsForCleanup -IncludeLegacy
+  Stop-ProcessOnLocalPort -Ports $ports
+  Write-WarningIfPortsStillListen -Ports $ports
 }
 
 Write-Host ''

@@ -111,6 +111,7 @@ Write-Host 'Iniciando entorno dev REV...' -ForegroundColor Cyan
 
 
 Import-DotEnv (Join-Path $RepoRoot '.env')
+Initialize-RevDevPortMap
 
 
 
@@ -225,7 +226,7 @@ if (-not $SkipDocker) {
     $null = Invoke-RevCompose -ComposeFile $ComposeFile -Profiles @('apps') -Arguments @(
       'restart', 'keycloak-adapter'
     )
-    Wait-TcpPort -Port 8088 -TimeoutSec 120 -Label 'Keycloak adapter (8088)' | Out-Null
+    Wait-TcpPort -Port $script:RevPortMap.KeycloakAdapter -TimeoutSec 120 -Label "Keycloak adapter ($($script:RevPortMap.KeycloakAdapter))" | Out-Null
 
     Write-Host 'Esperando microservicios en contenedores...' -ForegroundColor Cyan
 
@@ -269,19 +270,19 @@ if (-not $SkipBackend -and -not $DockerApps) {
 
   Write-Host 'Abriendo backend en ventanas separadas (Maven local)...' -ForegroundColor Cyan
 
-  Start-MavenTerminalJob 'eureka-server (:8761)' $RepoRoot 'infraestructuredomain/eureka-server' $MavenLauncher
+  Start-MavenTerminalJob "eureka-server (:$($script:RevPortMap.Eureka))" $RepoRoot 'infraestructuredomain/eureka-server' $MavenLauncher
 
-  Wait-TcpPort -Port 8761 -TimeoutSec 120 -Label 'Eureka (8761)' | Out-Null
+  Wait-TcpPort -Port $script:RevPortMap.Eureka -TimeoutSec 120 -Label "Eureka ($($script:RevPortMap.Eureka))" | Out-Null
 
 
 
-  Start-MavenTerminalJob 'spring-boot-admin (:8099)' $RepoRoot 'infraestructuredomain/spring-boot-admin' $MavenLauncher
+  Start-MavenTerminalJob "spring-boot-admin (:$($script:RevPortMap.Sba))" $RepoRoot 'infraestructuredomain/spring-boot-admin' $MavenLauncher
 
-  Start-MavenTerminalJob 'ms-incidentes (:8081)' $RepoRoot 'businessdomain/ms-incidentes' $MavenLauncher
+  Start-MavenTerminalJob "ms-incidentes (:$($script:RevPortMap.MsIncidentes))" $RepoRoot 'businessdomain/ms-incidentes' $MavenLauncher
 
-  Start-MavenTerminalJob 'ms-zonas-riesgo (:8082)' $RepoRoot 'businessdomain/ms-zonas-riesgo' $MavenLauncher
+  Start-MavenTerminalJob "ms-zonas-riesgo (:$($script:RevPortMap.MsZonas))" $RepoRoot 'businessdomain/ms-zonas-riesgo' $MavenLauncher
 
-  Start-MavenTerminalJob 'ms-recursos (:8083)' $RepoRoot 'businessdomain/ms-recursos' $MavenLauncher
+  Start-MavenTerminalJob "ms-recursos (:$($script:RevPortMap.MsRecursos))" $RepoRoot 'businessdomain/ms-recursos' $MavenLauncher
 
 
 
@@ -289,23 +290,23 @@ if (-not $SkipBackend -and -not $DockerApps) {
 
   Start-Sleep -Seconds 15
 
-  Wait-TcpPort -Port 8081 -TimeoutSec 120 -Label 'MS Incidentes (8081)' | Out-Null
+  Wait-TcpPort -Port $script:RevPortMap.MsIncidentes -TimeoutSec 120 -Label "MS Incidentes ($($script:RevPortMap.MsIncidentes))" | Out-Null
 
-  Wait-TcpPort -Port 8082 -TimeoutSec 120 -Label 'MS Zonas (8082)' | Out-Null
+  Wait-TcpPort -Port $script:RevPortMap.MsZonas -TimeoutSec 120 -Label "MS Zonas ($($script:RevPortMap.MsZonas))" | Out-Null
 
-  Wait-TcpPort -Port 8083 -TimeoutSec 120 -Label 'MS Recursos (8083)' | Out-Null
+  Wait-TcpPort -Port $script:RevPortMap.MsRecursos -TimeoutSec 120 -Label "MS Recursos ($($script:RevPortMap.MsRecursos))" | Out-Null
 
 
 
-  Start-MavenTerminalJob 'bff-rev (:8085)' $RepoRoot 'infraestructuredomain/bff-rev' $MavenLauncher
+  Start-MavenTerminalJob "bff-rev (:$($script:RevPortMap.Bff))" $RepoRoot 'infraestructuredomain/bff-rev' $MavenLauncher
 
-  Start-MavenTerminalJob 'keycloak-adapter (:8088)' $RepoRoot 'infraestructuredomain/keycloak-adapter' $MavenLauncher
+  Start-MavenTerminalJob "keycloak-adapter (:$($script:RevPortMap.KeycloakAdapter))" $RepoRoot 'infraestructuredomain/keycloak-adapter' $MavenLauncher
 
   Start-Sleep -Seconds 10
 
 
 
-  Start-MavenTerminalJob 'api-gateway (:8080)' $RepoRoot 'infraestructuredomain/api-gateway' $MavenLauncher
+  Start-MavenTerminalJob "api-gateway (:$($script:RevPortMap.Gateway))" $RepoRoot 'infraestructuredomain/api-gateway' $MavenLauncher
 
   Wait-RevGatewayReachable
 
@@ -321,7 +322,7 @@ if (-not $SkipFrontend) {
 
   if (-not $SkipFreeDevPorts) {
 
-    Stop-ProcessOnLocalPort -Ports @(5173)
+    Stop-ProcessOnLocalPort -Ports @($script:RevPortMap.Frontend)
 
   }
 
@@ -345,7 +346,8 @@ if (-not $SkipFrontend) {
 
   }
 
-  Start-TerminalJob 'frontend (vite :5173)' $frontendDir 'npm run dev'
+  $fePort = $script:RevPortMap.Frontend
+  Start-TerminalJob "frontend (vite :$fePort)" $frontendDir "npm run dev -- --port $fePort"
 
 } else {
 
@@ -359,15 +361,11 @@ Write-Host ''
 
 Write-Host 'Listo. URLs tipicas:' -ForegroundColor Green
 
-Write-Host '- Frontend:  http://localhost:5173'
-
-Write-Host '- Gateway:   http://localhost:8080'
-
-Write-Host '- Eureka:    http://localhost:8761'
-
-Write-Host '- Keycloak:  http://localhost:8090  (master: admin / admin)'
-
-Write-Host '- Consola realm rev: http://localhost:8090/admin/rev/console  (usuario admin / rev123)'
+Write-Host "- Frontend:  http://localhost:$($script:RevPortMap.Frontend)"
+Write-Host "- Gateway:   http://localhost:$($script:RevPortMap.Gateway)"
+Write-Host "- Eureka:    http://localhost:$($script:RevPortMap.Eureka)"
+Write-Host "- Keycloak:  http://localhost:$($script:RevPortMap.Keycloak)  (master: admin / admin)"
+Write-Host "- Consola realm rev: http://localhost:$($script:RevPortMap.Keycloak)/admin/rev/console  (usuario admin / rev123)"
 
 Write-Host '- Login app: despachador | brigadista | admin  /  rev123'
 

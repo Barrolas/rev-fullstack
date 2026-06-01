@@ -5,3 +5,6 @@ eureka:
   instance:
     hostname: api-gateway
     prefer-ip-address: false
+
+server:
+  port: 8080
