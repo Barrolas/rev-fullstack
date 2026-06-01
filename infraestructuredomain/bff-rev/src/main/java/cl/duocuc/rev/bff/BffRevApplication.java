@@ -1,8 +1,10 @@
 package cl.duocuc.rev.bff;
 
+import cl.duocuc.rev.bff.config.PublicReportProperties;
 import java.time.Duration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
@@ -12,6 +14,7 @@ import reactor.netty.http.client.HttpClient;
 
 @SpringBootApplication
 @EnableDiscoveryClient
+@EnableConfigurationProperties(PublicReportProperties.class)
 public class BffRevApplication {
 
     public static void main(String[] args) {
@@ -21,7 +24,7 @@ public class BffRevApplication {
     @Bean
     @LoadBalanced
     public WebClient.Builder loadBalancedWebClientBuilder() {
-        HttpClient httpClient = HttpClient.create().responseTimeout(Duration.ofSeconds(15));
+        HttpClient httpClient = HttpClient.create().responseTimeout(Duration.ofSeconds(120));
         return WebClient.builder().clientConnector(new ReactorClientHttpConnector(httpClient));
     }
 }

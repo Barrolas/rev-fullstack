@@ -4,6 +4,8 @@ server:
 spring:
   application:
     name: api-gateway
+  codec:
+    max-in-memory-size: 64MB
   cloud:
     gateway:
       server:
@@ -13,6 +15,11 @@ spring:
               uri: lb://BFF-REV
               predicates:
                 - Path=/api/public/**
+              filters:
+                - name: PublicRateLimitFilter
+                  args:
+                    maxRequests: 5
+                    windowSeconds: 3600
             - id: bff_route
               uri: lb://BFF-REV
               predicates:
