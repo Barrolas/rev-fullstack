@@ -37,10 +37,23 @@ export default function IncidentCard({ item }: IncidentCardProps) {
           <div className="rev-incident-card__identity">
             <span className={`rev-incident-card__estado-dot rev-incident-card__estado-dot--${estado.slug}`} aria-hidden="true" />
             <span className="rev-incident-card__type">{incidente.tipo}</span>
+            {incidente.folio && (
+              <span className="rev-incident-card__folio small text-muted ms-1">{incidente.folio}</span>
+            )}
           </div>
-          <Badge bg={estado.variant} className="rev-incident-card__badge">
-            {formatEstadoLabel(incidente.estado)}
-          </Badge>
+          <div className="d-flex flex-wrap gap-1 align-items-center">
+            {(incidente.adjuntos?.length ?? 0) > 0 && (
+              <Badge bg="warning" text="dark" className="rev-incident-card__badge">
+                <i className="bi bi-paperclip" aria-hidden="true" />
+              </Badge>
+            )}
+            {incidente.anonimo && incidente.origenReporte === 'PUBLICO' && (
+              <Badge bg="dark" className="rev-incident-card__badge">Anónimo</Badge>
+            )}
+            <Badge bg={estado.variant} className="rev-incident-card__badge">
+              {formatEstadoLabel(incidente.estado)}
+            </Badge>
+          </div>
         </div>
 
         <p className="rev-incident-card__desc">{incidente.descripcion}</p>

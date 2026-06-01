@@ -1,11 +1,20 @@
 export interface DashboardItem {
   incidente: {
     id: string;
+    folio?: string;
     tipo: string;
     estado: string;
-    lat: number;
-    lng: number;
+    lat?: number | null;
+    lng?: number | null;
+    direccionReferencia?: string;
     descripcion: string;
+    anonimo?: boolean;
+    origenReporte?: string;
+    reportanteNombre?: string;
+    reportanteApellido?: string;
+    reportanteRut?: string;
+    reportanteContacto?: string;
+    adjuntos?: AdjuntoMeta[];
   };
   zonaRiesgo: {
     nivel: string;
@@ -17,6 +26,38 @@ export interface DashboardItem {
     estado: string;
   }>;
   degraded: boolean;
+}
+
+export interface AdjuntoMeta {
+  id: string;
+  tipo: string;
+  nombreArchivo: string;
+  mimeType?: string;
+  tamanoBytes?: number;
+  orden?: number;
+}
+
+export interface PublicReportPayload {
+  tipo: string;
+  descripcion: string;
+  lat?: number;
+  lng?: number;
+  direccionReferencia?: string;
+  anonimo?: boolean;
+  reportanteNombre?: string;
+  reportanteApellido?: string;
+  reportanteRut?: string;
+  reportanteContacto?: string;
+  registrarme?: boolean;
+  registroUsername?: string;
+  registroPassword?: string;
+  registroEmail?: string;
+}
+
+export interface PublicReportResult {
+  id?: string;
+  folio?: string;
+  mensaje: string;
 }
 
 export interface Zona {
@@ -119,17 +160,53 @@ export async function createIncidente(data: IncidenteCreate): Promise<void> {
 }
 
 export async function createPublicIncidente(data: IncidenteCreate): Promise<{ id: string }> {
+  const result = await submitPublicReport({
+    payload: {
+      tipo: data.tipo,
+      descripcion: data.descripcion,
+      lat: data.lat,
+      lng: data.lng,
+      anonimo: true,
+    },
+    fotos: [],
+    video: null,
+    honeypot: '',
+    formLoadedAt: Date.now() - 5000,
+  });
+  return { id: result.id ?? '' };
+}
+
+export interface SubmitPublicReportOptions {
+  payload: PublicReportPayload;
+  fotos: File[];
+  video: File | null;
+  honeypot: string;
+  formLoadedAt: number;
+  captchaToken?: string;
+}
+
+export async function submitPublicReport(options: SubmitPublicReportOptions): Promise<PublicReportResult> {
+  const form = new FormData();
+  form.append('payload', JSON.stringify(options.payload));
+  form.append('formLoadedAt', String(options.formLoadedAt));
+  if (options.honeypot) form.append('website', options.honeypot);
+  if (options.captchaToken) form.append('captchaToken', options.captchaToken);
+  options.fotos.forEach((foto) => form.append('fotos', foto, foto.name));
+  if (options.video) form.append('video', options.video, options.video.name);
+
   const res = await fetch('/api/public/incidentes', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
+    body: form,
   });
   if (!res.ok) {
     const text = await res.text();
     throw new Error(formatApiError(text, res.status));
   }
-  const payload = await res.json();
-  return { id: payload.id ?? payload.incidente?.id ?? '' };
+  return res.json();
+}
+
+export function adjuntoUrl(incidenteId: string, adjuntoId: string): string {
+  return `/api/incidentes/${incidenteId}/adjuntos/${adjuntoId}`;
 }
 
 export async function fetchZonas(): Promise<Zona[]> {

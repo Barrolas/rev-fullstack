@@ -4,6 +4,7 @@ import { Link, useParams } from 'react-router-dom';
 import { DashboardItem, fetchDashboardItem } from '../api';
 import { useToast } from '../contexts/ToastContext';
 import AssignResourceModal from '../components/incidentes/AssignResourceModal';
+import IncidentAdjuntoGallery from '../components/incidentes/IncidentAdjuntoGallery';
 import DegradedAlert from '../components/DegradedAlert';
 import AppPage from '../components/layout/AppPage';
 import ModuleHub from '../components/layout/ModuleHub';
@@ -13,6 +14,13 @@ import RiskBadge from '../components/RiskBadge';
 import { riskLabel } from '../utils/zonaMapStyles';
 import { useAuth } from '../hooks/useAuth';
 import { useApiQuery } from '../hooks/useApiQuery';
+
+function origenLabel(origen?: string): string | null {
+  if (!origen) return null;
+  if (origen === 'PUBLICO') return 'Reporte ciudadano';
+  if (origen === 'INTERNO') return 'Registro interno';
+  return origen;
+}
 
 export default function IncidentDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -31,6 +39,9 @@ export default function IncidentDetailPage() {
   });
 
   const viewState = loading ? 'loading' : error || !item ? 'error' : 'idle';
+  const inc = item?.incidente;
+  const showReporter =
+    inc && !inc.anonimo && canManageIncidents && (inc.reportanteNombre || inc.reportanteContacto);
 
   const rail = item ? (
     <>
@@ -83,7 +94,7 @@ export default function IncidentDetailPage() {
         breadcrumbs={[
           { label: 'Despacho', to: '/' },
           { label: 'Incidentes', to: '/incidentes' },
-          { label: item ? `#${item.incidente.id.slice(0, 8)}…` : 'Detalle' },
+          { label: inc?.folio ?? (inc ? `#${inc.id.slice(0, 8)}…` : 'Detalle') },
         ]}
         actions={
           item && canManageIncidents && (
@@ -100,28 +111,89 @@ export default function IncidentDetailPage() {
             errorMessage={error || 'Incidente no encontrado'}
             onRetry={refetch}
           >
-            {item && (
+            {item && inc && (
               <div className="rev-card p-4">
                 <DegradedAlert show={item.degraded} />
-                <div className="d-flex justify-content-between align-items-start mb-3">
+                <div className="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
                   <div>
-                    <h2 className="h4 mb-1">{item.incidente.tipo}</h2>
-                    <Badge bg="secondary">{item.incidente.estado}</Badge>
+                    <h2 className="h4 mb-1">{inc.tipo}</h2>
+                    <div className="d-flex flex-wrap gap-2">
+                      <Badge bg="secondary">{inc.estado}</Badge>
+                      {inc.anonimo && <Badge bg="dark">Anónimo</Badge>}
+                      {origenLabel(inc.origenReporte) && (
+                        <Badge bg="info" text="dark">
+                          {origenLabel(inc.origenReporte)}
+                        </Badge>
+                      )}
+                      {(inc.adjuntos?.length ?? 0) > 0 && (
+                        <Badge bg="warning" text="dark">
+                          <i className="bi bi-paperclip me-1" />
+                          {inc.adjuntos!.length} adjunto{inc.adjuntos!.length !== 1 ? 's' : ''}
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                   <RiskBadge nivel={item.zonaRiesgo.nivel} />
                 </div>
-                <p>{item.incidente.descripcion}</p>
-                <Row className="g-3">
+
+                {inc.folio && (
+                  <p className="mb-2">
+                    <small className="text-muted d-block">Folio</small>
+                    <strong>{inc.folio}</strong>
+                  </p>
+                )}
+
+                <p>{inc.descripcion}</p>
+
+                <Row className="g-3 mb-3">
                   <Col sm={6}>
                     <small className="text-muted d-block">Ubicación</small>
-                    <span>Incidente en el territorio municipal</span>
-                    <Link to="/zonas" className="d-block small mt-1">Consultar mapa de zonas</Link>
+                    {inc.lat != null && inc.lng != null ? (
+                      <span>
+                        {inc.lat.toFixed(5)}, {inc.lng.toFixed(5)}
+                      </span>
+                    ) : (
+                      <span className="text-muted">Sin coordenadas</span>
+                    )}
+                    <Link to="/zonas" className="d-block small mt-1">
+                      Consultar mapa de zonas
+                    </Link>
                   </Col>
                   <Col sm={6}>
-                    <small className="text-muted d-block">Referencia</small>
-                    <span className="small">{item.incidente.id.slice(0, 8).toUpperCase()}</span>
+                    <small className="text-muted d-block">Referencia / dirección</small>
+                    <span>{inc.direccionReferencia || '—'}</span>
                   </Col>
                 </Row>
+
+                {showReporter && (
+                  <div className="rev-card p-3 mb-3 bg-dark border-secondary">
+                    <h3 className="h6 mb-2">Datos del reportante</h3>
+                    <Row className="g-2 small">
+                      {(inc.reportanteNombre || inc.reportanteApellido) && (
+                        <Col sm={6}>
+                          <span className="text-muted d-block">Nombre</span>
+                          {[inc.reportanteNombre, inc.reportanteApellido].filter(Boolean).join(' ')}
+                        </Col>
+                      )}
+                      {inc.reportanteRut && (
+                        <Col sm={6}>
+                          <span className="text-muted d-block">RUT</span>
+                          {inc.reportanteRut}
+                        </Col>
+                      )}
+                      {inc.reportanteContacto && (
+                        <Col sm={12}>
+                          <span className="text-muted d-block">Contacto</span>
+                          {inc.reportanteContacto}
+                        </Col>
+                      )}
+                    </Row>
+                  </div>
+                )}
+
+                {id && inc.adjuntos && inc.adjuntos.length > 0 && (
+                  <IncidentAdjuntoGallery incidenteId={id} adjuntos={inc.adjuntos} />
+                )}
               </div>
             )}
           </StateView>

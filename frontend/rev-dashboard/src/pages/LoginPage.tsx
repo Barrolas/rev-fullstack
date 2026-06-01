@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { login } from '../api';
 import { REV_BRAND, REV_IMAGES } from '../branding';
 import RevLogo from '../components/branding/RevLogo';
+import PublicReportForm from '../components/public-report/PublicReportForm';
+
+type LoginTab = 'ingresar' | 'reportar';
 
 const DEV_USERS = [
   { user: 'despachador', role: 'Despachador' },
@@ -37,6 +40,7 @@ const LOGIN_FEATURES = [
 ] as const;
 
 export default function LoginPage() {
+  const [activeTab, setActiveTab] = useState<LoginTab>('ingresar');
   const [user, setUser] = useState('');
   const [pass, setPass] = useState('');
   const [error, setError] = useState('');
@@ -146,6 +150,33 @@ export default function LoginPage() {
 
           <section className="rev-login__panel">
             <div className="rev-login__panel-body">
+              <div className="rev-login__tabs" role="tablist" aria-label="Acceso REV">
+                <button
+                  type="button"
+                  role="tab"
+                  id="tab-ingresar"
+                  aria-selected={activeTab === 'ingresar'}
+                  aria-controls="panel-ingresar"
+                  className={`rev-login__tab${activeTab === 'ingresar' ? ' rev-login__tab--active' : ''}`}
+                  onClick={() => setActiveTab('ingresar')}
+                >
+                  Ingresar
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  id="tab-reportar"
+                  aria-selected={activeTab === 'reportar'}
+                  aria-controls="panel-reportar"
+                  className={`rev-login__tab${activeTab === 'reportar' ? ' rev-login__tab--active' : ''}`}
+                  onClick={() => setActiveTab('reportar')}
+                >
+                  Reportar emergencia
+                </button>
+              </div>
+
+              {activeTab === 'ingresar' ? (
+                <>
               <header className="rev-login__form-header">
                 <span className="rev-login__eyebrow">Panel operativo</span>
                 <h1 className="rev-login__title">Iniciar sesión</h1>
@@ -154,7 +185,7 @@ export default function LoginPage() {
                 </p>
               </header>
 
-              <form className="rev-login__form" onSubmit={handleSubmit} noValidate>
+              <form className="rev-login__form" onSubmit={handleSubmit} noValidate id="panel-ingresar" role="tabpanel" aria-labelledby="tab-ingresar">
                 <div className="rev-field">
                   <label className="rev-field__label" htmlFor="login-user">
                     Usuario
@@ -258,6 +289,22 @@ export default function LoginPage() {
                   </div>
                 )}
               </div>
+                </>
+              ) : (
+                <div id="panel-reportar" role="tabpanel" aria-labelledby="tab-reportar">
+                  <header className="rev-login__form-header">
+                    <span className="rev-login__eyebrow">Ciudadano</span>
+                    <h1 className="rev-login__title">Reportar emergencia</h1>
+                    <p className="rev-login__subtitle">
+                      Envíe un reporte anónimo o identificado. No requiere cuenta.
+                    </p>
+                  </header>
+                  <PublicReportForm
+                    onSuccess={() => undefined}
+                    onGoToLogin={() => setActiveTab('ingresar')}
+                  />
+                </div>
+              )}
             </div>
 
             <footer className="rev-login__footer">

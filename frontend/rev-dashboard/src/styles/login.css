@@ -771,3 +771,167 @@ html.rev-boot-done .rev-login__shell {
     animation: none;
   }
 }
+
+/* Pestañas login + reporte público */
+.rev-login__tabs {
+  display: flex;
+  gap: 0.35rem;
+  padding: 0.35rem;
+  margin-bottom: 1.25rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--login-border-subtle);
+}
+
+.rev-login__tab {
+  flex: 1;
+  border: none;
+  border-radius: 10px;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--login-text-secondary);
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.rev-login__tab--active {
+  color: #fff;
+  background: var(--login-accent-soft);
+  box-shadow: inset 0 0 0 1px rgba(249, 115, 22, 0.35);
+}
+
+.rev-public-form__alert {
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  background: rgba(249, 115, 22, 0.12);
+  border: 1px solid rgba(249, 115, 22, 0.25);
+  font-size: 0.875rem;
+  color: #fde68a;
+}
+
+.rev-public-honeypot {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.rev-public-map {
+  height: 220px;
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--login-border);
+  z-index: 0;
+}
+
+.rev-public-location__results {
+  max-height: 160px;
+  overflow-y: auto;
+  border: 1px solid var(--login-border);
+  border-radius: 8px;
+  background: var(--login-surface);
+}
+
+.rev-public-location__result-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  color: var(--login-text-secondary);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.rev-public-location__result-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+
+.rev-public-media__btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.45rem 0.85rem;
+  border-radius: 8px;
+  border: 1px dashed var(--login-border);
+  color: var(--login-text-secondary);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.rev-public-media__btn--disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.rev-public-media__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.4rem 0;
+  font-size: 0.85rem;
+  color: var(--login-text-secondary);
+}
+
+.rev-public-media__remove {
+  border: none;
+  background: transparent;
+  color: #f87171;
+  cursor: pointer;
+}
+
+.rev-public-identity__check input {
+  margin-top: 0.2rem;
+}
+
+.rev-public-identity__register {
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--login-border-subtle);
+}
+
+.rev-public-success {
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.rev-public-success__icon {
+  font-size: 2.5rem;
+  color: #4ade80;
+  margin-bottom: 0.75rem;
+}
+
+.rev-public-success__folio {
+  font-size: 1.1rem;
+}
+
+.rev-adjunto-card {
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.5rem;
+}
+
+.rev-adjunto-media {
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: 6px;
+  display: block;
+}
+
+.rev-adjunto-placeholder {
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+}
