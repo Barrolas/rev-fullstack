@@ -95,8 +95,11 @@ services:
     container_name: rev-ms-incidentes
     ports:
       - "8081:8081"
+    environment:
+      REV_STORAGE_PATH: /data/incidente-adjuntos
     volumes:
       - ./businessdomain/ms-incidentes/target/ms-incidentes-${REV_VERSION:-1.0-SNAPSHOT}.jar:/opt/app.jar:ro
+      - rev_incidente_media:/data/incidente-adjuntos
     depends_on:
       postgres-incidentes:
         condition: service_healthy
@@ -183,3 +186,4 @@ volumes:
   pg_incidentes:
   pg_zonas:
   pg_recursos:
+  rev_incidente_media:
