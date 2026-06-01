@@ -241,6 +241,27 @@ sequenceDiagram
 
 > **Nota académica:** además de Factory Method, las clases `*State` implementan el patrón **State** (comportamiento variable según estado del objeto).
 
+### 4.1.1 Correlación geo-temporal de reportes (despacho)
+
+**Microservicio:** `ms-incidentes` — paquete `correlacion`
+
+| Concepto | Descripción |
+|----------|-------------|
+| **Incidente canónico** | Registro que concentra despacho de recursos y estados (`incidente_canonico_id` nulo). |
+| **Reporte vinculado** | Conserva su folio ciudadano; apunta al canónico vía `incidente_canonico_id`. |
+| **Sugerencia** | Fila en `incidente_correlacion` con score explicable y estado `PENDIENTE` hasta decisión humana. |
+
+**Score (0–100, sin ML):** proximidad Haversine (0–50), ventana temporal (0–30), mismo tipo (+20), ambos públicos (+10). Umbral configurable (`rev.correlacion.umbral-score`, default 60). Radios por tipo en `application.properties` (ej. URBANO 400 m / 90 min).
+
+**Flujo despacho:**
+
+1. Al crear incidente con GPS → `CorrelacionService.evaluarNuevoIncidente`.
+2. Operador revisa cola en módulo **Incidentes** (`/incidentes?vista=correlaciones`) o badges en listado.
+3. Confirma canónico → vincula folios; descarta → mantiene independientes.
+4. `bff-rev` resuelve ID canónico al asignar brigada (`OperacionesFacadeService`).
+
+**API:** `GET /incidentes/correlaciones/pendientes`, `POST .../confirmar`, `GET /incidentes/folio/{folio}`, `POST /incidentes/correlaciones/resumen` (batch dashboard).
+
 ### 4.2 Adapter — fuente de datos climáticos
 
 **Microservicio:** `ms-zonas-riesgo`
