@@ -9,8 +9,9 @@ Curso DSY1106, Duoc UC. Monorepo Maven en `rev-fullstack/`.
 
 1. Leer `.cursor/rules/rev-project.mdc` (contexto global).
 2. Si commiteas: `.cursor/rules/git-commits.mdc` + skill `rev-commit`.
-3. Si implementas fases: skill `rev-develop`.
-4. Si creas un MS nuevo: skill `rev-microservice`.
+3. Si ramificas o integras: `.cursor/rules/git-branching-rev.mdc`.
+4. Si implementas fases: skill `rev-develop`.
+5. Si creas un MS nuevo: skill `rev-microservice`.
 
 ## Git � reglas estrictas
 
@@ -20,6 +21,13 @@ Curso DSY1106, Duoc UC. Monorepo Maven en `rev-fullstack/`.
 | `git push` | **No**, salvo pedido expl�cito |
 | `git merge` / `rebase` / `pull` | **No**, salvo pedido expl�cito |
 | Crear PR / mergear PR | **No**, salvo pedido expl�cito |
+
+## Branching
+
+- `main` estable � `dev` integraci�n � `feature/*` (o `fix/*`, etc.) para trabajo diario.
+- Antes de implementar, sugerir rama desde `dev`; si depende de otra feature no mergeada, sub-rama desde la rama actual.
+- Merge feature ? `dev` (validaci�n); `dev` ? `main` solo cuando hay versi�n estable.
+- Detalle completo: [CONTRIBUTING.md](docs/CONTRIBUTING.md) y `.cursor/rules/git-branching-rev.mdc`.
 
 ## Commits at�micos
 
