@@ -2,41 +2,67 @@
 
 ## Estrategia de ramas
 
-El repositorio usa dos ramas principales:
+GitFlow simplificado: **ramas de trabajo → `dev` → `main`**.
 
 | Rama | Proposito |
 |------|-----------|
-| `main` | Codigo estable, listo para demo o entrega. Solo recibe merges desde `dev` cuando una iteracion esta validada. |
-| `dev` | Rama de desarrollo activo. Todo el trabajo diario (features, fixes, infra) se hace aqui. |
+| `main` | Codigo estable, listo para demo o entrega. Solo recibe merges desde `dev` cuando una version esta validada. |
+| `dev` | Integracion. Aqui convergen las features terminadas y revisadas. |
+| `feature/*`, `fix/*`, etc. | Trabajo diario. Una unidad logica por rama. |
 
-### Flujo recomendado
+### Diagrama
 
-```mermaid
-gitGraph
-  commit id: "inicial"
-  branch dev
-  checkout dev
-  commit id: "feature A"
-  commit id: "feature B"
-  checkout main
-  merge dev id: "release"
-  checkout dev
-  commit id: "feature C"
+```
+main          ← release estable (cuando el responsable lo decida)
+  ↑
+ dev          ← merge de features validadas
+  ↑
+feature/xxx   ← desarrollo y commits atomicos
 ```
 
-1. Clonar el repo y posicionarse en `dev`:
+### Convencion de nombres
+
+| Prefijo | Uso |
+|---------|-----|
+| `feature/` | Nueva funcionalidad |
+| `fix/` | Correccion de bug |
+| `refactor/` | Refactorizacion sin cambio de comportamiento |
+| `chore/` | Mantenimiento, docs, config |
+
+Ejemplos: `feature/ms-incidentes-estado-en-progreso`, `fix/bff-rev-timeout-zonas-riesgo`, `chore/docs-orden-de-arranque`.
+
+### Flujo de trabajo
+
+1. Actualizar `dev`:
    ```bash
    git checkout dev
    git pull origin dev
    ```
-2. Desarrollar y commitear en `dev` con formato atomico (ver abajo).
-3. Push a `origin/dev` cuando corresponda.
-4. Integrar a `main` solo cuando el equipo valide (merge explicito, no automatico).
+2. Crear rama para la tarea (desde `dev`):
+   ```bash
+   git checkout -b feature/<modulo>-<descripcion-corta>
+   ```
+3. Desarrollar y commitear con formato atomico (ver seccion Commits).
+4. Push de la rama cuando corresponda:
+   ```bash
+   git push -u origin feature/<modulo>-<descripcion-corta>
+   ```
+5. El responsable del repo mergea la feature a `dev` cuando la valida.
+6. Cuando `dev` tenga una version estable, el responsable mergea `dev` → `main`.
+
+### Desde donde ramificar
+
+| Situacion | Rama base |
+|-----------|-----------|
+| Nueva tarea independiente | `dev` |
+| Nueva tarea que depende de otra feature aun no mergeada | Sub-rama desde la rama feature actual |
 
 ### Reglas
 
 - **No commitear directamente en `main`** salvo hotfixes urgentes acordados.
+- **No mergear features directamente a `main`**: el camino es feature → `dev` → `main`.
 - **No hacer merge a `main`** sin revision previa del estado de `dev`.
+- **Una tarea = una rama**. Evitar mezclar alcances distintos en la misma rama.
 - **Push / merge / rebase** hacia remoto: solo cuando el responsable del repo lo indique explicitamente.
 
 ## Commits

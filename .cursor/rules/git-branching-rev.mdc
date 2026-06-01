@@ -1,0 +1,55 @@
+---
+description: Estrategia de branching REV — main estable, dev de integración, ramas feature
+alwaysApply: true
+---
+
+# Estrategia de branching REV
+
+## Ramas principales
+
+| Rama | Rol |
+|------|-----|
+| `main` | Estable. Solo recibe cambios validados desde `dev`. |
+| `dev` | Integración. Aquí convergen las features terminadas. |
+| `feature/*`, `fix/*`, etc. | Trabajo diario. Una unidad lógica por rama. |
+
+## Regla operativa para el agente
+
+- Antes de implementar una feature/fix/refactor, **sugerir crear una rama dedicada desde `dev`**.
+- Si el usuario inicia un nuevo cambio mientras está en otra rama de feature, **sugerir crear una sub-rama desde la rama actual** para aislar el nuevo alcance.
+- El destino habitual de merge de una feature es **`dev`**, no `main`.
+- `dev` → `main` solo cuando el usuario decida que hay una versión estable en `dev`.
+- No ejecutar `git merge`, `git rebase`, `git pull` ni `git push` salvo solicitud explícita del usuario.
+
+## Convención de nombres
+
+- `feature/<modulo>-<descripcion-corta>`
+- `fix/<modulo>-<descripcion-corta>`
+- `refactor/<modulo>-<descripcion-corta>`
+- `chore/<modulo>-<descripcion-corta>`
+
+Ejemplos:
+- `feature/ms-incidentes-estado-en-progreso`
+- `fix/bff-rev-timeout-zonas-riesgo`
+- `chore/docs-orden-de-arranque`
+
+## Flujo de trabajo
+
+```
+main  ←── (release estable, cuando el usuario lo decida)
+  ↑
+ dev  ←── merge de features validadas
+  ↑
+feature/xxx  ←── desarrollo y commits atómicos
+```
+
+1. Partir de `dev` actualizado.
+2. Crear rama `feature/...` (o `fix/...`, etc.).
+3. Implementar y commitear de forma atómica (`[ TIPO ]: Detalles`).
+4. El usuario mergea la rama a `dev` cuando valida la feature.
+5. Cuando `dev` esté estable, el usuario mergea `dev` → `main`.
+
+## Desde dónde ramificar
+
+- **Nueva tarea independiente** → rama desde `dev`.
+- **Nueva tarea que depende de otra feature aún no mergeada** → sub-rama desde la rama feature actual.
