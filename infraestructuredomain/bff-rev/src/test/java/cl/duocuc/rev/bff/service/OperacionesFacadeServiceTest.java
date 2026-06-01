@@ -33,6 +33,9 @@ class OperacionesFacadeServiceTest {
     @Mock
     private RecursosClientService recursosClientService;
 
+    @Mock
+    private CorrelacionFacadeService correlacionFacadeService;
+
     @InjectMocks
     private OperacionesFacadeService operacionesFacadeService;
 

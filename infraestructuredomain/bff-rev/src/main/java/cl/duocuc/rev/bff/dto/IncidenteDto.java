@@ -32,4 +32,10 @@ public class IncidenteDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private List<AdjuntoDto> adjuntos;
+    private UUID incidenteCanonicoId;
+    private String folioCanonico;
+    private Boolean esCanonico;
+    private Long cantidadReportesVinculados;
+    private Long sugerenciasPendientes;
+    private Short scoreMaximoPendiente;
 }

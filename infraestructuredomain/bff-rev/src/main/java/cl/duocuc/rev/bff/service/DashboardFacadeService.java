@@ -4,6 +4,7 @@ import cl.duocuc.rev.bff.cache.ZonaRiesgoCache;
 import cl.duocuc.rev.bff.client.IncidenteClientService;
 import cl.duocuc.rev.bff.client.RecursosClientService;
 import cl.duocuc.rev.bff.client.ZonaRiesgoClientService;
+import cl.duocuc.rev.bff.dto.CorrelacionResumenDto;
 import cl.duocuc.rev.bff.dto.DashboardResponse;
 import cl.duocuc.rev.bff.dto.IncidenteDto;
 import cl.duocuc.rev.bff.dto.RecursoDto;
@@ -11,6 +12,7 @@ import cl.duocuc.rev.bff.dto.ZonaRiesgoDto;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +26,7 @@ public class DashboardFacadeService {
     private final IncidenteClientService incidenteClientService;
     private final ZonaRiesgoClientService zonaRiesgoClientService;
     private final RecursosClientService recursosClientService;
+    private final CorrelacionFacadeService correlacionFacadeService;
     private final ZonaRiesgoCache zonaRiesgoCache;
 
     private DashboardFacadeService self;
@@ -35,7 +38,8 @@ public class DashboardFacadeService {
 
     public DashboardResponse obtenerPorIncidenteId(UUID id) {
         IncidenteDto incidente = incidenteClientService.obtenerPorId(id).block();
-        return construirDashboard(incidente);
+        Map<UUID, CorrelacionResumenDto> resumenes = correlacionFacadeService.cargarResumenes(List.of(id));
+        return construirDashboard(incidente, resumenes);
     }
 
     public List<DashboardResponse> listarDashboards() {
@@ -43,14 +47,20 @@ public class DashboardFacadeService {
         if (incidentes == null || incidentes.isEmpty()) {
             return Collections.emptyList();
         }
+        List<UUID> ids = incidentes.stream().map(IncidenteDto::getId).toList();
+        Map<UUID, CorrelacionResumenDto> resumenes = correlacionFacadeService.cargarResumenes(ids);
         return incidentes.stream()
-                .map(this::construirDashboard)
+                .map(incidente -> construirDashboard(incidente, resumenes))
                 .toList();
     }
 
-    private DashboardResponse construirDashboard(IncidenteDto incidente) {
+    private DashboardResponse construirDashboard(IncidenteDto incidente, Map<UUID, CorrelacionResumenDto> resumenes) {
+        correlacionFacadeService.enriquecerIncidente(incidente, resumenes);
+        UUID idDespacho = incidente.getIncidenteCanonicoId() != null
+                ? incidente.getIncidenteCanonicoId()
+                : incidente.getId();
         ZonaRiesgoDto zonaRiesgo = self.obtenerZonaRiesgo(incidente.getLat(), incidente.getLng());
-        RecursosResult recursosResult = self.obtenerRecursos(incidente.getId());
+        RecursosResult recursosResult = self.obtenerRecursos(idDespacho);
 
         return DashboardResponse.builder()
                 .incidente(incidente)

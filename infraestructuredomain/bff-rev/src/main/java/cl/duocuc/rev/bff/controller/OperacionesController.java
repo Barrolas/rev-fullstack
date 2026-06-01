@@ -1,11 +1,8 @@
 package cl.duocuc.rev.bff.controller;
 
-import cl.duocuc.rev.bff.dto.AsignacionDto;
-import cl.duocuc.rev.bff.dto.AsignarRecursoRequest;
 import cl.duocuc.rev.bff.dto.AdjuntoDto;
 import cl.duocuc.rev.bff.dto.IncidenteCreateRequest;
 import cl.duocuc.rev.bff.dto.IncidenteDto;
-import cl.duocuc.rev.bff.dto.RecursosDisponiblesDto;
 import cl.duocuc.rev.bff.dto.ZonaDto;
 import cl.duocuc.rev.bff.client.IncidenteClientService;
 import cl.duocuc.rev.bff.service.OperacionesFacadeService;
@@ -38,20 +35,14 @@ public class OperacionesController {
         return operacionesFacadeService.crearIncidente(request);
     }
 
+    @GetMapping("/ready")
+    public java.util.Map<String, String> ready() {
+        return java.util.Map.of("status", "UP", "service", "bff-rev");
+    }
+
     @GetMapping("/zonas")
     public List<ZonaDto> listarZonas() {
         return operacionesFacadeService.listarZonas();
-    }
-
-    @GetMapping("/recursos/disponibles")
-    public RecursosDisponiblesDto listarRecursosDisponibles() {
-        return operacionesFacadeService.listarRecursosDisponibles();
-    }
-
-    @PostMapping("/recursos/asignar")
-    @ResponseStatus(HttpStatus.CREATED)
-    public AsignacionDto asignarRecurso(@RequestBody AsignarRecursoRequest request) {
-        return operacionesFacadeService.asignarRecurso(request);
     }
 
     @GetMapping("/incidentes/{id}/adjuntos")

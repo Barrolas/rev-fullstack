@@ -10,6 +10,7 @@ import cl.duocuc.rev.bff.dto.IncidenteDto;
 import cl.duocuc.rev.bff.dto.RecursosDisponiblesDto;
 import cl.duocuc.rev.bff.dto.ZonaDto;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +21,7 @@ public class OperacionesFacadeService {
     private final IncidenteClientService incidenteClientService;
     private final ZonaRiesgoClientService zonaRiesgoClientService;
     private final RecursosClientService recursosClientService;
+    private final CorrelacionFacadeService correlacionFacadeService;
 
     public IncidenteDto crearIncidente(IncidenteCreateRequest request) {
         validarIncidente(request);
@@ -40,6 +42,8 @@ public class OperacionesFacadeService {
         if (request.getIncidenteId() == null || request.getBrigadaId() == null) {
             throw new IllegalArgumentException("incidenteId y brigadaId son obligatorios");
         }
+        UUID idDespacho = correlacionFacadeService.resolverIdDespacho(request.getIncidenteId());
+        request.setIncidenteId(idDespacho);
         return recursosClientService.asignar(request).block();
     }
 
