@@ -22,7 +22,7 @@ export default function ConfirmDialog({
   onCancel,
 }: ConfirmDialogProps) {
   return (
-    <Modal show={show} onHide={onCancel} centered size="sm">
+    <Modal show={show} onHide={onCancel} centered size="sm" className="rev-modal rev-dialog">
       <Modal.Header closeButton closeVariant="white">
         <Modal.Title>{title}</Modal.Title>
       </Modal.Header>

@@ -4,6 +4,7 @@ import { LayoutProvider } from '../contexts/LayoutContext';
 import { ToastProvider } from '../contexts/ToastContext';
 import { UiProvider } from '../contexts/UiContext';
 import AppShell from './layout/AppShell';
+import AppFooter from './layout/AppFooter';
 import Sidebar from './layout/Sidebar';
 import IncidentFormModal from './incidentes/IncidentFormModal';
 
@@ -18,9 +19,7 @@ export default function ProtectedLayout() {
           <AppShell sidebar={<Sidebar />}>
             <Outlet />
             <IncidentFormModal />
-            <footer className="rev-footer-bar text-center">
-              REV — Red de Emergencia Valle · Panel Despachador
-            </footer>
+            <AppFooter />
           </AppShell>
         </ToastProvider>
       </UiProvider>

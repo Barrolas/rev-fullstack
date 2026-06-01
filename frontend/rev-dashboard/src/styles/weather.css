@@ -1,0 +1,63 @@
+/* Widget climático — paleta REV */
+
+.rev-weather-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  font-size: var(--rev-text-meta);
+  color: var(--rev-text-secondary);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--rev-border);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.rev-weather-chip--compact {
+  padding: 3px 8px;
+}
+
+.rev-weather-chip__icon {
+  font-size: 0.75rem;
+  color: var(--rev-orange);
+}
+
+.rev-weather-chip__temp {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--rev-text);
+}
+
+.rev-weather-chip__sep {
+  opacity: 0.4;
+}
+
+.rev-weather-chip__meta {
+  color: var(--rev-text-tertiary);
+}
+
+.rev-weather-chip__detail {
+  display: none;
+  color: var(--rev-text-tertiary);
+}
+
+.rev-weather-chip__loading {
+  color: var(--rev-text-tertiary);
+  font-size: var(--rev-text-meta);
+}
+
+@media (min-width: 1200px) {
+  .rev-weather-chip:not(.rev-weather-chip--compact) .rev-weather-chip__detail {
+    display: inline;
+  }
+}
+
+.rev-welcome__weather {
+  margin-top: 6px;
+}
+
+@media (max-width: 991.98px) {
+  .rev-topbar__stat--weather {
+    display: none;
+  }
+}

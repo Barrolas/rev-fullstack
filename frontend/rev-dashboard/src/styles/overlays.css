@@ -1,0 +1,245 @@
+/* Modales, diálogos, alertas y notificaciones */
+
+/* —— Backdrop —— */
+.modal-backdrop.show {
+  opacity: 1;
+  background: rgba(7, 17, 31, 0.72);
+  backdrop-filter: blur(6px);
+}
+
+/* —— Modal base —— */
+.rev-modal .modal-content,
+.rev-dialog .modal-content {
+  background: var(--rev-surface);
+  border: 1px solid var(--rev-border);
+  border-radius: var(--rev-radius-card);
+  box-shadow:
+    0 24px 48px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+  overflow: hidden;
+}
+
+.rev-modal .modal-content::before,
+.rev-dialog .modal-content::before {
+  content: '';
+  display: block;
+  height: 2px;
+  background: var(--rev-orange);
+}
+
+.rev-modal .modal-header,
+.rev-dialog .modal-header {
+  border-bottom: 1px solid var(--rev-border);
+  padding: var(--rev-space-3) var(--rev-space-4) var(--rev-space-2);
+  background: linear-gradient(180deg, rgba(20, 44, 78, 0.25) 0%, transparent 100%);
+}
+
+.rev-modal .modal-title,
+.rev-dialog .modal-title {
+  font-size: var(--rev-text-sm);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--rev-text);
+}
+
+.rev-modal .modal-body,
+.rev-dialog .modal-body {
+  padding: var(--rev-space-3) var(--rev-space-4);
+  font-size: var(--rev-text-sm);
+  line-height: 1.55;
+  color: var(--rev-text-secondary);
+}
+
+.rev-dialog .modal-body {
+  color: var(--rev-text-secondary);
+}
+
+.rev-modal .modal-footer,
+.rev-dialog .modal-footer {
+  border-top: 1px solid var(--rev-border);
+  padding: var(--rev-space-2) var(--rev-space-4) var(--rev-space-3);
+  gap: var(--rev-space-2);
+  background: var(--rev-bg-secondary);
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+/* Botones en modales y diálogos */
+.rev-modal .modal-footer .btn,
+.rev-dialog .modal-footer .btn {
+  min-width: 5.25rem;
+  padding: 0.5rem 1.125rem;
+  font-size: var(--rev-text-sm);
+  font-weight: 500;
+  border-radius: var(--rev-radius-sm);
+  line-height: 1.25;
+}
+
+.rev-modal .modal-footer .btn-outline-secondary,
+.rev-dialog .modal-footer .btn-outline-secondary {
+  --bs-btn-color: var(--rev-text-secondary);
+  --bs-btn-border-color: var(--rev-border);
+  --bs-btn-bg: transparent;
+  --bs-btn-hover-bg: var(--rev-surface);
+  --bs-btn-hover-border-color: rgba(255, 255, 255, 0.14);
+  --bs-btn-hover-color: var(--rev-text);
+}
+
+.rev-modal .modal-footer .btn-primary,
+.rev-modal .modal-footer .btn-danger,
+.rev-dialog .modal-footer .btn-primary,
+.rev-dialog .modal-footer .btn-danger {
+  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.22);
+}
+
+.rev-modal .modal-footer .btn-primary:hover,
+.rev-modal .modal-footer .btn-danger:hover,
+.rev-dialog .modal-footer .btn-primary:hover,
+.rev-dialog .modal-footer .btn-danger:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(249, 115, 22, 0.3);
+}
+
+/* Botones en alertas / state view */
+.rev-state-view .btn {
+  min-width: 6rem;
+}
+
+.rev-alert + .btn,
+.rev-state-view .btn-outline-primary {
+  margin-top: var(--rev-space-2);
+}
+
+.rev-modal .btn-close,
+.rev-dialog .btn-close {
+  filter: invert(1) opacity(0.45);
+  transition: opacity 200ms ease;
+}
+
+.rev-modal .btn-close:hover,
+.rev-dialog .btn-close:hover {
+  filter: invert(1) opacity(0.75);
+}
+
+/* —— Alertas inline —— */
+.rev-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--rev-space-2);
+  padding: var(--rev-space-2) var(--rev-space-3);
+  border-radius: var(--rev-radius-sm);
+  font-size: var(--rev-text-sm);
+  line-height: 1.5;
+  border: 1px solid var(--rev-border);
+  background: var(--rev-bg-secondary);
+  color: var(--rev-text-secondary);
+}
+
+.rev-alert.alert {
+  margin-bottom: 0;
+}
+
+.rev-alert--error,
+.alert-danger.rev-alert {
+  background: var(--rev-orange-muted);
+  border-color: var(--rev-orange-border);
+  color: var(--rev-text);
+}
+
+.rev-alert--warning,
+.degraded-banner.rev-alert {
+  background: rgba(115, 131, 154, 0.1);
+  border-color: var(--rev-border);
+  color: var(--rev-text-secondary);
+}
+
+.rev-alert--warning::before,
+.degraded-banner.rev-alert::before {
+  content: '\F33A';
+  font-family: 'bootstrap-icons';
+  flex-shrink: 0;
+  font-size: 0.9375rem;
+  color: var(--rev-orange);
+  line-height: 1.4;
+}
+
+.rev-alert--info,
+.alert-secondary.rev-alert {
+  background: var(--rev-bg-secondary);
+  border-color: var(--rev-border);
+  color: var(--rev-text-tertiary);
+}
+
+.rev-alert .btn-close {
+  filter: invert(1) opacity(0.4);
+  padding: 0.5rem;
+}
+
+/* Degraded sin duplicar icono si ya tiene texto */
+.degraded-banner.rev-alert {
+  align-items: center;
+}
+
+/* Alertas dentro de modales */
+.rev-modal .alert,
+.rev-dialog .alert {
+  border-radius: var(--rev-radius-sm);
+  font-size: var(--rev-text-xs);
+  padding: var(--rev-space-2);
+}
+
+/* —— Toasts —— */
+.rev-toast-container {
+  z-index: 1100;
+}
+
+.rev-toast-container .toast.rev-toast {
+  min-width: 280px;
+  max-width: 360px;
+  background: var(--rev-surface-elevated) !important;
+  border: 1px solid var(--rev-border);
+  border-radius: var(--rev-radius-sm);
+  box-shadow: var(--rev-shadow-lg);
+  overflow: hidden;
+}
+
+.rev-toast-container .toast.rev-toast::before {
+  content: '';
+  display: block;
+  height: 2px;
+  background: var(--rev-orange);
+}
+
+.rev-toast-container .toast.rev-toast.bg-success::before {
+  background: var(--rev-text-tertiary);
+}
+
+.rev-toast-container .toast.rev-toast.bg-danger::before {
+  background: var(--rev-orange);
+}
+
+.rev-toast-container .toast.rev-toast.bg-info::before,
+.rev-toast-container .toast.rev-toast.bg-warning::before {
+  background: var(--rev-text-secondary);
+}
+
+.rev-toast-container .toast.rev-toast .toast-body {
+  padding: var(--rev-space-2) var(--rev-space-3);
+  font-size: var(--rev-text-sm);
+  font-weight: 500;
+  color: var(--rev-text) !important;
+}
+
+.rev-toast-container .toast.bg-success,
+.rev-toast-container .toast.bg-danger,
+.rev-toast-container .toast.bg-info,
+.rev-toast-container .toast.bg-warning {
+  background: var(--rev-surface-elevated) !important;
+}
+
+/* —— State view mensajes —— */
+.rev-state-view .rev-alert {
+  max-width: 24rem;
+  text-align: left;
+}

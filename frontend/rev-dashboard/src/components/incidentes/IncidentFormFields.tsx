@@ -1,6 +1,6 @@
 import { FormEvent, useState } from 'react';
 import { Alert, Button, Col, Form, Row } from 'react-bootstrap';
-import { createIncidente } from '../../api';
+import { createIncidente, createPublicIncidente } from '../../api';
 
 interface FormErrors {
   tipo?: string;
@@ -10,15 +10,20 @@ interface FormErrors {
 }
 
 interface IncidentFormFieldsProps {
-  onSuccess: () => void;
+  onSuccess: (incidentId?: string) => void;
   onCancel?: () => void;
   submitLabel?: string;
+  /** Reporte ciudadano sin autenticación */
+  publicMode?: boolean;
+  className?: string;
 }
 
 export default function IncidentFormFields({
   onSuccess,
   onCancel,
   submitLabel = 'Registrar incidente',
+  publicMode = false,
+  className = '',
 }: IncidentFormFieldsProps) {
   const [tipo, setTipo] = useState('');
   const [descripcion, setDescripcion] = useState('');
@@ -28,14 +33,30 @@ export default function IncidentFormFields({
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  const [geoLoading, setGeoLoading] = useState(false);
+
+  const useMyLocation = () => {
+    if (!navigator.geolocation) return;
+    setGeoLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setLat(pos.coords.latitude.toFixed(4));
+        setLng(pos.coords.longitude.toFixed(4));
+        setGeoLoading(false);
+      },
+      () => setGeoLoading(false),
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
+  };
+
   const validate = (): FormErrors => {
     const e: FormErrors = {};
     if (!tipo.trim()) e.tipo = 'El tipo es obligatorio';
     if (!descripcion.trim()) e.descripcion = 'La descripcion es obligatoria';
     const latNum = parseFloat(lat);
     const lngNum = parseFloat(lng);
-    if (!lat.trim() || Number.isNaN(latNum)) e.lat = 'Latitud invalida';
-    if (!lng.trim() || Number.isNaN(lngNum)) e.lng = 'Longitud invalida';
+    if (!lat.trim() || Number.isNaN(latNum)) e.lat = 'Indique la ubicación';
+    if (!lng.trim() || Number.isNaN(lngNum)) e.lng = 'Indique la ubicación';
     return e;
   };
 
@@ -48,13 +69,19 @@ export default function IncidentFormFields({
     setSubmitting(true);
     setError('');
     try {
-      await createIncidente({
+      const payload = {
         tipo: tipo.trim(),
         descripcion: descripcion.trim(),
         lat: parseFloat(lat),
         lng: parseFloat(lng),
-      });
-      onSuccess();
+      };
+      if (publicMode) {
+        const result = await createPublicIncidente(payload);
+        onSuccess(result.id || undefined);
+      } else {
+        await createIncidente(payload);
+        onSuccess();
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al registrar');
     } finally {
@@ -63,7 +90,7 @@ export default function IncidentFormFields({
   };
 
   return (
-    <Form onSubmit={handleSubmit} noValidate>
+    <Form onSubmit={handleSubmit} noValidate className={className}>
       <Row>
         <Col md={6}>
           <Form.Group className="mb-3">
@@ -98,7 +125,7 @@ export default function IncidentFormFields({
       <Row>
         <Col md={6}>
           <Form.Group className="mb-3">
-            <Form.Label>Latitud *</Form.Label>
+            <Form.Label>{publicMode ? 'Ubicación norte-sur *' : 'Referencia norte-sur *'}</Form.Label>
             <Form.Control
               type="number"
               step="any"
@@ -113,7 +140,7 @@ export default function IncidentFormFields({
         </Col>
         <Col md={6}>
           <Form.Group className="mb-3">
-            <Form.Label>Longitud *</Form.Label>
+            <Form.Label>{publicMode ? 'Ubicación este-oeste *' : 'Referencia este-oeste *'}</Form.Label>
             <Form.Control
               type="number"
               step="any"
@@ -127,10 +154,31 @@ export default function IncidentFormFields({
           </Form.Group>
         </Col>
       </Row>
-      <Alert variant="secondary" className="small">
-        Valle del Sol: prueba con lat -33.5, lng -70.5 (zona metropolitana)
+      <Alert variant="secondary" className="small rev-alert rev-alert--info">
+        {publicMode ? (
+          <>
+            Indique dónde ocurre la emergencia. Si puede, use el botón de ubicación para mayor
+            precisión dentro del territorio municipal.
+          </>
+        ) : (
+          <>Valle del Sol: ingrese la ubicación dentro del territorio municipal.</>
+        )}
       </Alert>
-      {error && <Alert variant="danger">{error}</Alert>}
+      {publicMode && (
+        <div className="mb-3">
+          <Button
+            type="button"
+            variant="outline-secondary"
+            size="sm"
+            onClick={useMyLocation}
+            disabled={geoLoading || submitting}
+          >
+            <i className={`bi ${geoLoading ? 'bi-arrow-repeat' : 'bi-geo-alt'} me-1`} />
+            {geoLoading ? 'Obteniendo ubicación…' : 'Usar mi ubicación'}
+          </Button>
+        </div>
+      )}
+      {error && <Alert variant="danger" className="rev-alert rev-alert--error">{error}</Alert>}
       <div className="d-flex gap-2 justify-content-end">
         {onCancel && (
           <Button variant="outline-secondary" onClick={onCancel} disabled={submitting}>

@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { Badge, Button, Col, ListGroup, Row } from 'react-bootstrap';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { DashboardItem, fetchDashboardItem } from '../api';
 import { useToast } from '../contexts/ToastContext';
 import AssignResourceModal from '../components/incidentes/AssignResourceModal';
@@ -10,6 +10,7 @@ import ModuleHub from '../components/layout/ModuleHub';
 import Topbar from '../components/layout/Topbar';
 import StateView from '../components/primitives/StateView';
 import RiskBadge from '../components/RiskBadge';
+import { riskLabel } from '../utils/zonaMapStyles';
 import { useAuth } from '../hooks/useAuth';
 import { useApiQuery } from '../hooks/useApiQuery';
 
@@ -37,8 +38,8 @@ export default function IncidentDetailPage() {
         <h2 className="h6 mb-3">Nivel de riesgo</h2>
         <RiskBadge nivel={item.zonaRiesgo.nivel} />
         <p className="text-muted small mt-2 mb-0">
-          Nivel: {item.zonaRiesgo.nivel}
-          {item.zonaRiesgo.cached && ' (cache)'}
+          Zona {riskLabel(item.zonaRiesgo.nivel).toLowerCase()}
+          {item.zonaRiesgo.cached && ' · datos en actualización'}
         </p>
       </div>
       <div className="rev-card p-3">
@@ -112,12 +113,13 @@ export default function IncidentDetailPage() {
                 <p>{item.incidente.descripcion}</p>
                 <Row className="g-3">
                   <Col sm={6}>
-                    <small className="text-muted d-block">Coordenadas</small>
-                    {item.incidente.lat}, {item.incidente.lng}
+                    <small className="text-muted d-block">Ubicación</small>
+                    <span>Incidente en el territorio municipal</span>
+                    <Link to="/zonas" className="d-block small mt-1">Consultar mapa de zonas</Link>
                   </Col>
                   <Col sm={6}>
-                    <small className="text-muted d-block">ID</small>
-                    <code className="small">{item.incidente.id}</code>
+                    <small className="text-muted d-block">Referencia</small>
+                    <span className="small">{item.incidente.id.slice(0, 8).toUpperCase()}</span>
                   </Col>
                 </Row>
               </div>

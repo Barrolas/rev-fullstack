@@ -1,0 +1,208 @@
+/* Fondo ambiental premium — despacho operacional, mapa y radar */
+
+.rev-main {
+  position: relative;
+  isolation: isolate;
+  background-color: var(--rev-bg);
+}
+
+.rev-main__ambient {
+  position: fixed;
+  top: 0;
+  left: var(--rev-sidebar-width);
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  transition: left 0.28s ease;
+}
+
+.rev-main__ambient-layer {
+  position: absolute;
+  inset: 0;
+}
+
+/* Base — profundidad y viñeta */
+.rev-main__ambient-layer--base {
+  background:
+    radial-gradient(ellipse 120% 95% at 50% 48%, transparent 32%, rgba(4, 10, 20, 0.72) 100%),
+    radial-gradient(ellipse 50% 40% at 98% 2%, rgba(249, 115, 22, 0.09), transparent 58%),
+    radial-gradient(ellipse 55% 45% at -2% 98%, rgba(20, 44, 78, 0.55), transparent 52%),
+    radial-gradient(ellipse 80% 50% at 50% -15%, rgba(16, 35, 62, 0.42), transparent 62%),
+    linear-gradient(168deg, #0d1a2e 0%, #07111f 38%, #050a14 72%, #040810 100%);
+}
+
+/* Cuadrícula cartográfica — meridianos y paralelos sutiles */
+.rev-main__ambient-layer--grid {
+  opacity: 0.55;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(rgba(249, 115, 22, 0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(249, 115, 22, 0.018) 1px, transparent 1px);
+  background-size:
+    72px 72px,
+    72px 72px,
+    288px 288px,
+    288px 288px;
+  mask-image: radial-gradient(ellipse 92% 78% at 48% 28%, black 0%, transparent 78%);
+}
+
+/* Curvas topográficas — patrón SVG */
+.rev-main__ambient-layer--topo {
+  opacity: 0.35;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='480' height='480' viewBox='0 0 480 480'%3E%3Cg fill='none' stroke='rgba(167%2C180%2C199%2C0.07)' stroke-width='0.65'%3E%3Cpath d='M0 120 Q120 80 240 120 T480 120'/%3E%3Cpath d='M0 200 Q160 160 320 200 T480 200'/%3E%3Cpath d='M0 280 Q100 240 200 280 T400 280 T480 280'/%3E%3Cpath d='M0 360 Q180 320 360 360 T480 360'/%3E%3Cpath d='M80 0 Q120 120 80 240 T80 480'/%3E%3Cpath d='M200 0 Q240 160 200 320 T200 480'/%3E%3Cpath d='M320 0 Q360 140 320 280 T320 480'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 480px 480px;
+  mask-image:
+    radial-gradient(ellipse 88% 72% at 55% 35%, black 0%, transparent 75%),
+    linear-gradient(180deg, black 0%, transparent 92%);
+  mask-composite: intersect;
+}
+
+/* Radar operacional — esquina inferior derecha */
+.rev-main__ambient-layer--radar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 0 4% 6% 0;
+  opacity: 0.85;
+}
+
+.rev-main__radar-svg {
+  width: min(22vw, 260px);
+  height: min(22vw, 260px);
+  filter: drop-shadow(0 0 24px rgba(249, 115, 22, 0.06));
+}
+
+.rev-main__radar-sweep {
+  transform-origin: 100px 100px;
+  animation: rev-radar-rotate 14s linear infinite;
+}
+
+@keyframes rev-radar-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Puntos de incidente / despliegue en el mapa */
+.rev-main__ambient-layer--pins {
+  inset: -5%;
+}
+
+.rev-main__map-pin {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--rev-orange);
+  box-shadow:
+    0 0 0 2px rgba(249, 115, 22, 0.15),
+    0 0 12px rgba(249, 115, 22, 0.35);
+  opacity: 0.45;
+}
+
+.rev-main__map-pin::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  border: 1px solid rgba(249, 115, 22, 0.2);
+  animation: rev-pin-ring 3.5s ease-out infinite;
+}
+
+.rev-main__map-pin--1 { top: 22%; left: 38%; animation-delay: 0s; }
+.rev-main__map-pin--2 { top: 48%; left: 62%; opacity: 0.32; animation-delay: 1.2s; }
+.rev-main__map-pin--3 { top: 68%; left: 28%; opacity: 0.38; animation-delay: 2.1s; }
+.rev-main__map-pin--4 { top: 35%; left: 78%; opacity: 0.28; animation-delay: 0.7s; }
+
+.rev-main__map-pin--1::after { animation-delay: 0s; }
+.rev-main__map-pin--2::after { animation-delay: 1.2s; }
+.rev-main__map-pin--3::after { animation-delay: 2.1s; }
+.rev-main__map-pin--4::after { animation-delay: 0.7s; }
+
+@keyframes rev-pin-ring {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+/* Coordenadas decorativas — estilo consola de despacho */
+.rev-main__ambient-layer--coords {
+  font-family: var(--rev-font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+  color: rgba(167, 180, 199, 0.22);
+}
+
+.rev-main__coord {
+  position: absolute;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.rev-main__coord--tl {
+  top: 12%;
+  left: 8%;
+}
+
+.rev-main__coord--tr {
+  top: 14%;
+  right: 6%;
+  text-align: right;
+}
+
+.rev-main__coord--br {
+  bottom: 8%;
+  left: 10%;
+}
+
+.rev-main__content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  flex: 1;
+}
+
+.rev-app-shell.sidebar-collapsed .rev-main__ambient {
+  left: var(--rev-sidebar-collapsed);
+}
+
+@media (max-width: 991.98px) {
+  .rev-main__ambient {
+    left: 0;
+  }
+
+  .rev-main__ambient-layer--radar {
+    opacity: 0.45;
+    padding-bottom: 12%;
+  }
+
+  .rev-main__radar-svg {
+    width: min(36vw, 180px);
+    height: min(36vw, 180px);
+  }
+
+  .rev-main__coord--tr {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rev-main__radar-sweep {
+    animation: none;
+    opacity: 0.35;
+  }
+
+  .rev-main__map-pin::after {
+    animation: none;
+    opacity: 0;
+  }
+}

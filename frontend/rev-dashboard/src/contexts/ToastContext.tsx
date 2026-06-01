@@ -35,7 +35,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {children}
       <ToastContainer position="top-end" className="p-3 rev-toast-container">
         {toasts.map((t) => (
-          <Toast key={t.id} bg={t.variant} autohide delay={4000} show>
+          <Toast key={t.id} bg={t.variant} autohide delay={4000} show className="rev-toast">
             <Toast.Body className={t.variant === 'warning' ? 'text-dark' : 'text-white'}>
               {t.message}
             </Toast.Body>

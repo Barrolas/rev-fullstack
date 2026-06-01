@@ -9,6 +9,10 @@ spring:
       server:
         webflux:
           routes:
+            - id: bff_public_route
+              uri: lb://BFF-REV
+              predicates:
+                - Path=/api/public/**
             - id: bff_route
               uri: lb://BFF-REV
               predicates:

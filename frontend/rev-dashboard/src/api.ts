@@ -118,6 +118,20 @@ export async function createIncidente(data: IncidenteCreate): Promise<void> {
   });
 }
 
+export async function createPublicIncidente(data: IncidenteCreate): Promise<{ id: string }> {
+  const res = await fetch('/api/public/incidentes', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(formatApiError(text, res.status));
+  }
+  const payload = await res.json();
+  return { id: payload.id ?? payload.incidente?.id ?? '' };
+}
+
 export async function fetchZonas(): Promise<Zona[]> {
   return apiFetch('/api/zonas');
 }

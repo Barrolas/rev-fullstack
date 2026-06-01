@@ -1,0 +1,44 @@
+.rev-logo {
+  display: block;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.rev-logo--emblem {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.rev-logo--horizontal {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+}
+
+.rev-logo--login {
+  margin: 0 auto 1rem;
+}
+
+.rev-login__hero-logo {
+  object-fit: contain;
+}
+
+.rev-login__hero-logo--wide {
+  width: 100%;
+  max-width: 22rem;
+  height: auto;
+}
+
+.rev-login__hero-logo--compact {
+  width: auto;
+  height: auto;
+  max-width: 5.5rem;
+}
+
+/* Sidebar — emblema libre, sin contenedor */
+.rev-sidebar__brand-logo.rev-logo--emblem {
+  object-fit: contain;
+  object-position: center;
+}

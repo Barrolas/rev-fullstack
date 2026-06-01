@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Informe Técnico Integral — REV</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({ startOnLoad: true, theme: 'dark', themeVariables: { primaryColor: '#10233E', primaryTextColor: '#fff', primaryBorderColor: '#F97316', lineColor: '#A7B4C7', secondaryColor: '#142C4E', tertiaryColor: '#07111F' } });</script>
+  <style>
+    /* ── REV Design tokens ── */
+    :root {
+      --rev-bg: #07111F;
+      --rev-bg-secondary: #10233E;
+      --rev-surface: #142C4E;
+      --rev-orange: #F97316;
+      --rev-orange-hover: #FB923C;
+      --rev-text: #FFFFFF;
+      --rev-text-secondary: #A7B4C7;
+      --rev-gray-light: #EEF2F7;
+      --rev-border: rgba(255,255,255,0.1);
+      /* A4 */
+      --a4-w: 210mm;
+      --a4-h: 297mm;
+      --page-margin-x: 18mm;
+      --page-margin-y: 15mm;
+    }
+
+    /* ── Regla de página: cada hoja impresa = A4 vertical ── */
+    @page {
+      size: A4 portrait;
+      margin: var(--page-margin-y) var(--page-margin-x);
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Inter, system-ui, sans-serif;
+      background: #2a3544;
+      color: var(--rev-text);
+      line-height: 1.65;
+      font-size: 11pt;
+    }
+
+    /* ── Hoja A4 en pantalla (vista previa) ── */
+    .page {
+      width: var(--a4-w);
+      min-height: var(--a4-h);
+      margin: 0 auto 14mm;
+      padding: var(--page-margin-y) var(--page-margin-x);
+      background: var(--rev-bg);
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+      position: relative;
+      overflow: visible;
+    }
+
+    .page:last-of-type {
+      margin-bottom: 0;
+    }
+
+    .page-break {
+      break-after: page;
+      page-break-after: always;
+    }
+
+    /* ── Impresión / PDF ── */
+    @media print {
+      html, body {
+        width: var(--a4-w);
+        margin: 0;
+        padding: 0;
+        background: var(--rev-bg) !important;
+        color: var(--rev-text);
+      }
+
+      body {
+        background: #fff;
+      }
+
+      .page {
+        width: 100%;
+        min-height: 0;
+        height: auto;
+        margin: 0;
+        padding: 0;
+        box-shadow: none;
+        background: var(--rev-bg) !important;
+        break-after: page;
+        page-break-after: always;
+      }
+
+      .page:last-of-type {
+        page-break-after: auto;
+        break-after: auto;
+      }
+
+      .no-print {
+        display: none !important;
+      }
+
+      .cover {
+        background: linear-gradient(160deg, var(--rev-bg) 0%, var(--rev-bg-secondary) 55%, var(--rev-surface) 100%) !important;
+        color: #fff !important;
+        min-height: calc(var(--a4-h) - var(--page-margin-y) * 2);
+      }
+
+      h1, h2, h3, h4, p, li, td, th, strong, .chapter-intro, .chapter-end {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .fig-placeholder {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      table, pre, .exec-box, .chapter-end, .mermaid, .header-bar {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      thead {
+        display: table-header-group;
+      }
+
+      tr {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      a {
+        color: var(--rev-orange);
+        text-decoration: none;
+      }
+
+      @page {
+        size: A4 portrait;
+        margin: var(--page-margin-y) var(--page-margin-x);
+      }
+    }
+
+    /* ── Tipografía y componentes ── */
+    h1, h2, h3, h4 { color: var(--rev-text); line-height: 1.25; }
+    h1 { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.02em; }
+    h2 { font-size: 1.35rem; font-weight: 600; margin-top: 2rem; padding-bottom: 0.4rem; border-bottom: 2px solid var(--rev-orange); }
+    h3 { font-size: 1.05rem; font-weight: 600; color: var(--rev-orange-hover); margin-top: 1.5rem; }
+    h4 { font-size: 0.95rem; margin-top: 1rem; }
+    p, li { color: var(--rev-text-secondary); }
+    strong { color: var(--rev-text); }
+    a { color: var(--rev-orange); }
+    .lead { font-size: 1.05rem; color: var(--rev-text-secondary); }
+    .meta { font-size: 0.85rem; color: var(--rev-text-secondary); }
+    .cover {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: calc(var(--a4-h) - var(--page-margin-y) * 2 - 6mm);
+      background: linear-gradient(160deg, var(--rev-bg) 0%, var(--rev-bg-secondary) 55%, var(--rev-surface) 100%);
+      border-left: 6px solid var(--rev-orange);
+    }
+    .cover-top { padding-top: 8mm; }
+    .cover-logo { width: 88px; height: auto; margin-bottom: 1.5rem; }
+    .cover-org { font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--rev-orange); font-weight: 700; }
+    .cover-title { font-size: 2.2rem; margin: 0.5rem 0 0; color: var(--rev-text); }
+    .cover-subtitle { font-size: 1.15rem; color: var(--rev-text-secondary); font-weight: 400; margin-top: 0.75rem; max-width: 28rem; }
+    .cover-accent { width: 64px; height: 4px; background: var(--rev-orange); margin: 1.5rem 0; }
+    .cover-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: auto; padding-top: 2rem; border-top: 1px solid var(--rev-border); }
+    .cover-grid dt { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--rev-text-secondary); margin-bottom: 2px; }
+    .cover-grid dd { margin: 0 0 1rem; color: var(--rev-text); font-size: 0.9rem; }
+    .exec-box { background: var(--rev-bg-secondary); border: 1px solid var(--rev-border); border-left: 4px solid var(--rev-orange); padding: 1.25rem 1.5rem; margin: 1.5rem 0; border-radius: 8px; }
+    .toc { list-style: none; padding: 0; }
+    .toc li { padding: 0.35rem 0; border-bottom: 1px dotted var(--rev-border); display: flex; justify-content: space-between; }
+    .toc a { text-decoration: none; color: var(--rev-text-secondary); }
+    .toc a:hover { color: var(--rev-orange); }
+    .toc-l2 { padding-left: 1.25rem; font-size: 0.92rem; }
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0 1.5rem; font-size: 0.88rem; }
+    th { background: var(--rev-surface); color: var(--rev-text); text-align: left; padding: 0.55rem 0.75rem; border: 1px solid var(--rev-border); font-weight: 600; }
+    td { padding: 0.5rem 0.75rem; border: 1px solid var(--rev-border); color: var(--rev-text-secondary); vertical-align: top; }
+    tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+    .chapter-intro { font-style: italic; color: var(--rev-text-secondary); margin-bottom: 1.25rem; padding-left: 1rem; border-left: 3px solid var(--rev-orange); }
+    .chapter-end { margin-top: 1.5rem; padding: 1rem; background: rgba(249,115,22,0.08); border-radius: 8px; border: 1px solid rgba(249,115,22,0.2); }
+    .chapter-end strong { color: var(--rev-orange); }
+    pre, code { font-family: 'Cascadia Code', 'Consolas', monospace; font-size: 0.78rem; }
+    pre { background: #0a1628; border: 1px solid var(--rev-border); border-radius: 8px; padding: 1rem; overflow-x: auto; color: #c9d4e3; }
+    code { background: rgba(255,255,255,0.06); padding: 0.1em 0.35em; border-radius: 4px; color: var(--rev-orange-hover); }
+    .mermaid { background: var(--rev-bg-secondary); border-radius: 8px; padding: 1rem; margin: 1rem 0; }
+    .fig-placeholder {
+      border: 2px dashed rgba(249,115,22,0.45); background: rgba(16,35,62,0.5);
+      border-radius: 10px; padding: 2rem 1.5rem; margin: 1.25rem 0; text-align: center;
+    }
+    .fig-placeholder .fig-num { font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--rev-orange); font-weight: 700; }
+    .fig-placeholder .fig-title { font-size: 1rem; color: var(--rev-text); margin: 0.5rem 0; font-weight: 600; }
+    .fig-placeholder .fig-desc { font-size: 0.85rem; color: var(--rev-text-secondary); max-width: 36rem; margin: 0 auto; }
+    .badge { display: inline-block; padding: 0.15em 0.55em; border-radius: 999px; font-size: 0.72rem; font-weight: 600; background: var(--rev-orange-muted, rgba(249,115,22,0.15)); color: var(--rev-orange); border: 1px solid rgba(249,115,22,0.3); }
+    .summary-table caption { caption-side: top; text-align: left; font-weight: 600; color: var(--rev-text); padding-bottom: 0.5rem; }
+    .header-bar { display: flex; justify-content: space-between; align-items: center; font-size: 0.7rem; color: var(--rev-text-secondary); border-bottom: 1px solid var(--rev-border); padding-bottom: 0.5rem; margin-bottom: 1.5rem; }
+    .footer-note { margin-top: 2rem; font-size: 0.75rem; color: var(--rev-text-secondary); text-align: center; border-top: 1px solid var(--rev-border); padding-top: 1rem; }
+    ul { padding-left: 1.25rem; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════ PORTADA ═══════════════ -->
+<section class="page cover page-break" id="portada">
+  <div class="cover-top">
+    <img class="cover-logo" src="../frontend/rev-dashboard/public/assets/logos/emblem-color.png" alt="Logo REV" />
+    <p class="cover-org">Municipalidad de Valle del Sol</p>
+    <h1 class="cover-title">RED DE EMERGENCIA VALLE (REV)</h1>
+    <p class="cover-subtitle">Informe Técnico Integral<br/>Arquitectura, Patrones y Ecosistema de Microservicios</p>
+    <div class="cover-accent"></div>
+  </div>
+  <dl class="cover-grid">
+    <div><dt>Asignatura</dt><dd>DESARROLLO FULLSTACK III</dd></div>
+    <div><dt>Código</dt><dd>DSY1106 — Duoc UC</dd></div>
+    <div><dt>Carrera</dt><dd>Ingeniería en Informática </dd></div>
+    <div><dt>Institución</dt><dd>Duoc UC</dd></div>
+    <div><dt>Integrantes</dt><dd><em>Nicolás Barra, Giannina Guerrero</em></dd></div>
+    <div><dt>Profesor(a)</dt><dd><em>ISRAEL ALEJANDRO VILLAGRA RIQUELME</em></dd></div>
+    <div><dt>Fecha</dt><dd>Mayo 2026</dd></div>
+    <div><dt>Versión</dt><dd>1.0 — verificada contra código fuente</dd></div>
+  </dl>
+</section>
+
+<!-- ═══════════════ RESUMEN EJECUTIVO ═══════════════ -->
+<section class="page page-break" id="resumen">
+  <div class="header-bar"><span>REV — Informe Técnico Integral</span><span>Resumen ejecutivo</span></div>
+  <h1>Resumen ejecutivo</h1>
+  <div class="exec-box">
+    <p><strong>Problema:</strong> La Municipalidad de Valle del Sol requiere coordinar emergencias (incendios forestales, incidentes urbanos y estructurales) con información dispersa, picos de demanda impredecibles y necesidad de respuesta rápida en terreno.</p>
+    <p><strong>Solución:</strong> REV (*Red de Emergencia Valle*) es una plataforma de misión crítica que integra despacho municipal, brigadas y ciudadanía en un ecosistema de microservicios con interfaz web moderna.</p>
+    <p><strong>Tecnologías:</strong> React 18 + Vite (frontend), Spring Boot 4 + Spring Cloud (backend), PostgreSQL/PostGIS, Keycloak, Eureka, Resilience4j, Docker.</p>
+    <p><strong>Arquitectura:</strong> API Gateway perimetral, BFF de agregación, tres microservicios de dominio con base de datos independiente, descubrimiento de servicios y autenticación JWT centralizada.</p>
+    <p><strong>Valor:</strong> Visión unificada del despacho, priorización por riesgo territorial, asignación de recursos, portal ciudadano sin registro y continuidad operativa parcial ante fallas de servicios secundarios.</p>
+  </div>
+  <p>Este informe documenta la arquitectura implementada, los patrones de diseño verificados en el repositorio <code>rev-fullstack</code>, la estrategia de branching, las prácticas de seguridad y observabilidad, y la experiencia de usuario del dashboard operacional. Toda afirmación técnica está respaldada por código, configuración o documentación existente en el monorepo.</p>
+  <table>
+    <caption>Indicadores clave del sistema</caption>
+    <thead><tr><th>Dimensión</th><th>Estado en REV</th></tr></thead>
+    <tbody>
+      <tr><td>Microservicios de negocio</td><td>3 (<code>ms-incidentes</code>, <code>ms-zonas-riesgo</code>, <code>ms-recursos</code>)</td></tr>
+      <tr><td>BFF + Gateway</td><td><code>bff-rev</code> :8085 · <code>api-gateway</code> :8080</td></tr>
+      <tr><td>Identidad</td><td>Keycloak realm <code>rev</code> · roles Despachador, Brigadista, Admin</td></tr>
+      <tr><td>Resiliencia</td><td>Circuit Breaker Resilience4j en BFF + flag <code>degraded</code></td></tr>
+      <tr><td>Frontend</td><td>SPA React — Despacho, Incidentes, Zonas, Recursos, Portal, Inicio</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══════════════ ÍNDICE ═══════════════ -->
+<section class="page page-break" id="indice">
+  <div class="header-bar"><span>REV — Informe Técnico Integral</span><span>Índice</span></div>
+  <h1>Tabla de contenidos</h1>
+  <ol class="toc">
+    <li><a href="#cap1">1. Introducción</a></li>
+    <li class="toc-l2"><a href="#cap1-1">1.1 Objetivos y alcance</a></li>
+    <li><a href="#cap2">2. Descripción general del sistema</a></li>
+    <li><a href="#cap3">3. Arquitectura del sistema</a></li>
+    <li class="toc-l2"><a href="#cap3-1">3.1–3.4 Componentes, comunicación y flujo</a></li>
+    <li><a href="#cap4">4. Arquetipos utilizados</a></li>
+    <li><a href="#cap5">5. Patrones de diseño</a></li>
+    <li><a href="#cap6">6. Patrones arquitectónicos</a></li>
+    <li><a href="#cap7">7. Estrategia de branching</a></li>
+    <li><a href="#cap8">8. Buenas prácticas de desarrollo</a></li>
+    <li><a href="#cap9">9. Seguridad</a></li>
+    <li><a href="#cap10">10. Observabilidad, logging y auditoría</a></li>
+    <li><a href="#cap11">11. Base de datos</a></li>
+    <li><a href="#cap12">12. UX/UI y experiencia de usuario</a></li>
+    <li><a href="#cap13">13. Evidencias del sistema</a></li>
+    <li><a href="#cap14">14. Conclusiones</a></li>
+  </ol>
+</section>
+
+<!-- ═══════════════ CAP 1 ═══════════════ -->
+<section class="page page-break" id="cap1">
+  <div class="header-bar"><span>Capítulo 1</span><span>Introducción</span></div>
+  <h1>1. Introducción</h1>
+  <p class="chapter-intro">REV surge como respuesta institucional ante la complejidad creciente de la gestión de emergencias en el territorio municipal de Valle del Sol.</p>
+
+  <h3>1.1 Contexto municipal</h3>
+  <p>La comuna enfrenta riesgos recurrentes — incendios forestales en zona metropolitana, incidentes urbanos y emergencias estructurales en la costa — que exigen coordinación entre despacho, brigadas y ciudadanía. Los modelos monolíticos tradicionales dificultan escalar ante picos de demanda y degradan la experiencia del operador bajo estrés operacional.</p>
+
+  <h3>1.2 Problemática y motivación</h3>
+  <ul>
+    <li>Información fragmentada entre sistemas o planillas.</li>
+    <li>Dificultad para evaluar riesgo territorial antes de despachar recursos.</li>
+    <li>Necesidad de canal ciudadano ágil sin fricción administrativa.</li>
+    <li>Requerimiento académico de demostrar arquitecturas modernas con evidencia en código.</li>
+  </ul>
+
+  <h3 id="cap1-1">1.3 Objetivos, alcance y limitaciones</h3>
+  <table>
+    <caption>Objetivos del proyecto</caption>
+    <thead><tr><th>Tipo</th><th>Descripción</th></tr></thead>
+    <tbody>
+      <tr><td><strong>General</strong></td><td>Implementar una plataforma de gestión de emergencias basada en microservicios, con interfaz de despacho y portal ciudadano.</td></tr>
+      <tr><td><strong>Específico 1</strong></td><td>Gestionar ciclo de vida de incidentes con reglas de transición de estado (<code>ms-incidentes</code>).</td></tr>
+      <tr><td><strong>Específico 2</strong></td><td>Clasificar riesgo territorial con PostGIS y evaluación por coordenadas (<code>ms-zonas-riesgo</code>).</td></tr>
+      <tr><td><strong>Específico 3</strong></td><td>Administrar y asignar brigadas, vehículos y herramientas (<code>ms-recursos</code>).</td></tr>
+      <tr><td><strong>Específico 4</strong></td><td>Agregar datos en BFF con tolerancia a fallos para el dashboard React.</td></tr>
+    </tbody>
+  </table>
+  <p><strong>Alcance:</strong> Monorepo Maven + frontend NPM, despliegue local con Docker Compose, autenticación Keycloak, documentación y pruebas en flujos críticos.</p>
+  <p><strong>Limitaciones:</strong> Adaptador climático simulado (<code>FakeWeatherAdapter</code>); seguridad de roles aplicada en Gateway (no en anotaciones dentro de cada MS); transiciones de estado desde UI limitadas a creación y asignación de recursos; sin ELK/Prometheus en producción actual.</p>
+
+  <div class="chapter-end"><strong>Conclusión del capítulo:</strong> REV combina necesidad municipal real con un stack moderno verificable, delimitando explícitamente lo implementado versus mejoras futuras.</div>
+</section>
+
+<!-- ═══════════════ CAP 2 ═══════════════ -->
+<section class="page page-break" id="cap2">
+  <div class="header-bar"><span>Capítulo 2</span><span>Descripción general</span></div>
+  <h1>2. Descripción general del sistema</h1>
+  <p class="chapter-intro">REV conecta al despacho municipal, las brigadas en terreno y la ciudadanía bajo el lema «Conectividad que salva vidas».</p>
+
+  <h3>2.1 Propósito y capacidades</h3>
+  <p>Plataforma de <strong>misión crítica</strong> para registrar, priorizar y coordinar emergencias. Capacidades verificadas en UI: dashboard operacional, listado y detalle de incidentes, mapa de zonas de riesgo, gestión de recursos, página de inicio con KPIs, portal público de reporte (<code>/portal</code>) y autenticación vía login.</p>
+
+  <h3>2.2 Perfiles de usuario</h3>
+  <table>
+    <caption>Perfiles, descripción y funciones</caption>
+    <thead><tr><th>Perfil</th><th>Descripción</th><th>Funciones principales</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Administrador</strong></td><td>Supervisión y configuración de identidad</td><td>Acceso al panel; enlace a consola Keycloak (<code>Sidebar</code> — rol Admin); mismas capacidades operativas que despachador en UI actual</td></tr>
+      <tr><td><strong>Despachador</strong></td><td>Operador del centro de emergencias</td><td>Dashboard, incidentes, zonas, recursos, creación de incidentes, asignación de recursos (<code>canManageIncidents</code>)</td></tr>
+      <tr><td><strong>Brigadista</strong></td><td>Personal de terreno</td><td>Acceso autenticado al panel (rol validado en Gateway); consulta operacional según permisos frontend</td></tr>
+      <tr><td><strong>Ciudadano</strong></td><td>Vecino del valle</td><td>Reporte vía portal público (<code>POST /api/public/incidentes</code>) sin autenticación</td></tr>
+    </tbody>
+  </table>
+
+  <h3>2.3 Beneficios</h3>
+  <ul>
+    <li>Visión consolidada del estado operacional del día.</li>
+    <li>Priorización por nivel de riesgo territorial (LOW / MEDIUM / HIGH).</li>
+    <li>Degradación controlada: el despacho continúa con información parcial si un MS falla.</li>
+    <li>Canal ciudadano directo al mismo backend que atiende el despacho.</li>
+  </ul>
+  <div class="chapter-end"><strong>Conclusión:</strong> REV articula cuatro actores con interfaces diferenciadas pero un mismo ecosistema de datos agregados por el BFF.</div>
+</section>
+
+<!-- ═══════════════ CAP 3 ═══════════════ -->
+<section class="page page-break" id="cap3">
+  <div class="header-bar"><span>Capítulo 3</span><span>Arquitectura</span></div>
+  <h1>3. Arquitectura del sistema</h1>
+  <p class="chapter-intro">Capítulo central del informe. Describe la instancia concreta desplegada, no un catálogo teórico de patrones.</p>
+
+  <h3 id="cap3-1">3.1 Arquitectura general</h3>
+  <p>Estilo <strong>microservicios</strong> en monorepo Maven (<code>rev-parent</code>) con dominios <code>businessdomain</code> e <code>infraestructuredomain</code>. Comunicación síncrona REST; descubrimiento vía Eureka; perímetro con API Gateway; agregación en BFF; persistencia <em>database per service</em>.</p>
+
+  <div class="mermaid">
+flowchart TB
+    subgraph Cliente["Capa cliente"]
+        FE["React Dashboard :5173"]
+        PORTAL["Portal /portal"]
+    end
+    subgraph Perimetro["Perímetro"]
+        GW["API Gateway :8080"]
+        KCA["Keycloak Adapter :8088"]
+    end
+    subgraph Plataforma["Plataforma"]
+        EU["Eureka :8761"]
+        SBA["Spring Boot Admin :8099"]
+        KC["Keycloak :8090"]
+    end
+    subgraph Orquestacion["Orquestación"]
+        BFF["bff-rev :8085"]
+    end
+    subgraph Negocio["Dominio"]
+        MI["ms-incidentes :8081"]
+        MZ["ms-zonas-riesgo :8082"]
+        MR["ms-recursos :8083"]
+    end
+    subgraph Datos["Persistencia"]
+        PG1[("PostgreSQL rev_incidentes :5432")]
+        PG2[("PostGIS rev_zonas :5433")]
+        PG3[("PostgreSQL rev_recursos :5434")]
+    end
+    FE --> GW
+    PORTAL -->|"/api/public/**"| GW
+    GW -->|JWT /api/**| BFF
+    GW -->|"/auth/**"| KCA
+    KCA --> KC
+    BFF --> MI & MZ & MR
+    MI --> PG1
+    MZ --> PG2
+    MR --> PG3
+    MI & MZ & MR & BFF & GW & KCA -.-> EU
+    SBA -.-> EU
+  </div>
+
+  <h3>3.2 Componentes</h3>
+  <table class="summary-table">
+    <caption>Inventario de componentes verificados</caption>
+    <thead><tr><th>Componente</th><th>Puerto</th><th>Rol</th><th>Ruta en repo</th></tr></thead>
+    <tbody>
+      <tr><td>Frontend React</td><td>5173</td><td>SPA despacho + portal</td><td><code>frontend/rev-dashboard/</code></td></tr>
+      <tr><td>API Gateway</td><td>8080</td><td>Enrutamiento, filtro JWT</td><td><code>infraestructuredomain/api-gateway/</code></td></tr>
+      <tr><td>BFF-REV</td><td>8085</td><td>Facade, agregación dashboard</td><td><code>infraestructuredomain/bff-rev/</code></td></tr>
+      <tr><td>ms-incidentes</td><td>8081</td><td>Ciclo de vida incidentes</td><td><code>businessdomain/ms-incidentes/</code></td></tr>
+      <tr><td>ms-zonas-riesgo</td><td>8082</td><td>Zonas y riesgo territorial</td><td><code>businessdomain/ms-zonas-riesgo/</code></td></tr>
+      <tr><td>ms-recursos</td><td>8083</td><td>Brigadas, vehículos, asignaciones</td><td><code>businessdomain/ms-recursos/</code></td></tr>
+      <tr><td>Keycloak Adapter</td><td>8088</td><td>Login, validación JWT, roles</td><td><code>infraestructuredomain/keycloak-adapter/</code></td></tr>
+      <tr><td>Eureka Server</td><td>8761</td><td>Service discovery</td><td><code>infraestructuredomain/eureka-server/</code></td></tr>
+      <tr><td>Spring Boot Admin</td><td>8099</td><td>Monitorización centralizada</td><td><code>infraestructuredomain/spring-boot-admin/</code></td></tr>
+      <tr><td>Keycloak</td><td>8090</td><td>IAM — realm <code>rev</code></td><td><code>docker/keycloak/rev-realm.json</code></td></tr>
+    </tbody>
+  </table>
+
+  <h3>3.3 Comunicación</h3>
+  <table>
+    <thead><tr><th>Mecanismo</th><th>Implementación REV</th></tr></thead>
+    <tbody>
+      <tr><td><strong>REST</strong></td><td>Controllers Spring en MS; WebClient reactivo en BFF hacia <code>MS-INCIDENTES</code>, <code>MS-ZONAS-RIESGO</code>, <code>MS-RECURSOS</code></td></tr>
+      <tr><td><strong>Discovery</strong></td><td>Eureka — rutas Gateway <code>lb://BFF-REV</code>, <code>lb://KEYCLOAK-ADAPTER</code></td></tr>
+      <tr><td><strong>JWT</strong></td><td>Keycloak emite token; Gateway <code>AuthenticationFilter</code> valida vía adapter <code>/roles</code></td></tr>
+      <tr><td><strong>Routing</strong></td><td><code>/api/public/**</code> sin JWT · <code>/api/**</code> con filtro · <code>/auth/**</code> → adapter</td></tr>
+    </tbody>
+  </table>
+
+  <h3>3.4 Flujo de datos (Dashboard)</h3>
+  <div class="mermaid">
+sequenceDiagram
+    participant U as Usuario despachador
+    participant FE as React
+    participant GW as API Gateway
+    participant BFF as bff-rev
+    participant MI as ms-incidentes
+    participant MZ as ms-zonas-riesgo
+    participant MR as ms-recursos
+    participant DB as Bases de datos
+    U->>FE: Consulta dashboard
+    FE->>GW: GET /api/dashboard/incidentes + Bearer JWT
+    GW->>GW: AuthenticationFilter
+    GW->>BFF: Forward request
+    BFF->>MI: Listar incidentes
+    MI->>DB: SELECT incidentes
+    DB-->>MI: Filas
+    MI-->>BFF: IncidenteDto[]
+    loop Por cada incidente
+        BFF->>MZ: GET /zonas/riesgo?lat&lng
+        BFF->>MR: GET /recursos/incidente/{id}
+    end
+    BFF-->>FE: DashboardResponse[] (degraded si fallback)
+    FE-->>U: Vista unificada
+  </div>
+  <div class="chapter-end"><strong>Conclusión:</strong> La arquitectura separa claramente perímetro, agregación y dominio, con tres bases de datos independientes.</div>
+</section>
+
+<!-- ═══════════════ CAP 4 ═══════════════ -->
+<section class="page page-break" id="cap4">
+  <div class="header-bar"><span>Capítulo 4</span><span>Arquetipos</span></div>
+  <h1>4. Arquetipos utilizados</h1>
+  <p class="chapter-intro">Distinción académica: la <strong>arquitectura</strong> es la instancia concreta de REV; el <strong>arquetipo</strong> es el estilo organizacional reutilizable; el <strong>patrón</strong> resuelve un problema puntual dentro de ese estilo.</p>
+
+  <table>
+    <caption>Jerarquía conceptual aplicada a REV</caption>
+    <thead><tr><th>Nivel</th><th>En REV</th><th>Ejemplo verificable</th></tr></thead>
+    <tbody>
+      <tr><td>Arquitectura</td><td>Microservicios + Gateway + BFF + 3 BD</td><td><code>docker-compose.yml</code>, diagrama cap. 3</td></tr>
+      <tr><td>Arquetipo</td><td>MS Spring Cloud por capas; hexagonal parcial</td><td>Estructura <code>controller/service/repository</code></td></tr>
+      <tr><td>Patrón</td><td>Factory, State, Facade, etc.</td><td><code>IncidentStateFactory</code>, <code>DashboardFacadeService</code></td></tr>
+    </tbody>
+  </table>
+
+  <h3>4.1 Arquetipo de microservicio Spring</h3>
+  <p>Cada MS de negocio replica la misma organización:</p>
+  <table>
+    <thead><tr><th>Capa</th><th>Paquete</th><th>Ejemplo (ms-incidentes)</th></tr></thead>
+    <tbody>
+      <tr><td>Controller</td><td><code>controller/</code></td><td><code>IncidenteController</code></td></tr>
+      <tr><td>Service</td><td><code>service/</code></td><td><code>IncidenteService</code></td></tr>
+      <tr><td>Repository</td><td><code>repository/</code></td><td><code>IncidenteRepository</code></td></tr>
+      <tr><td>Entity</td><td><code>entity/</code></td><td><code>Incidente</code>, <code>TransicionEstado</code></td></tr>
+      <tr><td>DTO</td><td><code>dto/</code></td><td><code>IncidenteRequest</code>, <code>IncidenteResponse</code></td></tr>
+      <tr><td>Exception</td><td><code>exception/</code></td><td><code>BusinessRuleException</code>, <code>ApiExceptionHandler</code></td></tr>
+    </tbody>
+  </table>
+  <p>Infraestructura común en <code>businessdomain/pom.xml</code>: Eureka client, Actuator, Flyway, springdoc-openapi, PostgreSQL.</p>
+
+  <h3>4.2 Arquetipo Maven <code>rev-microservice-archetype</code></h3>
+  <p>Ruta: <code>archetypes/rev-microservice-archetype/</code>. Genera un MS con <code>@EnableDiscoveryClient</code>, <code>application.properties</code> base y estructura alineada al monorepo.</p>
+  <pre>mvn archetype:generate \
+  -DarchetypeGroupId=cl.duocuc.rev \
+  -DarchetypeArtifactId=rev-microservice-archetype \
+  -DartifactId=ms-nuevo</pre>
+
+  <div class="fig-placeholder">
+    <p class="fig-num">Figura 1</p>
+    <p class="fig-title">Estructura del arquetipo Maven REV</p>
+    <p class="fig-desc"><strong>Capturar:</strong> árbol de <code>archetypes/rev-microservice-archetype/src/main/resources/</code> mostrando <code>archetype-metadata.xml</code> y <code>archetype-resources/</code>.<br/><strong>Interpretación:</strong> estandariza la creación de nuevos microservicios compatibles con Eureka y Actuator.<br/><strong>Conclusión:</strong> evidencia de arquetipo Maven custom requerido en el encargo EVA2.</p>
+  </div>
+
+  <h3>4.3 Arquetipo hexagonal (parcial) — ms-zonas-riesgo</h3>
+  <table>
+    <thead><tr><th>Concepto</th><th>Archivo</th></tr></thead>
+    <tbody>
+      <tr><td>Puerto</td><td><code>port/WeatherDataPort.java</code></td></tr>
+      <tr><td>Adaptador</td><td><code>adapter/FakeWeatherAdapter.java</code></td></tr>
+      <tr><td>Orquestación</td><td><code>service/ZonaService.java</code> inyecta el puerto</td></tr>
+    </tbody>
+  </table>
+  <div class="chapter-end"><strong>Conclusión:</strong> REV estandariza la estructura de MS mediante arquetipo Maven y capas Spring; ms-zonas-riesgo extiende con ports/adapters.</div>
+</section>
+
+<!-- ═══════════════ CAP 5 ═══════════════ -->
+<section class="page page-break" id="cap5">
+  <div class="header-bar"><span>Capítulo 5</span><span>Patrones de diseño</span></div>
+  <h1>5. Patrones de diseño</h1>
+  <p class="chapter-intro">Patrones GoF y de conveniencia Spring verificados en código. Formato: objetivo → problema → ubicación → beneficio → evidencia.</p>
+
+  <h3>5.1 Factory Method — <code>IncidentStateFactory</code></h3>
+  <table>
+    <thead><tr><th>Aspecto</th><th>Detalle</th></tr></thead>
+    <tbody>
+      <tr><td>Objetivo</td><td>Resolver el handler de estado según <code>EstadoIncidente</code> actual</td></tr>
+      <tr><td>Problema</td><td>Evitar <code>switch</code> dispersos al validar transiciones</td></tr>
+      <tr><td>Ubicación</td><td><code>ms-incidentes/.../state/IncidentStateFactory.java</code></td></tr>
+      <tr><td>Beneficio</td><td>Registro automático vía Spring (<code>List&lt;IncidentStateHandler&gt;</code>) en <code>EnumMap</code></td></tr>
+    </tbody>
+  </table>
+  <pre>@Component
+public class IncidentStateFactory {
+    public void validarTransicion(Incidente incidente, EstadoIncidente destino) {
+        IncidentStateHandler handler = handlers.get(incidente.getEstado());
+        handler.validarTransicion(incidente, destino);
+    }
+}</pre>
+  <div class="fig-placeholder"><p class="fig-num">Figura 2</p><p class="fig-title">IncidentStateFactory en IDE</p><p class="fig-desc">Captura del factory y handlers registrados. Conclusión: patrón Factory Method aplicado al dominio de incidentes.</p></div>
+
+  <h3>5.2 State — handlers de transición</h3>
+  <table>
+    <thead><tr><th>Clase</th><th>Estado</th><th>Regla destacada</th></tr></thead>
+    <tbody>
+      <tr><td><code>ReportadoState</code></td><td>REPORTADO</td><td>→ EN_PROGRESO requiere georreferenciación (<code>requireGeo</code>)</td></tr>
+      <tr><td><code>EnProgresoState</code></td><td>EN_PROGRESO</td><td>Transiciones hacia CONTROLADO / ESCALADO</td></tr>
+      <tr><td><code>ControladoState</code></td><td>CONTROLADO</td><td>Avance hacia cierre</td></tr>
+      <tr><td><code>EscaladoState</code></td><td>ESCALADO</td><td>Prioridad operacional</td></tr>
+    </tbody>
+  </table>
+  <p>Base común: <code>BaseIncidentState.java</code> — método <code>requireGeo</code> lanza <code>BusinessRuleException</code> si faltan coordenadas.</p>
+  <div class="fig-placeholder"><p class="fig-num">Figura 3</p><p class="fig-title">Jerarquía State — ReportadoState, EnProgresoState, ControladoState</p><p class="fig-desc">Captura del paquete <code>state/</code>. Test: <code>IncidentStateFactoryTest.java</code>.</p></div>
+
+  <h3>5.3 Adapter — clima simulado</h3>
+  <table>
+    <thead><tr><th>Aspecto</th><th>Detalle</th></tr></thead>
+    <tbody>
+      <tr><td>Puerto</td><td><code>WeatherDataPort.obtenerCondiciones(lat, lng)</code></td></tr>
+      <tr><td>Adaptador</td><td><code>FakeWeatherAdapter</code> — datos determinísticos, fuente <code>FAKE_WEATHER_ADAPTER</code></td></tr>
+      <tr><td>Beneficio</td><td>Permite sustituir por API meteorológica real sin cambiar <code>ZonaService</code></td></tr>
+    </tbody>
+  </table>
+  <div class="fig-placeholder"><p class="fig-num">Figura 4</p><p class="fig-title">WeatherDataPort y FakeWeatherAdapter</p><p class="fig-desc">Captura de puerto + adaptador en ms-zonas-riesgo.</p></div>
+
+  <h3>5.4 Facade — <code>DashboardFacadeService</code></h3>
+  <p>Agrega incidente + zona de riesgo + recursos en un único <code>DashboardResponse</code> con flag <code>degraded</code>.</p>
+  <pre>return DashboardResponse.builder()
+    .incidente(incidente)
+    .zonaRiesgo(zonaRiesgo)
+    .recursos(recursosResult.recursos())
+    .degraded(recursosResult.degraded())
+    .build();</pre>
+  <div class="fig-placeholder"><p class="fig-num">Figura 5</p><p class="fig-title">DashboardFacadeService — método construirDashboard</p><p class="fig-desc">Captura del facade en bff-rev con anotaciones @CircuitBreaker.</p></div>
+
+  <h3>5.5 Repository — Spring Data JPA</h3>
+  <p>Interfaces en cada MS: <code>IncidenteRepository</code>, <code>ZonaRepository</code>, <code>BrigadaRepository</code>, etc. Abstraen persistencia PostgreSQL/PostGIS.</p>
+  <div class="fig-placeholder"><p class="fig-num">Figura 6</p><p class="fig-title">Repositorio Spring Data</p><p class="fig-desc">Ejemplo: <code>IncidenteRepository extends JpaRepository</code>.</p></div>
+
+  <h3>5.6 Builder — DTOs Lombok</h3>
+  <p><code>@Builder</code> en DTOs del BFF y MS, p. ej. <code>WeatherDataDto.builder()</code>, <code>DashboardResponse.builder()</code>, <code>ZonaRiesgoDto.builder()</code>.</p>
+  <div class="fig-placeholder"><p class="fig-num">Figura 7</p><p class="fig-title">DTO con @Builder de Lombok</p><p class="fig-desc">Captura de clase DTO con anotaciones Lombok.</p></div>
+
+  <div class="chapter-end"><strong>Conclusión:</strong> Seis patrones trazables con archivos, tests y uso en runtime del dashboard.</div>
+</section>
+
+<!-- ═══════════════ CAP 6 ═══════════════ -->
+<section class="page page-break" id="cap6">
+  <div class="header-bar"><span>Capítulo 6</span><span>Patrones arquitectónicos</span></div>
+  <h1>6. Patrones arquitectónicos</h1>
+
+  <table>
+    <caption>Patrones arquitectónicos en REV</caption>
+    <thead><tr><th>Patrón</th><th>Problema</th><th>Implementación</th><th>Ubicación</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Microservicios</strong></td><td>Acoplamiento monolítico</td><td>3 MS de dominio independientes</td><td><code>businessdomain/</code></td></tr>
+      <tr><td><strong>API Gateway</strong></td><td>Exponer un único punto de entrada</td><td>Spring Cloud Gateway :8080</td><td><code>api-gateway/application.yml</code></td></tr>
+      <tr><td><strong>BFF</strong></td><td>Adaptar API al frontend</td><td>Agregación dashboard y operaciones</td><td><code>bff-rev/</code></td></tr>
+      <tr><td><strong>Circuit Breaker</strong></td><td>Cascada de fallos</td><td>Resilience4j — instancias <code>zonasRiesgo</code>, <code>recursos</code></td><td><code>DashboardFacadeService</code> + <code>application.properties</code></td></tr>
+      <tr><td><strong>Service Discovery</strong></td><td>Localizar instancias dinámicas</td><td>Eureka + <code>lb://</code> en Gateway y WebClient</td><td><code>eureka-server/</code></td></tr>
+      <tr><td><strong>Database per Service</strong></td><td>Acoplamiento de datos</td><td>3 PostgreSQL/PostGIS separados</td><td><code>docker-compose.yml</code></td></tr>
+      <tr><td><strong>Cache Aside</strong></td><td>Fallback sin perder contexto</td><td><code>ZonaRiesgoCache</code> en fallback del circuit breaker</td><td><code>bff-rev/.../cache/ZonaRiesgoCache.java</code></td></tr>
+      <tr><td><strong>JWT Authentication</strong></td><td>Identidad distribuida</td><td>Keycloak + adapter + filtro Gateway</td><td><code>AuthenticationFilter.java</code></td></tr>
+    </tbody>
+  </table>
+
+  <h3>6.1 Circuit Breaker — configuración verificada</h3>
+  <pre>resilience4j.circuitbreaker.instances.zonasRiesgo.slidingWindowSize=10
+resilience4j.circuitbreaker.instances.zonasRiesgo.failureRateThreshold=50
+resilience4j.circuitbreaker.instances.zonasRiesgo.waitDurationInOpenState=5s</pre>
+  <p>Actuator expone <code>circuitbreakers</code> en BFF: <code>management.endpoints.web.exposure.include=health,info,circuitbreakers</code></p>
+
+  <div class="chapter-end"><strong>Conclusión:</strong> REV implementa el stack arquitectónico completo esperado en un ecosistema Spring Cloud educativo y profesional.</div>
+</section>
+
+<!-- ═══════════════ CAP 7 ═══════════════ -->
+<section class="page page-break" id="cap7">
+  <div class="header-bar"><span>Capítulo 7</span><span>Branching</span></div>
+  <h1>7. Estrategia de branching</h1>
+  <p class="chapter-intro">Documentado en <code>docs/CONTRIBUTING.md</code>. GitFlow simplificado con dos ramas principales.</p>
+
+  <table>
+    <thead><tr><th>Rama</th><th>Propósito</th></tr></thead>
+    <tbody>
+      <tr><td><code>main</code></td><td>Código estable — demo y entrega. Solo merges desde <code>dev</code> validados</td></tr>
+      <tr><td><code>dev</code></td><td>Desarrollo activo diario</td></tr>
+      <tr><td><code>feature/*</code></td><td>Recomendado para features aisladas (documentado en guías del equipo)</td></tr>
+    </tbody>
+  </table>
+
+  <div class="mermaid">
+gitGraph
+  commit id: "inicial"
+  branch dev
+  checkout dev
+  commit id: "feature incidentes"
+  commit id: "feature BFF"
+  checkout main
+  merge dev id: "release EVA2"
+  checkout dev
+  commit id: "feature UX"
+  </div>
+
+  <p><strong>Commits atómicos:</strong> formato <code>[ TIPO ]: descripción</code> — FEAT, FIX, DOCS, INFRA, etc.</p>
+  <p><strong>CI:</strong> <code>.github/workflows/ci.yml</code> dispara en push/PR a <code>main</code>, <code>dev</code>, <code>develop</code>.</p>
+
+  <div class="fig-placeholder"><p class="fig-num">Figura 8</p><p class="fig-title">Repositorio GitHub — ramas main y dev</p><p class="fig-desc">Captura de GitHub → Branches. Adjuntar PR de dev → main si existe.</p></div>
+  <div class="fig-placeholder"><p class="fig-num">Figura 9</p><p class="fig-title">Pull Request de integración</p><p class="fig-desc">Captura de PR con revisión y checks CI.</p></div>
+
+  <div class="chapter-end"><strong>Conclusión:</strong> La estrategia protege <code>main</code> y canaliza el trabajo colaborativo en <code>dev</code>.</div>
+</section>
+
+<!-- ═══════════════ CAP 8 ═══════════════ -->
+<section class="page page-break" id="cap8">
+  <div class="header-bar"><span>Capítulo 8</span><span>Buenas prácticas</span></div>
+  <h1>8. Buenas prácticas de desarrollo</h1>
+
+  <table>
+    <thead><tr><th>Principio</th><th>Evidencia en REV</th></tr></thead>
+    <tbody>
+      <tr><td><strong>SRP / separación de capas</strong></td><td>Controller → Service → Repository en cada MS</td></tr>
+      <tr><td><strong>Inyección de dependencias</strong></td><td>Constructor injection con Lombok <code>@RequiredArgsConstructor</code></td></tr>
+      <tr><td><strong>DRY en infraestructura</strong></td><td>Parent POM compartido; archetype Maven</td></tr>
+      <tr><td><strong>Nomenclatura</strong></td><td>Prefijo <code>ms-</code>, paquetes <code>cl.duocuc.rev.*</code></td></tr>
+      <tr><td><strong>Validación de esquema</strong></td><td><code>ddl-auto=validate</code> + Flyway migrations</td></tr>
+      <tr><td><strong>Manejo de errores</strong></td><td><code>ApiExceptionHandler</code>, <code>BusinessRuleException</code></td></tr>
+      <tr><td><strong>Tests</strong></td><td><code>IncidentStateFactoryTest</code>, <code>ZonaServiceTest</code>, tests BFF</td></tr>
+      <tr><td><strong>Documentación</strong></td><td>README por módulo; OpenAPI springdoc en MS</td></tr>
+      <tr><td><strong>Frontend modular</strong></td><td>Componentes por dominio (<code>inicio/</code>, <code>incidentes/</code>, <code>zonas/</code>)</td></tr>
+    </tbody>
+  </table>
+  <div class="chapter-end"><strong>Conclusión:</strong> El monorepo aplica convenciones consistentes que facilitan onboarding y evaluación académica.</div>
+</section>
+
+<!-- ═══════════════ CAP 9 ═══════════════ -->
+<section class="page page-break" id="cap9">
+  <div class="header-bar"><span>Capítulo 9</span><span>Seguridad</span></div>
+  <h1>9. Seguridad</h1>
+
+  <h3>9.1 Modelo de autenticación y autorización</h3>
+  <ul>
+    <li><strong>Keycloak</strong> realm <code>rev</code> — roles: Despachador, Brigadista, Admin</li>
+    <li><strong>Cliente</strong> <code>rev-frontend</code> — flujo password grant (dev) vía adapter</li>
+    <li><strong>JWT RSA256</strong> — validación con JWK Set en <code>JwtService.java</code></li>
+    <li><strong>Gateway</strong> — <code>AuthenticationFilter</code> exige Bearer y consulta <code>KEYCLOAK-ADAPTER/roles</code></li>
+  </ul>
+
+  <div class="mermaid">
+sequenceDiagram
+    participant U as Usuario
+    participant FE as React
+    participant GW as Gateway
+    participant AUTH as Keycloak Adapter
+    participant KC as Keycloak
+    U->>FE: login(user, pass)
+    FE->>GW: POST /auth/login
+    GW->>AUTH: StripPrefix → /login
+    AUTH->>KC: token endpoint
+    KC-->>AUTH: access_token JWT
+    AUTH-->>FE: token
+    FE->>GW: GET /api/dashboard + Authorization Bearer
+    GW->>AUTH: GET /roles
+    AUTH-->>GW: roles válidos
+    GW->>BFF: request autorizado
+  </div>
+
+  <h3>9.2 Rutas públicas vs protegidas</h3>
+  <table>
+    <thead><tr><th>Ruta Gateway</th><th>JWT</th><th>Uso</th></tr></thead>
+    <tbody>
+      <tr><td><code>/api/public/**</code></td><td>No</td><td>Portal ciudadano</td></tr>
+      <tr><td><code>/api/**</code></td><td>Sí</td><td>Panel despacho</td></tr>
+      <tr><td><code>/auth/**</code></td><td>N/A</td><td>Login, roles, refresh</td></tr>
+    </tbody>
+  </table>
+  <p><strong>Nota:</strong> Los microservicios de negocio no implementan <code>@PreAuthorize</code>; el perímetro de seguridad está en Gateway + adapter (decisión documentada).</p>
+
+  <div class="fig-placeholder"><p class="fig-num">Figura 10</p><p class="fig-title">Consola Keycloak — realm rev</p><p class="fig-desc">Roles, clientes y usuarios de prueba.</p></div>
+  <div class="fig-placeholder"><p class="fig-num">Figura 11</p><p class="fig-title">AuthenticationFilter — Gateway</p><p class="fig-desc">Código del filtro JWT en api-gateway.</p></div>
+  <div class="fig-placeholder"><p class="fig-num">Figura 12</p><p class="fig-title">Configuración JWT — JwtService</p><p class="fig-desc">Validación JWK Set URI del realm.</p></div>
+
+  <div class="chapter-end"><strong>Conclusión:</strong> Seguridad centralizada en el perímetro, alineada con arquitectura de microservicios perimetral.</div>
+</section>
+
+<!-- ═══════════════ CAP 10 ═══════════════ -->
+<section class="page page-break" id="cap10">
+  <div class="header-bar"><span>Capítulo 10</span><span>Observabilidad</span></div>
+  <h1>10. Observabilidad, logging y auditoría</h1>
+
+  <h3>10.1 Estado actual</h3>
+  <table>
+    <thead><tr><th>Capacidad</th><th>Estado</th><th>Evidencia</th></tr></thead>
+    <tbody>
+      <tr><td>Spring Boot Actuator</td><td>Implementado</td><td><code>health,info</code> en MS; <code>circuitbreakers</code> en BFF</td></tr>
+      <tr><td>Spring Boot Admin</td><td>Implementado</td><td>Puerto 8099, <code>@EnableAdminServer</code></td></tr>
+      <tr><td>Logging explícito</td><td>Parcial</td><td>Gateway INFO; <code>@Slf4j</code> en filtro y AuthController</td></tr>
+      <tr><td>Métricas Prometheus</td><td>No implementado</td><td>—</td></tr>
+      <tr><td>Tracing distribuido</td><td>No implementado</td><td>—</td></tr>
+      <tr><td>Auditoría de negocio</td><td>Parcial</td><td>Tabla <code>transiciones_estado</code> en ms-incidentes</td></tr>
+    </tbody>
+  </table>
+
+  <h3>10.2 Registro de eventos</h3>
+  <p>Las transiciones de estado de incidentes se persisten en <code>transiciones_estado</code> (Flyway V1), proporcionando trazabilidad del ciclo de vida. El BFF marca respuestas <code>degraded: true</code> cuando un fallback de Circuit Breaker activa, visible en UI como «información parcial».</p>
+
+  <h3>10.3 Evolución futura recomendada</h3>
+  <table>
+    <thead><tr><th>Stack</th><th>Propósito</th></tr></thead>
+    <tbody>
+      <tr><td><strong>ELK</strong> (Elasticsearch, Logstash, Kibana)</td><td>Centralizar logs de 8+ servicios</td></tr>
+      <tr><td><strong>Prometheus + Grafana</strong></td><td>Métricas JVM, latencia WebClient, estado CB</td></tr>
+      <tr><td><strong>Grafana Loki</strong></td><td>Logs ligero complementario a Prometheus</td></tr>
+      <tr><td><strong>OpenTelemetry</strong></td><td>Tracing entre Gateway → BFF → MS</td></tr>
+    </tbody>
+  </table>
+  <div class="chapter-end"><strong>Conclusión:</strong> Observabilidad básica operativa hoy; roadmap claro hacia plataforma de monitoreo enterprise.</div>
+</section>
+
+<!-- ═══════════════ CAP 11 ═══════════════ -->
+<section class="page page-break" id="cap11">
+  <div class="header-bar"><span>Capítulo 11</span><span>Base de datos</span></div>
+  <h1>11. Base de datos</h1>
+
+  <h3>11.1 Database per Service</h3>
+  <table>
+    <thead><tr><th>Microservicio</th><th>BD</th><th>Motor</th><th>Puerto host</th></tr></thead>
+    <tbody>
+      <tr><td>ms-incidentes</td><td><code>rev_incidentes</code></td><td>PostgreSQL 16</td><td>5432</td></tr>
+      <tr><td>ms-zonas-riesgo</td><td><code>rev_zonas</code></td><td>PostGIS 16</td><td>5433</td></tr>
+      <tr><td>ms-recursos</td><td><code>rev_recursos</code></td><td>PostgreSQL 16</td><td>5434</td></tr>
+    </tbody>
+  </table>
+
+  <h3>11.2 Diccionario de datos resumido</h3>
+  <table>
+    <thead><tr><th>Tabla</th><th>MS</th><th>Campos clave</th></tr></thead>
+    <tbody>
+      <tr><td><code>incidentes</code></td><td>incidentes</td><td>id UUID, tipo, estado, lat, lng, descripcion, reportante_uuid</td></tr>
+      <tr><td><code>transiciones_estado</code></td><td>incidentes</td><td>incidente_id, estado_anterior, estado_nuevo, created_at</td></tr>
+      <tr><td><code>zonas</code></td><td>zonas</td><td>nombre, nivel_riesgo, min/max lat/lng</td></tr>
+      <tr><td><code>condiciones_climaticas</code></td><td>zonas</td><td>zona_id, temperatura, humedad, viento</td></tr>
+      <tr><td><code>brigadas</code></td><td>recursos</td><td>nombre, capacidad, estado</td></tr>
+      <tr><td><code>vehiculos</code></td><td>recursos</td><td>patente, tipo, estado</td></tr>
+      <tr><td><code>asignaciones</code></td><td>recursos</td><td>incidente_id UUID, brigada_id, vehiculo_id, activa</td></tr>
+    </tbody>
+  </table>
+
+  <div class="mermaid">
+erDiagram
+    INCIDENTES ||--o{ TRANSICIONES_ESTADO : registra
+    ZONAS ||--o{ CONDICIONES_CLIMATICAS : tiene
+    BRIGADAS ||--o{ ASIGNACIONES : participa
+    VEHICULOS ||--o{ ASIGNACIONES : opcional
+    INCIDENTES ||--o{ ASIGNACIONES : referencia_UUID
+  </div>
+  <p><em>Nota: la referencia incidente_id en asignaciones es UUID lógico cross-service, no FK entre bases de datos.</em></p>
+
+  <div class="fig-placeholder"><p class="fig-num">Figura 13</p><p class="fig-title">Flyway migrations y esquema PostgreSQL</p><p class="fig-desc">Captura de <code>db/migration/V1__*.sql</code> o cliente SQL conectado a rev_incidentes.</p></div>
+  <div class="chapter-end"><strong>Conclusión:</strong> Modelo alineado a bounded contexts con PostGIS para capacidad territorial futura.</div>
+</section>
+
+<!-- ═══════════════ CAP 12 ═══════════════ -->
+<section class="page page-break" id="cap12">
+  <div class="header-bar"><span>Capítulo 12</span><span>UX/UI</span></div>
+  <h1>12. UX/UI y experiencia de usuario</h1>
+
+  <h3>12.1 Objetivos UX</h3>
+  <ul>
+    <li>Reducir carga cognitiva del despachador bajo presión operacional.</li>
+    <li>Priorizar información accionable (emergencias en curso, alto riesgo, avisos).</li>
+    <li>Lenguaje comercial/municipal — sin jerga técnica en pantalla.</li>
+    <li>Portal ciudadano accesible sin registro previo.</li>
+  </ul>
+
+  <h3>12.2 Design System REV</h3>
+  <table>
+    <thead><tr><th>Token</th><th>Valor</th><th>Uso</th></tr></thead>
+    <tbody>
+      <tr><td><code>--rev-bg</code></td><td>#07111F</td><td>Fondo principal</td></tr>
+      <tr><td><code>--rev-surface</code></td><td>#142C4E</td><td>Tarjetas y paneles</td></tr>
+      <tr><td><code>--rev-orange</code></td><td>#F97316</td><td>Acento institucional, CTAs</td></tr>
+      <tr><td><code>--rev-text-secondary</code></td><td>#A7B4C7</td><td>Texto de apoyo</td></tr>
+      <tr><td>Tipografía</td><td>Inter, Segoe UI</td><td><code>theme.css</code></td></tr>
+    </tbody>
+  </table>
+
+  <h3>12.3 Arquitectura de información (páginas)</h3>
+  <table>
+    <thead><tr><th>Módulo</th><th>Ruta</th><th>Función UX</th></tr></thead>
+    <tbody>
+      <tr><td>Inicio</td><td><code>/inicio</code></td><td>Hero + KPIs + panorama + prioridades + showcase REV</td></tr>
+      <tr><td>Despacho</td><td><code>/</code></td><td>Tabla operacional del día, tiles zonas/recursos</td></tr>
+      <tr><td>Incidentes</td><td><code>/incidentes</code></td><td>Filtros, vista cards/tabla, rail de distribución</td></tr>
+      <tr><td>Zonas</td><td><code>/zonas</code></td><td>Mapa Leaflet + listado + riesgo</td></tr>
+      <tr><td>Recursos</td><td><code>/recursos</code></td><td>Brigadas, vehículos, herramientas</td></tr>
+      <tr><td>Portal</td><td><code>/portal</code></td><td>Reporte ciudadano público</td></tr>
+    </tbody>
+  </table>
+
+  <h3>12.4 Componentes y decisiones de diseño</h3>
+  <ul>
+    <li><strong>OperationalAmbient</strong> — fondo decorativo mapa/radar (sin interacción).</li>
+    <li><strong>ModuleHub</strong> — patrón layout KPIs + toolbar + rail reutilizable.</li>
+    <li><strong>StateView</strong> — estados loading / empty / error unificados.</li>
+    <li><strong>DegradedAlert</strong> — mensaje «información parcial» al usuario (no «circuit breaker»).</li>
+    <li><strong>Glass cards</strong> — superficies semitransparentes en <code>theme.css</code>.</li>
+  </ul>
+
+  <div class="fig-placeholder"><p class="fig-num">Figura 14</p><p class="fig-title">Dashboard Despacho</p><p class="fig-desc">Captura pantalla completa con KPIs y tabla activos.</p></div>
+  <div class="fig-placeholder"><p class="fig-num">Figura 15</p><p class="fig-title">Módulo Incidentes y Zonas</p><p class="fig-desc">Vista cards + mapa de riesgo.</p></div>
+  <div class="fig-placeholder"><p class="fig-num">Figura 16</p><p class="fig-title">Portal ciudadano</p><p class="fig-desc">Hero + formulario reporte público.</p></div>
+
+  <div class="chapter-end"><strong>Conclusión:</strong> UI coherente con identidad REV, orientada al despachador y al vecino, con design tokens centralizados.</div>
+</section>
+
+<!-- ═══════════════ CAP 13 ═══════════════ -->
+<section class="page page-break" id="cap13">
+  <div class="header-bar"><span>Capítulo 13</span><span>Evidencias</span></div>
+  <h1>13. Evidencias del sistema</h1>
+  <p class="chapter-intro">Galería de capturas requeridas para evaluación EVA2. Insertar imágenes reales reemplazando cada placeholder.</p>
+
+  <table>
+    <thead><tr><th>Figura</th><th>Captura requerida</th><th>Análisis esperado</th></tr></thead>
+    <tbody>
+      <tr><td>1–7</td><td>Patrones de diseño (cap. 5)</td><td>Código fuente en IDE</td></tr>
+      <tr><td>8–9</td><td>GitHub branching</td><td>main, dev, PR</td></tr>
+      <tr><td>10–12</td><td>Seguridad Keycloak + JWT</td><td>Realm, filtro, adapter</td></tr>
+      <tr><td>13</td><td>Base de datos</td><td>Flyway / PostgreSQL</td></tr>
+      <tr><td>14–16</td><td>Frontend UX</td><td>Pantallas operativas</td></tr>
+      <tr><td>17</td><td>Eureka Dashboard</td><td>Instancias registradas :8761</td></tr>
+      <tr><td>18</td><td>Spring Boot Admin</td><td>Health de microservicios :8099</td></tr>
+      <tr><td>19</td><td>Swagger / OpenAPI</td><td>Documentación MS incidentes</td></tr>
+      <tr><td>20</td><td>Docker Compose</td><td><code>docker compose ps</code> servicios activos</td></tr>
+    </tbody>
+  </table>
+
+  <div class="fig-placeholder"><p class="fig-num">Figura 17</p><p class="fig-title">Eureka Service Discovery</p><p class="fig-desc">Todas las instancias UP: MS-INCIDENTES, MS-ZONAS-RIESGO, MS-RECURSOS, BFF-REV, api-gateway, KEYCLOAK-ADAPTER.</p></div>
+  <div class="fig-placeholder"><p class="fig-num">Figura 18</p><p class="fig-title">Spring Boot Admin</p><p class="fig-desc">Monitorización centralizada de actuators.</p></div>
+  <div class="fig-placeholder"><p class="fig-num">Figura 19</p><p class="fig-title">Swagger UI — ms-incidentes</p><p class="fig-desc">Endpoints REST documentados con springdoc.</p></div>
+  <div class="fig-placeholder"><p class="fig-num">Figura 20</p><p class="fig-title">Docker Compose — stack REV</p><p class="fig-desc">PostgreSQL ×3, Keycloak, Eureka, MS, BFF, Gateway.</p></div>
+</section>
+
+<!-- ═══════════════ CAP 14 ═══════════════ -->
+<section class="page page-break" id="cap14">
+  <div class="header-bar"><span>Capítulo 14</span><span>Conclusiones</span></div>
+  <h1>14. Conclusiones</h1>
+
+  <h3>14.1 Evaluación técnica</h3>
+  <p>REV demuestra dominio de arquitectura de microservicios con evidencia verificable: monorepo Maven estructurado, tres bounded contexts con persistencia independiente, BFF resiliente, Gateway con JWT, descubrimiento Eureka y frontend React alineado al negocio municipal.</p>
+
+  <h3>14.2 Beneficios obtenidos</h3>
+  <ul>
+    <li>Desacoplamiento que permite evolucionar incidentes, zonas y recursos por separado.</li>
+    <li>Experiencia unificada de despacho pese a tres fuentes de datos.</li>
+    <li>Continuidad operativa parcial mediante Circuit Breaker y cache aside.</li>
+    <li>Canal ciudadano integrado al mismo backend operacional.</li>
+    <li>Arquetipo Maven que acelera nuevos servicios compatibles.</li>
+  </ul>
+
+  <h3>14.3 Aprendizajes</h3>
+  <ul>
+    <li>Diferencia práctica entre arquitectura, arquetipo y patrón de diseño.</li>
+    <li>Importancia del BFF para adaptar APIs granulares al consumo del frontend.</li>
+    <li>Seguridad perimetral vs defensa en profundidad por microservicio.</li>
+    <li>UX de misión crítica: lenguaje claro y estados degradados comprensibles.</li>
+  </ul>
+
+  <h3>14.4 Escalabilidad futura</h3>
+  <ul>
+    <li>Observabilidad: ELK, Prometheus, Grafana, OpenTelemetry.</li>
+    <li>Adaptador climático real sustituyendo <code>FakeWeatherAdapter</code>.</li>
+    <li>Transiciones de estado completas desde UI.</li>
+    <li>Despliegue cloud con réplicas por MS detrás de Eureka.</li>
+  </ul>
+
+  <h3>14.5 Trabajo colaborativo</h3>
+  <p>La estrategia <code>main</code> / <code>dev</code>, commits atómicos y documentación en <code>docs/</code> sostienen el trabajo grupal exigido en EVA2, facilitando defensa oral individual con trazabilidad al código.</p>
+
+  <div class="exec-box">
+    <p><strong>Síntesis final:</strong> REV es una plataforma de emergencias municipal implementada con stack moderno, patrones documentados y evidencia en repositorio — apta para auditoría técnica académica y evolución hacia producción institucional.</p>
+  </div>
+
+  <p class="footer-note">Documento generado a partir del repositorio <code>rev-fullstack</code> · Duoc UC · DSY1106 · Mayo 2026<br/>
+  Complementos: <code>docs/informe-sistema-rev.md</code> · <code>docs/patrones-y-arquitectura-rev.md</code></p>
+</section>
+
+<p class="no-print footer-note" style="padding:2rem;text-align:center;max-width:210mm;margin:0 auto;">
+  <strong>Vista previa A4</strong> — cada bloque gris oscuro simula una hoja 210 × 297 mm.<br/>
+  Para PDF: <kbd>Ctrl+P</kbd> → Destino: <strong>Guardar como PDF</strong> → Tamaño: <strong>A4</strong> → Orientación: <strong>Vertical</strong> → Márgenes: <strong>Predeterminados</strong> → activar <strong>Gráficos de fondo</strong>.<br/>
+  No uses “Ajustar al ancho”; deja escala al 100%.
+</p>
+
+</body>
+</html>

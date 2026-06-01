@@ -1,75 +1,148 @@
-/* REV - Red de Emergencia Valle | Paleta portada presentacion DSY1106 */
+/* REV — Design System v2 | Monocromático institucional + acento naranja */
+
 :root {
-  /* Fondo y estructura */
-  --rev-navy: #002147;
-  --rev-navy-dark: #001529;
-  --rev-neutral: #050b14;
-  --rev-surface: #0a1f3d;
-  --rev-surface-elevated: #0f2a4f;
+  /* —— Paleta oficial —— */
+  --rev-bg: #07111f;
+  --rev-bg-secondary: #0b172a;
+  --rev-surface: #10233e;
+  --rev-surface-elevated: #142c4e;
+  --rev-border: rgba(255, 255, 255, 0.08);
 
-  /* Acentos portada */
-  --rev-orange: #f37021;
-  --rev-orange-hover: #ff8533;
-  --rev-cyan: #3498db;
-  --rev-white: #ffffff;
+  --rev-text: #ffffff;
+  --rev-text-secondary: #a7b4c7;
+  --rev-text-tertiary: #73839a;
 
-  /* Semanticos UI */
-  --rev-primary: var(--rev-navy);
+  --rev-orange: #f97316;
+  --rev-orange-hover: #fb923c;
+  --rev-orange-muted: rgba(249, 115, 22, 0.12);
+  --rev-orange-border: rgba(249, 115, 22, 0.28);
+
+  /* Aliases legacy (compatibilidad) */
+  --rev-navy: var(--rev-bg-secondary);
+  --rev-navy-dark: var(--rev-bg);
+  --rev-neutral: var(--rev-bg);
+  --rev-white: var(--rev-text);
+  --rev-muted: var(--rev-text-secondary);
+  --rev-cyan: var(--rev-text-secondary);
+  --rev-accent: var(--rev-orange);
+  --rev-primary: var(--rev-orange);
   --rev-secondary: var(--rev-orange);
-  --rev-accent: var(--rev-cyan);
-  --rev-danger: #e74c3c;
-  --rev-warning: #f39c12;
-  --rev-success: #2ecc71;
-  --rev-bg: var(--rev-navy-dark);
-  --rev-text: var(--rev-white);
-  --rev-muted: rgba(255, 255, 255, 0.65);
-  --rev-border: rgba(52, 152, 219, 0.28);
+  --rev-danger: var(--rev-orange);
+  --rev-warning: var(--rev-text-tertiary);
+  --rev-success: var(--rev-text-tertiary);
 
-  /* Bootstrap override */
-  --bs-primary: var(--rev-navy);
-  --bs-secondary: var(--rev-orange);
-  --bs-danger: var(--rev-danger);
-  --bs-warning: var(--rev-warning);
-  --bs-success: var(--rev-success);
-  --bs-info: var(--rev-cyan);
-  --bs-body-bg: var(--rev-navy-dark);
-  --bs-body-color: var(--rev-white);
+  /* —— Tipografía —— */
+  --rev-font-sans: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  --rev-font-mono: 'JetBrains Mono', 'Cascadia Code', ui-monospace, monospace;
+
+  --rev-text-title: 1.375rem;
+  --rev-text-section: 1.0625rem;
+  --rev-text-subtitle: 0.9375rem;
+  --rev-text-body: 0.875rem;
+  --rev-text-meta: 0.6875rem;
+
+  --rev-text-xs: 0.6875rem;
+  --rev-text-sm: 0.8125rem;
+  --rev-text-base: 0.875rem;
+  --rev-text-lg: 1rem;
+  --rev-text-xl: 1.125rem;
+
+  /* —— Espaciado (grid 8px) —— */
+  --rev-space-1: 8px;
+  --rev-space-2: 12px;
+  --rev-space-3: 16px;
+  --rev-space-4: 24px;
+  --rev-space-5: 32px;
+
+  /* —— Layout páginas internas —— */
+  --rev-page-gap: var(--rev-space-3);
+  --rev-workspace-rail: minmax(260px, 300px);
+  --rev-workspace-gap: var(--rev-space-4);
+
+  /* —— Forma —— */
+  --rev-radius-sm: 8px;
+  --rev-radius-md: 12px;
+  --rev-radius-lg: 16px;
+  --rev-radius-xl: 16px;
+  --rev-radius-card: 16px;
+
+  /* —— Superficies —— */
+  --rev-glass-bg: var(--rev-surface);
+  --rev-glass-border: var(--rev-border);
+  --rev-shadow-card: 0 8px 24px rgba(0, 0, 0, 0.18);
+  --rev-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.18);
+  --rev-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.24);
+
+  /* —— Bootstrap override —— */
+  --bs-primary: var(--rev-orange);
+  --bs-secondary: var(--rev-text-tertiary);
+  --bs-danger: var(--rev-orange);
+  --bs-warning: var(--rev-text-tertiary);
+  --bs-success: var(--rev-text-tertiary);
+  --bs-info: var(--rev-text-secondary);
+  --bs-body-bg: var(--rev-bg);
+  --bs-body-color: var(--rev-text);
   --bs-border-color: var(--rev-border);
-  --bs-link-color: var(--rev-cyan);
-  --bs-link-hover-color: #5dade2;
+  --bs-link-color: var(--rev-text-secondary);
+  --bs-link-hover-color: var(--rev-orange);
+  --bs-primary-rgb: 249, 115, 22;
 }
 
 [data-bs-theme='dark'] {
-  --bs-body-bg: var(--rev-navy-dark);
-  --bs-body-color: var(--rev-white);
-  --bs-secondary-bg: var(--rev-surface);
-  --bs-tertiary-bg: var(--rev-surface-elevated);
+  --bs-body-bg: var(--rev-bg);
+  --bs-body-color: var(--rev-text);
+  --bs-secondary-bg: var(--rev-bg-secondary);
+  --bs-tertiary-bg: var(--rev-surface);
   --bs-border-color: var(--rev-border);
-  --bs-primary: var(--rev-navy);
-  --bs-primary-rgb: 0, 33, 71;
+  --bs-primary: var(--rev-orange);
 }
 
 body {
-  background: linear-gradient(135deg, var(--rev-navy) 0%, var(--rev-navy-dark) 55%, var(--rev-neutral) 100%);
-  background-attachment: fixed;
+  background: var(--rev-bg);
   color: var(--rev-text);
   min-height: 100vh;
+  font-family: var(--rev-font-sans);
+  font-size: var(--rev-text-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Barra superior / inferior estilo portada */
+/* —— Cards unificadas —— */
+.rev-card {
+  background: rgba(16, 35, 62, 0.78);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: var(--rev-radius-card);
+  box-shadow:
+    var(--rev-shadow-card),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+}
+
+.rev-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--rev-shadow-lg);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.rev-card.card {
+  overflow: hidden;
+}
+
+/* —— Navbar legacy —— */
 .rev-navbar {
-  background: var(--rev-neutral) !important;
-  border-bottom: 3px solid var(--rev-orange);
+  background: var(--rev-bg-secondary) !important;
+  border-bottom: 1px solid var(--rev-border);
 }
 
 .rev-navbar .navbar-brand {
   font-weight: 600;
-  letter-spacing: 0.02em;
-  color: var(--rev-white) !important;
+  color: var(--rev-text) !important;
 }
 
 .rev-navbar .nav-link {
-  color: var(--rev-muted) !important;
+  color: var(--rev-text-secondary) !important;
 }
 
 .rev-navbar .nav-link.active,
@@ -78,44 +151,72 @@ body {
 }
 
 .rev-footer-bar {
-  background: var(--rev-neutral);
-  border-top: 2px solid var(--rev-orange);
-  color: var(--rev-muted);
-  font-size: 0.8rem;
+  background: var(--rev-bg-secondary);
+  border-top: 1px solid var(--rev-border);
+  color: var(--rev-text-tertiary);
+  font-size: var(--rev-text-meta);
+  padding: var(--rev-space-2) var(--rev-space-3);
+}
+
+/* —— Botones —— */
+.btn {
+  font-size: var(--rev-text-sm);
+  font-weight: 500;
   padding: 0.5rem 1rem;
+  border-radius: var(--rev-radius-sm);
+  line-height: 1.25;
+  transition:
+    background-color 200ms ease,
+    border-color 200ms ease,
+    color 200ms ease,
+    transform 150ms ease,
+    box-shadow 200ms ease;
 }
 
-.rev-card {
-  background: linear-gradient(160deg, var(--rev-surface) 0%, var(--rev-surface-elevated) 100%);
-  border: 1px solid var(--rev-border);
-  border-radius: 8px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+.btn-sm {
+  font-size: var(--rev-text-xs);
+  padding: 0.4375rem 0.875rem;
 }
 
-.rev-kpi {
-  border-left: 4px solid var(--rev-orange);
+.btn-primary,
+.btn-danger {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
 }
 
-.rev-kpi .h4 {
-  color: var(--rev-white);
+.btn-primary:hover:not(:disabled),
+.btn-danger:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(249, 115, 22, 0.28);
 }
 
-/* Botones primarios = naranja portada */
+.btn-primary:active:not(:disabled),
+.btn-danger:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.btn-outline-primary:hover:not(:disabled),
+.btn-outline-secondary:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
 .btn-primary {
   --bs-btn-bg: var(--rev-orange);
   --bs-btn-border-color: var(--rev-orange);
   --bs-btn-hover-bg: var(--rev-orange-hover);
   --bs-btn-hover-border-color: var(--rev-orange-hover);
-  --bs-btn-active-bg: #d9651a;
-  --bs-btn-active-border-color: #d9651a;
-}
-
-.btn-outline-primary {
-  --bs-btn-color: var(--rev-cyan);
-  --bs-btn-border-color: var(--rev-cyan);
-  --bs-btn-hover-bg: var(--rev-cyan);
-  --bs-btn-hover-border-color: var(--rev-cyan);
-  --bs-btn-hover-color: var(--rev-neutral);
+  --bs-btn-active-bg: #ea580c;
+  --bs-btn-active-border-color: #ea580c;
+  --bs-btn-color: #fff;
+  font-weight: 500;
+  border-radius: var(--rev-radius-sm);
 }
 
 .btn-danger {
@@ -123,91 +224,102 @@ body {
   --bs-btn-border-color: var(--rev-orange);
   --bs-btn-hover-bg: var(--rev-orange-hover);
   --bs-btn-hover-border-color: var(--rev-orange-hover);
+  --bs-btn-color: #fff;
 }
 
+.btn-outline-primary {
+  --bs-btn-color: var(--rev-text-secondary);
+  --bs-btn-border-color: var(--rev-border);
+  --bs-btn-hover-bg: var(--rev-surface-elevated);
+  --bs-btn-hover-border-color: rgba(255, 255, 255, 0.14);
+  --bs-btn-hover-color: var(--rev-text);
+}
+
+.btn-outline-secondary {
+  --bs-btn-color: var(--rev-text-secondary);
+  --bs-btn-border-color: var(--rev-border);
+  --bs-btn-hover-bg: var(--rev-surface-elevated);
+  --bs-btn-hover-border-color: rgba(255, 255, 255, 0.12);
+  --bs-btn-hover-color: var(--rev-text);
+}
+
+/* —— Badges de riesgo —— */
 .badge-risk-high {
   background-color: var(--rev-orange) !important;
-  color: var(--rev-neutral) !important;
+  color: #fff !important;
 }
 
 .badge-risk-medium {
-  background-color: var(--rev-warning) !important;
-  color: var(--rev-neutral) !important;
+  background-color: var(--rev-surface-elevated) !important;
+  color: var(--rev-text-secondary) !important;
+  border: 1px solid var(--rev-border);
 }
 
 .badge-risk-low {
-  background-color: var(--rev-success) !important;
+  background-color: rgba(115, 131, 154, 0.2) !important;
+  color: var(--rev-text-secondary) !important;
+  border: 1px solid var(--rev-border);
 }
 
 .badge-risk-unknown {
-  background-color: var(--rev-muted) !important;
-  color: var(--rev-neutral) !important;
+  background-color: var(--rev-bg-secondary) !important;
+  color: var(--rev-text-tertiary) !important;
+  border: 1px solid var(--rev-border);
 }
 
+/* —— Bootstrap badges — monocromático —— */
+.badge.bg-primary,
+.badge.bg-danger {
+  background-color: var(--rev-orange) !important;
+  color: #fff !important;
+}
+
+.badge.bg-secondary {
+  background-color: var(--rev-surface-elevated) !important;
+  color: var(--rev-text-secondary) !important;
+  border: 1px solid var(--rev-border);
+}
+
+.badge.bg-success,
+.badge.bg-warning,
+.badge.bg-info {
+  background-color: rgba(115, 131, 154, 0.18) !important;
+  color: var(--rev-text-secondary) !important;
+  border: 1px solid var(--rev-border);
+}
+
+/* —— Alertas —— */
 .degraded-banner {
-  background-color: rgba(243, 112, 33, 0.15);
-  color: #fdebd0;
-  border: 1px solid var(--rev-orange);
-}
-
-/* Login: acento circuito cyan en esquina */
-.rev-login-wrap {
-  position: relative;
-  overflow: hidden;
-}
-
-.rev-login-wrap::before {
-  content: '';
-  position: absolute;
-  top: -40px;
-  left: -40px;
-  width: 180px;
-  height: 180px;
-  background:
-    linear-gradient(90deg, transparent 48%, rgba(52, 152, 219, 0.35) 48%, rgba(52, 152, 219, 0.35) 52%, transparent 52%) 0 0 / 20px 20px,
-    linear-gradient(0deg, transparent 48%, rgba(52, 152, 219, 0.25) 48%, rgba(52, 152, 219, 0.25) 52%, transparent 52%) 0 0 / 20px 20px;
-  opacity: 0.6;
-  pointer-events: none;
-}
-
-.rev-login-title {
-  color: var(--rev-white);
-  font-weight: 700;
-  letter-spacing: 0.04em;
-}
-
-.rev-login-subtitle {
-  color: var(--rev-orange);
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.rev-logo-mark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 56px;
-  height: 56px;
-  border: 2px solid var(--rev-white);
-  transform: rotate(45deg);
-  margin-bottom: 1rem;
-}
-
-.rev-logo-mark span {
-  transform: rotate(-45deg);
-  font-weight: 800;
-  color: var(--rev-white);
-  font-size: 1.1rem;
-}
-
-.rev-logo-mark span em {
-  color: var(--rev-orange);
-  font-style: normal;
+  background-color: var(--rev-orange-muted) !important;
+  color: var(--rev-text-secondary) !important;
+  border: 1px solid var(--rev-orange-border) !important;
 }
 
 .alert-info {
-  --bs-alert-bg: rgba(52, 152, 219, 0.12);
-  --bs-alert-border-color: var(--rev-cyan);
-  --bs-alert-color: #aed6f1;
+  --bs-alert-bg: var(--rev-surface);
+  --bs-alert-border-color: var(--rev-border);
+  --bs-alert-color: var(--rev-text-secondary);
+}
+
+.alert-danger {
+  --bs-alert-bg: var(--rev-orange-muted);
+  --bs-alert-border-color: var(--rev-orange-border);
+  --bs-alert-color: var(--rev-text);
+}
+
+.alert-warning {
+  --bs-alert-bg: var(--rev-surface-elevated);
+  --bs-alert-border-color: var(--rev-border);
+  --bs-alert-color: var(--rev-text-secondary);
+}
+
+.alert-secondary {
+  --bs-alert-bg: var(--rev-bg-secondary);
+  --bs-alert-border-color: var(--rev-border);
+  --bs-alert-color: var(--rev-text-tertiary);
+}
+
+/* —— Modales (base — ver overlays.css para detalle) —— */
+.spinner-border.text-primary {
+  color: var(--rev-orange) !important;
 }

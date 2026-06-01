@@ -1,9 +1,9 @@
 export function formatApiError(text: string, status: number): string {
   if (status === 401 || status === 403) {
-    return 'Sesión expirada o token inválido. Inicie sesión nuevamente.';
+    return 'Su sesión expiró. Inicie sesión nuevamente.';
   }
   if (status === 503) {
-    return 'Servicio temporalmente no disponible. Verifique que el backend esté en ejecución e intente de nuevo.';
+    return 'El servicio no está disponible en este momento. Intente de nuevo en unos minutos.';
   }
   try {
     const json = JSON.parse(text) as { message?: string; error?: string };

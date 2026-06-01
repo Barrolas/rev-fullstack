@@ -1,0 +1,208 @@
+/* Vistas internas — layout, tablas, tipografía */
+
+.rev-main__content .rev-app-page {
+  flex: 1;
+}
+
+/* —— Página —— */
+.rev-app-page {
+  padding: var(--rev-space-2) var(--rev-space-4) var(--rev-space-5);
+}
+
+/* —— Cards —— */
+.rev-card.p-3,
+.rev-card.p-4,
+.rev-card .card-body {
+  padding: var(--rev-space-3) !important;
+}
+
+.rev-card .h6,
+.rev-card h2.h6 {
+  font-size: var(--rev-text-sm);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-transform: none;
+  color: var(--rev-text-secondary);
+  margin-bottom: var(--rev-space-2);
+}
+
+/* Incident cards — disable hover lift on nested cards */
+.rev-card.card.rev-card:hover,
+.rev-card.card:hover {
+  transform: none;
+}
+
+.rev-card.card {
+  transition: border-color 200ms ease, box-shadow 200ms ease;
+}
+
+.rev-card.card:hover {
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: var(--rev-shadow-lg);
+}
+
+/* —— Tablas —— */
+.rev-card .table {
+  --bs-table-color: var(--rev-text-secondary);
+  --bs-table-border-color: var(--rev-border);
+  --bs-table-bg: transparent;
+  font-size: var(--rev-text-sm);
+  margin-bottom: 0;
+}
+
+.rev-card .table thead th {
+  font-size: var(--rev-text-meta);
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--rev-text-tertiary);
+  border-bottom: 1px solid var(--rev-border);
+  padding: var(--rev-space-2) var(--rev-space-2);
+  white-space: nowrap;
+  background: transparent;
+}
+
+.rev-card .table tbody td {
+  padding: var(--rev-space-2);
+  vertical-align: middle;
+  border-color: var(--rev-border);
+  color: var(--rev-text-secondary);
+}
+
+.rev-card .table-hover tbody tr {
+  transition: background 200ms ease;
+}
+
+.rev-card .table-hover tbody tr:hover {
+  --bs-table-hover-bg: rgba(255, 255, 255, 0.03);
+}
+
+.rev-card .table-striped > tbody > tr:nth-of-type(odd) > * {
+  --bs-table-accent-bg: rgba(255, 255, 255, 0.015);
+}
+
+.rev-card .table-bordered {
+  border-color: var(--rev-border);
+}
+
+/* —— Toolbar —— */
+.rev-module-hub__toolbar small,
+.rev-toolbar-meta {
+  font-size: var(--rev-text-sm);
+  color: var(--rev-text-tertiary);
+  line-height: 1.45;
+  max-width: 36rem;
+}
+
+/* —— Incident cards —— */
+.rev-card .card-title.h6 {
+  font-size: var(--rev-text-sm);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--rev-text);
+}
+
+.rev-card .card-text {
+  font-size: var(--rev-text-sm);
+  line-height: 1.55;
+  color: var(--rev-text-secondary);
+}
+
+.rev-card .list-group-item {
+  font-size: var(--rev-text-meta);
+  border-color: var(--rev-border) !important;
+  color: var(--rev-text-secondary);
+}
+
+.rev-card .btn-sm {
+  font-size: var(--rev-text-meta);
+  font-weight: 500;
+  border-radius: var(--rev-radius-sm);
+}
+
+/* —— Detalle incidente —— */
+.rev-card .h4 {
+  font-size: var(--rev-text-lg);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--rev-text);
+}
+
+.rev-module-hub__rail .rev-card {
+  margin-bottom: var(--rev-space-2);
+}
+
+.rev-module-hub__rail .rev-card:last-child {
+  margin-bottom: 0;
+}
+
+.rev-module-hub__rail .rev-card:hover {
+  transform: none;
+}
+
+/* —— Footer —— */
+.rev-footer-bar {
+  border-top: 1px solid var(--rev-border);
+  background: var(--rev-bg-secondary);
+  font-size: var(--rev-text-meta);
+  color: var(--rev-text-tertiary);
+  padding: var(--rev-space-2) var(--rev-space-3);
+}
+
+.rev-footer-bar::before {
+  display: none;
+}
+
+/* —— Badges estado incidente —— */
+.badge.bg-info {
+  background-color: rgba(115, 131, 154, 0.15) !important;
+  color: var(--rev-text-secondary) !important;
+}
+
+.badge.bg-warning {
+  background-color: var(--rev-orange-muted) !important;
+  color: var(--rev-orange) !important;
+  border: 1px solid var(--rev-orange-border);
+}
+
+.badge.bg-success {
+  background-color: rgba(115, 131, 154, 0.15) !important;
+  color: var(--rev-text-secondary) !important;
+}
+
+.badge.bg-danger {
+  background-color: var(--rev-orange) !important;
+  color: #fff !important;
+}
+
+.badge {
+  font-size: var(--rev-text-meta);
+  font-weight: 500;
+  letter-spacing: 0;
+  padding: 0.3em 0.55em;
+  border-radius: 6px;
+}
+
+code {
+  color: var(--rev-text-secondary);
+  font-size: var(--rev-text-meta);
+}
+
+@media (max-width: 575.98px) {
+  .rev-module-hub__toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .rev-module-hub__toolbar-actions {
+    width: 100%;
+  }
+
+  .rev-module-hub__toolbar-actions .btn {
+    flex: 1;
+  }
+
+  .rev-app-page {
+    padding: var(--rev-space-3);
+  }
+}

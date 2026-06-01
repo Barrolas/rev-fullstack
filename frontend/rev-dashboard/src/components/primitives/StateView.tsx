@@ -16,7 +16,7 @@ export default function StateView({
   state,
   loadingMessage = 'Cargando...',
   emptyTitle = 'Sin datos',
-  emptyMessage = 'No hay registros para mostrar.',
+  emptyMessage = 'No hay información para mostrar.',
   emptyAction,
   errorMessage,
   onRetry,
@@ -34,7 +34,7 @@ export default function StateView({
   if (state === 'error') {
     return (
       <div className="rev-state-view">
-        <i className="bi bi-exclamation-triangle rev-state-view__icon text-warning" />
+        <i className="bi bi-exclamation-triangle rev-state-view__icon" />
         <div className="rev-state-view__title">Error al cargar</div>
         <ErrorAlert message={errorMessage ?? 'Ocurrió un error inesperado'} />
         {onRetry && (

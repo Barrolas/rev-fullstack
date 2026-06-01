@@ -1,5 +1,6 @@
 import { type ReactNode } from 'react';
 import { useLayout } from '../../contexts/LayoutContext';
+import OperationalAmbient from './OperationalAmbient';
 
 interface AppShellProps {
   sidebar: ReactNode;
@@ -17,7 +18,10 @@ export default function AppShell({ sidebar, children }: AppShellProps) {
         aria-hidden="true"
       />
       {sidebar}
-      <div className="rev-main">{children}</div>
+      <div className="rev-main">
+        <OperationalAmbient />
+        <div className="rev-main__content">{children}</div>
+      </div>
     </div>
   );
 }
