@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { DashboardItem } from '../api';
 import RiskBadge from './RiskBadge';
 import { formatEstadoLabel } from '../utils/dashboardAggregates';
-import { getEstadoVisual, isHighPriorityIncident } from '../utils/incidentesFilters';
+import { getEstadoVisual, hasPendingCorrelation, isHighPriorityIncident, isLinkedReport } from '../utils/incidentesFilters';
 
 interface IncidentCardProps {
   item: DashboardItem;
@@ -12,6 +12,9 @@ interface IncidentCardProps {
 export default function IncidentCard({ item }: IncidentCardProps) {
   const { incidente, zonaRiesgo, recursos, degraded } = item;
   const highPriority = isHighPriorityIncident(item);
+  const pendingCorr = hasPendingCorrelation(item);
+  const linked = isLinkedReport(item);
+  const vinculados = incidente.cantidadReportesVinculados ?? 0;
   const estado = getEstadoVisual(incidente.estado);
   const visibleResources = recursos.slice(0, 2);
   const extraResources = recursos.length - visibleResources.length;
@@ -23,6 +26,8 @@ export default function IncidentCard({ item }: IncidentCardProps) {
         'rev-incident-card',
         `rev-incident-card--${estado.slug}`,
         highPriority ? 'rev-incident-card--priority' : '',
+        linked ? 'rev-incident-card--linked' : '',
+        pendingCorr ? 'rev-incident-card--correlacion' : '',
       ].filter(Boolean).join(' ')}
     >
       <Card.Body className="rev-incident-card__body">
@@ -45,6 +50,21 @@ export default function IncidentCard({ item }: IncidentCardProps) {
             {(incidente.adjuntos?.length ?? 0) > 0 && (
               <Badge bg="warning" text="dark" className="rev-incident-card__badge">
                 <i className="bi bi-paperclip" aria-hidden="true" />
+              </Badge>
+            )}
+            {pendingCorr && (
+              <Badge bg="warning" text="dark" className="rev-incident-card__badge">
+                Posible duplicado
+              </Badge>
+            )}
+            {vinculados > 0 && (
+              <Badge bg="info" text="dark" className="rev-incident-card__badge">
+                +{vinculados} reportes
+              </Badge>
+            )}
+            {linked && incidente.folioCanonico && (
+              <Badge bg="secondary" className="rev-incident-card__badge">
+                Vinculado a {incidente.folioCanonico}
               </Badge>
             )}
             {incidente.anonimo && incidente.origenReporte === 'PUBLICO' && (

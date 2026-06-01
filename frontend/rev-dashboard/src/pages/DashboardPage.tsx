@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import { Badge, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { fetchDashboard, fetchRecursos, fetchZonas } from '../api';
+import { fetchCorrelacionesPendientesCount, fetchDashboard, fetchRecursos, fetchZonas } from '../api';
 import { useUi } from '../contexts/UiContext';
 import AppPage from '../components/layout/AppPage';
 import ModuleHub from '../components/layout/ModuleHub';
@@ -25,13 +25,24 @@ const QUICK_LINKS = [
   { to: '/recursos', icon: 'bi-truck', label: 'Recursos' },
 ];
 
-function DespachoKpiStrip({ kpis }: { kpis: ReturnType<typeof computeDashboardKpis> }) {
+function DespachoKpiStrip({
+  kpis,
+  correlacionesPendientes,
+}: {
+  kpis: ReturnType<typeof computeDashboardKpis>;
+  correlacionesPendientes: number;
+}) {
   return (
     <div className="rev-despacho-kpi-strip" aria-label="Resumen operacional">
       <span className="rev-despacho-kpi"><strong>{kpis.total}</strong> total</span>
       <span className="rev-despacho-kpi rev-despacho-kpi--active"><strong>{kpis.activos}</strong> activos</span>
       <span className="rev-despacho-kpi rev-despacho-kpi--risk"><strong>{kpis.altoRiesgo}</strong> alto</span>
       <span className="rev-despacho-kpi"><strong>{kpis.degradados}</strong> avisos</span>
+      {correlacionesPendientes > 0 && (
+        <Link to="/incidentes?vista=correlaciones" className="rev-despacho-kpi rev-despacho-kpi--correlacion">
+          <strong>{correlacionesPendientes}</strong> correlaciones
+        </Link>
+      )}
     </div>
   );
 }
@@ -61,14 +72,21 @@ export default function DashboardPage() {
   const dashboardFn = useCallback(() => fetchDashboard(), []);
   const zonasFn = useCallback(() => fetchZonas(), []);
   const recursosFn = useCallback(() => fetchRecursos(), []);
+  const correlacionesFn = useCallback(() => fetchCorrelacionesPendientesCount(), []);
 
   const { data: items, loading, error, refetch } = useApiQuery({ fetchFn: dashboardFn });
+  const { data: correlacionesCount, refetch: refetchCorrelaciones } = useApiQuery({
+    fetchFn: correlacionesFn,
+  });
   const { data: zonas } = useApiQuery({ fetchFn: zonasFn });
   const { data: recursos } = useApiQuery({ fetchFn: recursosFn });
 
   useEffect(() => {
-    if (incidentCreatedTick > 0) refetch();
-  }, [incidentCreatedTick, refetch]);
+    if (incidentCreatedTick > 0) {
+      refetch();
+      refetchCorrelaciones();
+    }
+  }, [incidentCreatedTick, refetch, refetchCorrelaciones]);
 
   const list = items ?? [];
   const kpis = computeDashboardKpis(list);
@@ -82,7 +100,7 @@ export default function DashboardPage() {
 
   const toolbar = (
     <div className="rev-despacho-command-bar">
-      <DespachoKpiStrip kpis={kpis} />
+      <DespachoKpiStrip kpis={kpis} correlacionesPendientes={correlacionesCount ?? 0} />
       <nav className="rev-despacho-quick-nav" aria-label="Accesos rápidos">
         {QUICK_LINKS.map((link) => (
           <Link key={link.to} to={link.to} className="rev-despacho-quick-nav__item">

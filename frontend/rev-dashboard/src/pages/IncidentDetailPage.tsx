@@ -5,6 +5,8 @@ import { DashboardItem, fetchDashboardItem } from '../api';
 import { useToast } from '../contexts/ToastContext';
 import AssignResourceModal from '../components/incidentes/AssignResourceModal';
 import IncidentAdjuntoGallery from '../components/incidentes/IncidentAdjuntoGallery';
+import IncidentCorrelationSection from '../components/incidentes/IncidentCorrelationSection';
+import { isLinkedReport } from '../utils/incidentesFilters';
 import DegradedAlert from '../components/DegradedAlert';
 import AppPage from '../components/layout/AppPage';
 import ModuleHub from '../components/layout/ModuleHub';
@@ -42,6 +44,11 @@ export default function IncidentDetailPage() {
   const inc = item?.incidente;
   const showReporter =
     inc && !inc.anonimo && canManageIncidents && (inc.reportanteNombre || inc.reportanteContacto);
+  const linkedReport = item ? isLinkedReport(item) : false;
+  const dispatchIncidenteId =
+    inc?.incidenteCanonicoId && inc.incidenteCanonicoId !== inc.id
+      ? inc.incidenteCanonicoId
+      : id;
 
   const rail = item ? (
     <>
@@ -67,7 +74,7 @@ export default function IncidentDetailPage() {
             ))}
           </ListGroup>
         )}
-        {canManageIncidents && (
+        {canManageIncidents && !linkedReport && (
           <Button
             variant="primary"
             size="sm"
@@ -75,7 +82,7 @@ export default function IncidentDetailPage() {
             onClick={() => setAssignModalOpen(true)}
           >
             <i className="bi bi-truck me-1" />
-            Asignar recurso
+            Despachar brigada
           </Button>
         )}
       </div>
@@ -97,9 +104,9 @@ export default function IncidentDetailPage() {
           { label: inc?.folio ?? (inc ? `#${inc.id.slice(0, 8)}…` : 'Detalle') },
         ]}
         actions={
-          item && canManageIncidents && (
+          item && canManageIncidents && !linkedReport && (
             <Button variant="outline-primary" size="sm" onClick={() => setAssignModalOpen(true)}>
-              Asignar recurso
+              Despachar brigada
             </Button>
           )
         }
@@ -194,16 +201,25 @@ export default function IncidentDetailPage() {
                 {id && inc.adjuntos && inc.adjuntos.length > 0 && (
                   <IncidentAdjuntoGallery incidenteId={id} adjuntos={inc.adjuntos} />
                 )}
+
+                {item && id && (
+                  <IncidentCorrelationSection
+                    incidenteId={id}
+                    item={item}
+                    canManage={canManageIncidents}
+                    onUpdated={refetch}
+                  />
+                )}
               </div>
             )}
           </StateView>
         </ModuleHub>
       </AppPage>
 
-      {id && (
+      {dispatchIncidenteId && (
         <AssignResourceModal
           show={assignModalOpen}
-          incidenteId={id}
+          incidenteId={dispatchIncidenteId}
           onHide={() => setAssignModalOpen(false)}
           onAssigned={() => {
             showToast('Recurso asignado correctamente', 'success');

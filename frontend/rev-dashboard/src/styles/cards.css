@@ -82,6 +82,15 @@
   box-shadow: var(--rev-shadow-card), 0 0 0 1px rgba(249, 115, 22, 0.08);
 }
 
+.rev-incident-card--correlacion {
+  box-shadow: 0 0 0 1px rgba(255, 193, 7, 0.35);
+}
+
+.rev-incident-card--linked {
+  border-left-color: var(--rev-muted, #6c757d);
+  opacity: 0.92;
+}
+
 .rev-incident-card--priority {
   border-color: rgba(249, 115, 22, 0.35) !important;
   border-left-color: var(--rev-orange) !important;

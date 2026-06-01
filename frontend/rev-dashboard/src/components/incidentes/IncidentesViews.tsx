@@ -85,18 +85,22 @@ export default function IncidentesTable({ items }: IncidentesTableProps) {
 
 interface IncidentesSummaryRailProps {
   items: DashboardItem[];
+  correlacionesPendientes?: number;
   onFilterEstado: (estado: string) => void;
   onFilterHighRisk: () => void;
   onFilterSinRecursos: () => void;
   onFilterDegradados: () => void;
+  onFilterCorrelaciones?: () => void;
 }
 
 export function IncidentesSummaryRail({
   items,
+  correlacionesPendientes = 0,
   onFilterEstado,
   onFilterHighRisk,
   onFilterSinRecursos,
   onFilterDegradados,
+  onFilterCorrelaciones,
 }: IncidentesSummaryRailProps) {
   const counts: Record<string, number> = {};
   let highRisk = 0;
@@ -190,6 +194,19 @@ export function IncidentesSummaryRail({
             </span>
             <span className="rev-incidentes-rail__shortcut-label">Info parcial</span>
             <strong>{degradados}</strong>
+          </button>
+        )}
+        {correlacionesPendientes > 0 && onFilterCorrelaciones && (
+          <button
+            type="button"
+            className="rev-incidentes-rail__shortcut rev-incidentes-rail__shortcut--correlacion"
+            onClick={onFilterCorrelaciones}
+          >
+            <span className="rev-incidentes-rail__shortcut-icon">
+              <i className="bi bi-intersect" aria-hidden="true" />
+            </span>
+            <span className="rev-incidentes-rail__shortcut-label">Correlaciones</span>
+            <strong>{correlacionesPendientes}</strong>
           </button>
         )}
       </div>

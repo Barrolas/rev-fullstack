@@ -13,6 +13,7 @@ export interface IncidentFiltersState {
   activosOnly: boolean;
   sinRecursos: boolean;
   degradadosOnly: boolean;
+  correlacionPendienteOnly: boolean;
   sort: IncidentSort;
 }
 
@@ -23,6 +24,7 @@ export const DEFAULT_INCIDENT_FILTERS: IncidentFiltersState = {
   activosOnly: true,
   sinRecursos: false,
   degradadosOnly: false,
+  correlacionPendienteOnly: false,
   sort: 'priority',
 };
 
@@ -39,8 +41,20 @@ function matchesSearch(item: DashboardItem, query: string): boolean {
     incidente.tipo.toLowerCase().includes(q) ||
     incidente.descripcion.toLowerCase().includes(q) ||
     incidente.id.toLowerCase().includes(q) ||
-    incidente.estado.toLowerCase().includes(q)
+    incidente.estado.toLowerCase().includes(q) ||
+    (incidente.folio?.toLowerCase().includes(q) ?? false)
   );
+}
+
+export function hasPendingCorrelation(item: DashboardItem): boolean {
+  return (item.incidente.sugerenciasPendientes ?? 0) > 0
+    || (item.incidente.scoreMaximoPendiente ?? 0) >= 60;
+}
+
+export function isLinkedReport(item: DashboardItem): boolean {
+  return item.incidente.esCanonico === false
+    && !!item.incidente.incidenteCanonicoId
+    && item.incidente.incidenteCanonicoId !== item.incidente.id;
 }
 
 export function filterIncidents(
@@ -51,6 +65,7 @@ export function filterIncidents(
     if (filters.activosOnly && item.incidente.estado === 'CERRADO') return false;
     if (filters.sinRecursos && item.recursos.length > 0) return false;
     if (filters.degradadosOnly && !item.degraded) return false;
+    if (filters.correlacionPendienteOnly && !hasPendingCorrelation(item)) return false;
     if (filters.estadoFilter !== 'ALL' && item.incidente.estado !== filters.estadoFilter) {
       return false;
     }
@@ -108,6 +123,7 @@ export function hasActiveIncidentFilters(filters: IncidentFiltersState): boolean
     !filters.activosOnly ||
     filters.sinRecursos ||
     filters.degradadosOnly ||
+    filters.correlacionPendienteOnly ||
     filters.sort !== 'priority'
   );
 }

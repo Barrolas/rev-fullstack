@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button } from 'react-bootstrap';
-import { fetchDashboard } from '../api';
+import { useSearchParams } from 'react-router-dom';
+import { fetchCorrelacionesPendientesCount, fetchDashboard } from '../api';
 import { useUi } from '../contexts/UiContext';
 import IncidentCard from '../components/IncidentCard';
+import IncidentesCorrelacionesPanel from '../components/incidentes/IncidentesCorrelacionesPanel';
 import IncidentesFilters from '../components/incidentes/IncidentesFilters';
+import IncidentesModuleTabs, { type IncidentesModuleView } from '../components/incidentes/IncidentesModuleTabs';
 import {
   IncidentesGroupedList,
   IncidentesSummaryRail,
@@ -30,16 +33,37 @@ import {
 export default function IncidentesPage() {
   const { openIncidentModal, incidentCreatedTick } = useUi();
   const { canManageIncidents } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const moduleView: IncidentesModuleView =
+    searchParams.get('vista') === 'correlaciones' ? 'correlaciones' : 'listado';
+
   const fetchFn = useCallback(() => fetchDashboard(), []);
+  const correlacionesCountFn = useCallback(() => fetchCorrelacionesPendientesCount(), []);
   const { data: items, loading, error, refetch } = useApiQuery({ fetchFn });
+  const { data: correlacionesCount, refetch: refetchCorrelacionesCount } = useApiQuery({
+    fetchFn: correlacionesCountFn,
+  });
 
   const [filters, setFilters] = useState<IncidentFiltersState>(DEFAULT_INCIDENT_FILTERS);
   const [viewMode, setViewMode] = useState<IncidentViewMode>('cards');
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set(['CERRADO']));
 
+  const setModuleView = (view: IncidentesModuleView) => {
+    if (view === 'listado') {
+      setSearchParams({});
+    } else {
+      setSearchParams({ vista: 'correlaciones' });
+    }
+  };
+
+  const refreshAll = useCallback(() => {
+    refetch();
+    refetchCorrelacionesCount();
+  }, [refetch, refetchCorrelacionesCount]);
+
   useEffect(() => {
-    if (incidentCreatedTick > 0) refetch();
-  }, [incidentCreatedTick, refetch]);
+    if (incidentCreatedTick > 0) refreshAll();
+  }, [incidentCreatedTick, refreshAll]);
 
   const list = items ?? [];
   const kpis = computeDashboardKpis(list);
@@ -91,6 +115,23 @@ export default function IncidentesPage() {
       <KpiCol>
         <KpiCard label="Con avisos" value={kpis.degradados} icon="bi-shield-exclamation" sub="Datos incompletos" />
       </KpiCol>
+      {(correlacionesCount ?? 0) > 0 && (
+        <KpiCol>
+          <button
+            type="button"
+            className="rev-incidentes-kpi-link w-100 border-0 bg-transparent p-0 text-start"
+            onClick={() => setModuleView('correlaciones')}
+          >
+            <KpiCard
+              label="Correlaciones"
+              value={correlacionesCount ?? 0}
+              icon="bi-intersect"
+              iconVariant="warning"
+              sub="Pendientes de revisión"
+            />
+          </button>
+        </KpiCol>
+      )}
     </KpiRow>
   );
 
@@ -113,7 +154,7 @@ export default function IncidentesPage() {
         {filtered.length} incidente{filtered.length !== 1 ? 's' : ''} mostrados
       </small>
       <div className="rev-module-hub__toolbar-actions">
-        <Button variant="outline-secondary" size="sm" onClick={refetch}>
+        <Button variant="outline-secondary" size="sm" onClick={refreshAll}>
           <i className="bi bi-arrow-clockwise me-1" />
           Actualizar
         </Button>
@@ -139,15 +180,18 @@ export default function IncidentesPage() {
       onFilterSinRecursos={() =>
         patchFilters({ sinRecursos: true, activosOnly: true, estadoFilter: 'ALL' })
       }
-      onFilterDegradados={() =>
+      onFilterDegradados={() => {
+        setModuleView('listado');
         patchFilters({
           degradadosOnly: true,
           activosOnly: false,
           estadoFilter: 'ALL',
           riskFilter: 'ALL',
           sinRecursos: false,
-        })
-      }
+        });
+      }}
+      correlacionesPendientes={correlacionesCount ?? 0}
+      onFilterCorrelaciones={() => setModuleView('correlaciones')}
     />
   );
 
@@ -169,39 +213,51 @@ export default function IncidentesPage() {
       <AppPage>
         <ModuleHub kpis={kpiSection} toolbar={toolbar} rail={rail}>
           <div className="rev-incidentes-layout">
-            {filtersBar}
-            <StateView
-              state={baseViewState}
-              errorMessage={error}
-              onRetry={refetch}
-              emptyTitle="Sin incidentes"
-              emptyMessage="No hay incidentes registrados. Cree el primero desde el botón Nuevo incidente."
-              emptyAction={
-                canManageIncidents ? (
-                  <Button variant="danger" size="sm" onClick={openIncidentModal}>
-                    Registrar incidente
-                  </Button>
-                ) : undefined
-              }
-            >
-              {showFilteredEmpty ? (
-                <div className="rev-incidentes-empty-filtered rev-card">
-                  <i className="bi bi-funnel" aria-hidden="true" />
-                  <p>Ningún incidente coincide con los filtros aplicados.</p>
-                  <Button variant="outline-secondary" size="sm" onClick={clearFilters}>
-                    Limpiar filtros
-                  </Button>
-                </div>
-              ) : (
-                <IncidentesGroupedList
-                  groups={groups}
-                  viewMode={viewMode}
-                  collapsedGroups={collapsedGroups}
-                  onToggleGroup={toggleGroup}
-                  renderCards={renderCards}
-                />
-              )}
-            </StateView>
+            <IncidentesModuleTabs
+              active={moduleView}
+              correlacionesCount={correlacionesCount ?? 0}
+              onChange={setModuleView}
+            />
+
+            {moduleView === 'correlaciones' ? (
+              <IncidentesCorrelacionesPanel onResolved={refreshAll} />
+            ) : (
+              <>
+                {filtersBar}
+                <StateView
+                  state={baseViewState}
+                  errorMessage={error}
+                  onRetry={refetch}
+                  emptyTitle="Sin incidentes"
+                  emptyMessage="No hay incidentes registrados. Cree el primero desde el botón Nuevo incidente."
+                  emptyAction={
+                    canManageIncidents ? (
+                      <Button variant="danger" size="sm" onClick={openIncidentModal}>
+                        Registrar incidente
+                      </Button>
+                    ) : undefined
+                  }
+                >
+                  {showFilteredEmpty ? (
+                    <div className="rev-incidentes-empty-filtered rev-card">
+                      <i className="bi bi-funnel" aria-hidden="true" />
+                      <p>Ningún incidente coincide con los filtros aplicados.</p>
+                      <Button variant="outline-secondary" size="sm" onClick={clearFilters}>
+                        Limpiar filtros
+                      </Button>
+                    </div>
+                  ) : (
+                    <IncidentesGroupedList
+                      groups={groups}
+                      viewMode={viewMode}
+                      collapsedGroups={collapsedGroups}
+                      onToggleGroup={toggleGroup}
+                      renderCards={renderCards}
+                    />
+                  )}
+                </StateView>
+              </>
+            )}
           </div>
         </ModuleHub>
       </AppPage>

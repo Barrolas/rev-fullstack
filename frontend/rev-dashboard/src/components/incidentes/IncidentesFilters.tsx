@@ -145,6 +145,15 @@ export default function IncidentesFilters({
             />
             <span>Sin recursos</span>
           </label>
+          <label className="rev-incidentes-filters__toggle">
+            <Form.Check
+              type="switch"
+              id="incidentes-correlacion-pendiente"
+              checked={filters.correlacionPendienteOnly}
+              onChange={(e) => onFiltersChange({ correlacionPendienteOnly: e.target.checked })}
+            />
+            <span>Correlación pendiente</span>
+          </label>
         </div>
 
         <div className="rev-incidentes-filters__meta">
