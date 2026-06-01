@@ -8,7 +8,8 @@
     "realm": [
       { "name": "Despachador" },
       { "name": "Brigadista" },
-      { "name": "Admin" }
+      { "name": "Admin" },
+      { "name": "Ciudadano" }
     ]
   },
   "users": [
