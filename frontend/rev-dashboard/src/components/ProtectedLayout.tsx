@@ -7,6 +7,7 @@ import AppShell from './layout/AppShell';
 import AppFooter from './layout/AppFooter';
 import Sidebar from './layout/Sidebar';
 import IncidentFormModal from './incidentes/IncidentFormModal';
+import BackendReadyGate from './BackendReadyGate';
 
 export default function ProtectedLayout() {
   if (!getToken()) {
@@ -17,7 +18,9 @@ export default function ProtectedLayout() {
       <UiProvider>
         <ToastProvider>
           <AppShell sidebar={<Sidebar />}>
-            <Outlet />
+            <BackendReadyGate>
+              <Outlet />
+            </BackendReadyGate>
             <IncidentFormModal />
             <AppFooter />
           </AppShell>

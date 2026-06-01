@@ -15,6 +15,12 @@ export interface DashboardItem {
     reportanteRut?: string;
     reportanteContacto?: string;
     adjuntos?: AdjuntoMeta[];
+    incidenteCanonicoId?: string;
+    folioCanonico?: string;
+    esCanonico?: boolean;
+    cantidadReportesVinculados?: number;
+    sugerenciasPendientes?: number;
+    scoreMaximoPendiente?: number;
   };
   zonaRiesgo: {
     nivel: string;
@@ -70,10 +76,63 @@ export interface Zona {
   maxLng: number;
 }
 
+export interface BrigadaItem {
+  id: number;
+  nombre: string;
+  capacidad: number;
+  estado: string;
+  vehiculoId?: number | null;
+}
+
+export interface VehiculoItem {
+  id: number;
+  patente: string;
+  tipo: string;
+  estado: string;
+}
+
+export interface HerramientaItem {
+  id: number;
+  nombre: string;
+  cantidadTotal: number;
+  cantidadDisponible: number;
+}
+
+export interface BrigadistaItem {
+  id: number;
+  nombre: string;
+  apellido: string;
+  rut?: string;
+  especialidad?: string;
+  estado: string;
+}
+
 export interface RecursosDisponibles {
-  brigadas: Array<{ id: number; nombre: string; capacidad: number; estado: string }>;
-  vehiculos: Array<{ id: number; patente: string; tipo: string; estado: string }>;
-  herramientas: Array<{ id: number; nombre: string; cantidadTotal: number; cantidadDisponible: number }>;
+  brigadas: BrigadaItem[];
+  vehiculos: VehiculoItem[];
+  herramientas: HerramientaItem[];
+}
+
+export interface RecursosCatalogo extends RecursosDisponibles {
+  brigadistas: BrigadistaItem[];
+}
+
+export interface BrigadaDetalle {
+  id: number;
+  nombre: string;
+  capacidad: number;
+  estado: string;
+  vehiculoId?: number | null;
+  vehiculo?: VehiculoItem | null;
+  brigadistas: BrigadistaItem[];
+  herramientas: Array<{ herramientaId: number; nombre: string; cantidad: number }>;
+  listaParaDespacho: boolean;
+}
+
+export interface BrigadaComposicionPayload {
+  vehiculoId?: number | null;
+  brigadistaIds: number[];
+  herramientas: Array<{ herramientaId: number; cantidad: number }>;
 }
 
 export interface IncidenteCreate {
@@ -81,15 +140,19 @@ export interface IncidenteCreate {
   descripcion: string;
   lat: number;
   lng: number;
+  direccionReferencia?: string;
 }
 
 export interface AsignarRecurso {
   incidenteId: string;
   brigadaId: number;
   vehiculoId?: number;
+  usarComposicionBrigada?: boolean;
 }
 
 import { formatApiError } from './utils/apiErrors';
+import { formatLoginError, formatLoginNetworkError } from './utils/loginErrors';
+import { API_RETRY_DELAYS_MS, isRetryableHttpStatus, sleep } from './utils/apiRetry';
 
 const TOKEN_KEY = 'rev_token';
 
@@ -112,36 +175,104 @@ export function clearToken() {
 
 export async function login(username: string, password: string): Promise<void> {
   const body = new URLSearchParams({ username, password });
-  const res = await fetch('/auth/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body,
-  });
-  if (!res.ok) throw new Error('Login fallido');
-  const data = await res.json();
+  let res: Response;
+  try {
+    res = await fetch('/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body,
+    });
+  } catch {
+    throw new Error(formatLoginNetworkError());
+  }
+
+  const text = await res.text();
+  if (!res.ok) {
+    throw new Error(formatLoginError(text, res.status));
+  }
+
+  let data: { access_token?: string };
+  try {
+    data = JSON.parse(text) as { access_token?: string };
+  } catch {
+    throw new Error('Respuesta de login inválida. Intente de nuevo.');
+  }
+
+  if (!data.access_token) {
+    throw new Error('Respuesta de login sin token. Verifique Keycloak y el adaptador.');
+  }
+
   setToken(data.access_token);
 }
 
-async function apiFetch<T>(url: string, options: RequestInit = {}): Promise<T> {
-  const res = await fetch(url, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...authHeaders(),
-      ...options.headers,
-    },
-  });
-  if (!res.ok) {
-    const text = await res.text();
-    if (res.status === 401 || res.status === 403) {
-      clearToken();
-      window.location.assign('/login');
+function handleAuthFailure(text: string, status: number): never {
+  clearToken();
+  window.location.assign('/login');
+  throw new Error(formatApiError(text, status));
+}
+
+async function apiFetch<T>(url: string, options: RequestInit = {}, attempt = 0): Promise<T> {
+  const maxAttempts = API_RETRY_DELAYS_MS.length;
+
+  try {
+    const res = await fetch(url, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...authHeaders(),
+        ...options.headers,
+      },
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+
+      if (res.status === 401 || res.status === 403) {
+        handleAuthFailure(text, res.status);
+      }
+
+      if (isRetryableHttpStatus(res.status) && attempt < maxAttempts - 1) {
+        await sleep(API_RETRY_DELAYS_MS[attempt + 1]);
+        return apiFetch<T>(url, options, attempt + 1);
+      }
+
       throw new Error(formatApiError(text, res.status));
     }
-    throw new Error(formatApiError(text, res.status));
+
+    if (res.status === 204) return undefined as T;
+    return res.json();
+  } catch (err) {
+    if (err instanceof Error && (err.message.includes('sesión') || err.message.includes('sesion'))) {
+      throw err;
+    }
+    if (attempt < maxAttempts - 1) {
+      await sleep(API_RETRY_DELAYS_MS[attempt + 1]);
+      return apiFetch<T>(url, options, attempt + 1);
+    }
+    if (err instanceof Error) throw err;
+    throw new Error('No se pudo conectar con el servidor. Verifique que el gateway esté en ejecución.');
   }
-  if (res.status === 204) return undefined as T;
-  return res.json();
+}
+
+/** Comprueba gateway + BFF + auth antes de mostrar módulos tras el splash. */
+export async function waitForRevBackend(maxWaitMs = 24_000): Promise<boolean> {
+  const deadline = Date.now() + maxWaitMs;
+  while (Date.now() < deadline) {
+    try {
+      const res = await fetch('/api/ready', {
+        headers: {
+          'Content-Type': 'application/json',
+          ...authHeaders(),
+        },
+      });
+      if (res.ok) return true;
+      if (res.status === 401 || res.status === 403) return false;
+    } catch {
+      /* red / gateway aún no responde */
+    }
+    await sleep(800);
+  }
+  return false;
 }
 
 export async function fetchDashboard(): Promise<DashboardItem[]> {
@@ -217,9 +348,125 @@ export async function fetchRecursos(): Promise<RecursosDisponibles> {
   return apiFetch('/api/recursos/disponibles');
 }
 
+export async function fetchRecursosCatalogo(): Promise<RecursosCatalogo> {
+  return apiFetch('/api/recursos/catalogo');
+}
+
+export async function fetchBrigadaDetalle(id: number): Promise<BrigadaDetalle> {
+  return apiFetch(`/api/recursos/brigadas/${id}`);
+}
+
+export async function updateBrigadaComposicion(
+  id: number,
+  payload: BrigadaComposicionPayload,
+): Promise<BrigadaDetalle> {
+  return apiFetch(`/api/recursos/brigadas/${id}/composicion`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function createBrigada(data: { nombre: string; capacidad: number }): Promise<BrigadaItem> {
+  return apiFetch('/api/recursos/brigadas', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function createBrigadista(data: {
+  nombre: string;
+  apellido: string;
+  rut?: string;
+  especialidad?: string;
+}): Promise<BrigadistaItem> {
+  return apiFetch('/api/recursos/brigadistas', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function createVehiculo(data: { patente: string; tipo: string }): Promise<VehiculoItem> {
+  return apiFetch('/api/recursos/vehiculos', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function createHerramienta(data: {
+  nombre: string;
+  cantidadTotal: number;
+}): Promise<HerramientaItem> {
+  return apiFetch('/api/recursos/herramientas', { method: 'POST', body: JSON.stringify(data) });
+}
+
 export async function asignarRecurso(data: AsignarRecurso): Promise<void> {
   await apiFetch('/api/recursos/asignar', {
     method: 'POST',
-    body: JSON.stringify(data),
+    body: JSON.stringify({
+      ...data,
+      usarComposicionBrigada: data.usarComposicionBrigada ?? true,
+    }),
+  });
+}
+
+export interface IncidenteResumen {
+  id: string;
+  folio?: string;
+  tipo: string;
+  estado: string;
+  lat?: number | null;
+  lng?: number | null;
+  descripcion: string;
+  origenReporte?: string;
+  incidenteCanonicoId?: string;
+  createdAt?: string;
+}
+
+export interface CorrelacionItem {
+  id: string;
+  incidenteA: IncidenteResumen;
+  incidenteB: IncidenteResumen;
+  score: number;
+  distanciaMetros: number;
+  deltaMinutos: number;
+  motivo: Record<string, unknown>;
+  estado: string;
+  incidenteCanonicoId?: string;
+  createdAt?: string;
+}
+
+export interface GrupoIncidente {
+  incidenteCanonicoId: string;
+  folioCanonico?: string;
+  canonico: IncidenteResumen;
+  vinculados: IncidenteResumen[];
+  sugerenciasPendientes: CorrelacionItem[];
+}
+
+export async function fetchCorrelacionesPendientes(): Promise<CorrelacionItem[]> {
+  return apiFetch('/api/incidentes/correlaciones/pendientes');
+}
+
+export async function fetchCorrelacionesPendientesCount(): Promise<number> {
+  const data = await apiFetch<{ total: number }>('/api/incidentes/correlaciones/pendientes/count');
+  return data.total;
+}
+
+export async function fetchIncidenteGrupo(id: string): Promise<GrupoIncidente> {
+  return apiFetch(`/api/incidentes/${id}/grupo`);
+}
+
+export async function fetchIncidentePorFolio(folio: string): Promise<IncidenteResumen> {
+  return apiFetch(`/api/incidentes/folio/${encodeURIComponent(folio.trim())}`);
+}
+
+export async function confirmarCorrelacion(
+  correlacionId: string,
+  incidenteCanonicoId: string,
+): Promise<CorrelacionItem> {
+  return apiFetch(`/api/incidentes/correlaciones/${correlacionId}/confirmar`, {
+    method: 'POST',
+    body: JSON.stringify({ incidenteCanonicoId }),
+  });
+}
+
+export async function descartarCorrelacion(
+  correlacionId: string,
+  motivo?: string,
+): Promise<CorrelacionItem> {
+  return apiFetch(`/api/incidentes/correlaciones/${correlacionId}/descartar`, {
+    method: 'POST',
+    body: JSON.stringify(motivo ? { motivo } : {}),
   });
 }

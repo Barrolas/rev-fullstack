@@ -66,8 +66,8 @@ export default function LoginPage() {
     try {
       await login(user, pass);
       navigate('/inicio');
-    } catch {
-      setError('Credenciales inválidas. Verifique usuario y clave.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo iniciar sesión.');
     } finally {
       setIsSubmitting(false);
     }

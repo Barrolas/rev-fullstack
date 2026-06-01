@@ -140,6 +140,7 @@ export default function ZonasPage() {
         <ModuleHub toolbar={toolbar}>
           <StateView
             state={viewState}
+            loadingMessage="Cargando zonas de riesgo…"
             errorMessage={error}
             onRetry={refetch}
             emptyTitle="Sin zonas"
