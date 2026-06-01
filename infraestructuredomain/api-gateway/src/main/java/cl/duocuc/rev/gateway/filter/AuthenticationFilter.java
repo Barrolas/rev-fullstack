@@ -52,9 +52,24 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                             return rse;
                         }
                         if (error instanceof WebClientResponseException wcre) {
-                            if (wcre.getStatusCode().is4xxClientError()) {
+                            if (wcre.getStatusCode().value() == HttpStatus.NOT_FOUND.value()) {
+                                log.warn("Keycloak adapter not registered yet: {}", wcre.getMessage());
+                                return new ResponseStatusException(
+                                        HttpStatus.SERVICE_UNAVAILABLE,
+                                        "Auth service not ready",
+                                        error);
+                            }
+                            if (wcre.getStatusCode().value() == HttpStatus.UNAUTHORIZED.value()
+                                    || wcre.getStatusCode().value() == HttpStatus.FORBIDDEN.value()) {
                                 log.warn("Gateway auth rejected: {}", wcre.getMessage());
                                 return new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token invalid or expired", error);
+                            }
+                            if (wcre.getStatusCode().is4xxClientError()) {
+                                log.warn("Gateway auth client error: {}", wcre.getMessage());
+                                return new ResponseStatusException(
+                                        HttpStatus.SERVICE_UNAVAILABLE,
+                                        "Auth service error",
+                                        error);
                             }
                         }
                         log.error("Gateway auth error: {}", error.getMessage());

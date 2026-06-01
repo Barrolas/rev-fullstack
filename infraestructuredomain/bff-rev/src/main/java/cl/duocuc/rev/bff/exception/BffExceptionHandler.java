@@ -2,17 +2,65 @@ package cl.duocuc.rev.bff.exception;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentConversionNotSupportedException;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 @RestControllerAdvice
 public class BffExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException ex) {
-        return ResponseEntity.badRequest().body(Map.of(
+        return ResponseEntity.badRequest().body(errorBody(HttpStatus.BAD_REQUEST, ex.getMessage()));
+    }
+
+    @ExceptionHandler({JsonProcessingException.class, MethodArgumentConversionNotSupportedException.class})
+    public ResponseEntity<Map<String, Object>> handleInvalidPayload(Exception ex) {
+        return ResponseEntity.badRequest().body(errorBody(
+                HttpStatus.BAD_REQUEST,
+                "Datos del reporte invalidos. Recargue la pagina e intente nuevamente."));
+    }
+
+    @ExceptionHandler(WebClientResponseException.class)
+    public ResponseEntity<Map<String, Object>> handleWebClientResponse(WebClientResponseException ex) {
+        if (ex.getStatusCode().value() == HttpStatus.NOT_FOUND.value()) {
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(errorBody(
+                    HttpStatus.SERVICE_UNAVAILABLE,
+                    "El microservicio aun no esta disponible en Eureka. Intente nuevamente en unos segundos."));
+        }
+        String message = ex.getStatusCode().is4xxClientError()
+                ? "No se pudo completar la operacion: " + ex.getStatusText()
+                : "Un servicio interno respondio con error. Intente nuevamente en unos minutos.";
+        HttpStatus status = ex.getStatusCode().is5xxServerError()
+                ? HttpStatus.SERVICE_UNAVAILABLE
+                : HttpStatus.valueOf(ex.getStatusCode().value());
+        return ResponseEntity.status(status).body(errorBody(status, message));
+    }
+
+    @ExceptionHandler(WebClientRequestException.class)
+    public ResponseEntity<Map<String, Object>> handleWebClientRequest(WebClientRequestException ex) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(errorBody(
+                HttpStatus.SERVICE_UNAVAILABLE,
+                "No se pudo conectar con un microservicio. Verifique que Eureka y los MS esten en ejecucion."));
+    }
+
+    private static Map<String, Object> errorBody(HttpStatus status, String message) {
+        return errorBody(status.value(), message);
+    }
+
+    private static Map<String, Object> errorBody(org.springframework.http.HttpStatusCode status, String message) {
+        return errorBody(status.value(), message);
+    }
+
+    private static Map<String, Object> errorBody(int status, String message) {
+        return Map.of(
                 "timestamp", LocalDateTime.now().toString(),
-                "error", ex.getMessage()));
+                "status", status,
+                "error", message);
     }
 }

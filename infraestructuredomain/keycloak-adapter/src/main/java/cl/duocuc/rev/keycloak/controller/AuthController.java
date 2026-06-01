@@ -4,6 +4,7 @@ import cl.duocuc.rev.keycloak.exception.BusinessRuleException;
 import cl.duocuc.rev.keycloak.service.JwtService;
 import cl.duocuc.rev.keycloak.dto.RegisterRequest;
 import cl.duocuc.rev.keycloak.dto.RegisterResponse;
+import cl.duocuc.rev.keycloak.dto.TokenResponse;
 import cl.duocuc.rev.keycloak.service.KeycloakAdminService;
 import cl.duocuc.rev.keycloak.service.KeycloakRestService;
 import com.auth0.jwk.Jwk;
@@ -75,7 +76,7 @@ public class AuthController {
     }
 
     @PostMapping(value = "/login", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> login(
+    public ResponseEntity<TokenResponse> login(
             @RequestParam("username") String username,
             @RequestParam("password") String password) {
         return ResponseEntity.ok(keycloakRestService.login(username, password));
@@ -88,7 +89,7 @@ public class AuthController {
     }
 
     @PostMapping(value = "/refresh", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> refresh(@RequestParam("refresh_token") String refreshToken) {
+    public ResponseEntity<TokenResponse> refresh(@RequestParam("refresh_token") String refreshToken) {
         return ResponseEntity.ok(keycloakRestService.refresh(refreshToken));
     }
 
