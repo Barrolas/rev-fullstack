@@ -2,6 +2,7 @@ import { useEffect, useMemo } from 'react';
 import { Circle, MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { createRevIncidentMarkerIcon } from '../../utils/revIncidentMapMarker';
+import { OSM_ATTRIBUTION, OSM_TILE_URL } from '../../utils/mapConfig';
 
 interface MapPoint {
   lat: number;
@@ -43,10 +44,7 @@ export default function CorrelationPairMap({ pointA, pointB, radioMetros = 400 }
   return (
     <div className="rev-correlacion-map">
       <MapContainer center={center} zoom={14} className="rev-correlacion-map__canvas" scrollWheelZoom={false}>
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
+        <TileLayer attribution={OSM_ATTRIBUTION} url={OSM_TILE_URL} />
         <FitBounds points={points} />
         {pointA.lat != null && pointA.lng != null && (
           <>
