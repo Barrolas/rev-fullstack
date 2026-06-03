@@ -18,4 +18,7 @@ public class ZonaResponse {
     private Double maxLat;
     private Double minLng;
     private Double maxLng;
+    private Double centerLat;
+    private Double centerLng;
+    private Double radioMetros;
 }

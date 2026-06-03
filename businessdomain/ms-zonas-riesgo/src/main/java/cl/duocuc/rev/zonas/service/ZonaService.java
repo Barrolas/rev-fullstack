@@ -9,6 +9,7 @@ import cl.duocuc.rev.zonas.exception.BusinessRuleException;
 import cl.duocuc.rev.zonas.model.NivelRiesgo;
 import cl.duocuc.rev.zonas.port.WeatherDataPort;
 import cl.duocuc.rev.zonas.repository.ZonaRepository;
+import cl.duocuc.rev.zonas.util.ZonaGeometryUtil;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -112,6 +113,9 @@ public class ZonaService {
                 .maxLat(zona.getMaxLat())
                 .minLng(zona.getMinLng())
                 .maxLng(zona.getMaxLng())
+                .centerLat(ZonaGeometryUtil.centerLat(zona))
+                .centerLng(ZonaGeometryUtil.centerLng(zona))
+                .radioMetros(ZonaGeometryUtil.radioMetros(zona))
                 .build();
     }
 }
