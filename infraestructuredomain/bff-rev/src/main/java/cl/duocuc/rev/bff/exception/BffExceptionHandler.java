@@ -28,18 +28,42 @@ public class BffExceptionHandler {
 
     @ExceptionHandler(WebClientResponseException.class)
     public ResponseEntity<Map<String, Object>> handleWebClientResponse(WebClientResponseException ex) {
+        String body = ex.getResponseBodyAsString();
+        if (ex.getStatusCode().is4xxClientError() && body != null && !body.isBlank()
+                && (body.contains("\"code\"") || body.contains("\"message\""))) {
+            HttpStatus status = HttpStatus.valueOf(ex.getStatusCode().value());
+            return ResponseEntity.status(status).body(errorBody(status, extractRemoteMessage(body, ex.getStatusText())));
+        }
         if (ex.getStatusCode().value() == HttpStatus.NOT_FOUND.value()) {
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(errorBody(
                     HttpStatus.SERVICE_UNAVAILABLE,
                     "El microservicio aun no esta disponible en Eureka. Intente nuevamente en unos segundos."));
         }
         String message = ex.getStatusCode().is4xxClientError()
-                ? "No se pudo completar la operacion: " + ex.getStatusText()
+                ? "No se pudo completar la operacion: " + extractRemoteMessage(body, ex.getStatusText())
                 : "Un servicio interno respondio con error. Intente nuevamente en unos minutos.";
         HttpStatus status = ex.getStatusCode().is5xxServerError()
                 ? HttpStatus.SERVICE_UNAVAILABLE
                 : HttpStatus.valueOf(ex.getStatusCode().value());
         return ResponseEntity.status(status).body(errorBody(status, message));
+    }
+
+    private static String extractRemoteMessage(String body, String fallback) {
+        if (body == null || body.isBlank()) {
+            return fallback;
+        }
+        int msgIdx = body.indexOf("\"message\"");
+        if (msgIdx >= 0) {
+            int start = body.indexOf(':', msgIdx) + 1;
+            int q1 = body.indexOf('"', start);
+            if (q1 >= 0) {
+                int q2 = body.indexOf('"', q1 + 1);
+                if (q2 > q1) {
+                    return body.substring(q1 + 1, q2);
+                }
+            }
+        }
+        return fallback;
     }
 
     @ExceptionHandler(WebClientRequestException.class)
@@ -50,10 +74,6 @@ public class BffExceptionHandler {
     }
 
     private static Map<String, Object> errorBody(HttpStatus status, String message) {
-        return errorBody(status.value(), message);
-    }
-
-    private static Map<String, Object> errorBody(org.springframework.http.HttpStatusCode status, String message) {
         return errorBody(status.value(), message);
     }
 

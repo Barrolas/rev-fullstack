@@ -22,6 +22,7 @@ public class MapaIncidentePuntoDto {
     private String direccionReferencia;
     private String origenReporte;
     private String nivelRiesgoZona;
+    private String zonaNombre;
     private boolean esCanonico;
     private long reportesEnGrupo;
     private long sugerenciasPendientes;

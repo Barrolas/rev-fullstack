@@ -93,6 +93,21 @@ public class IncidenteClientService {
         }
     }
 
+    public Mono<Integer> recalcularZonas() {
+        return webClient()
+                .post()
+                .uri("/incidentes/recalcular-zonas")
+                .retrieve()
+                .bodyToMono(java.util.Map.class)
+                .map(body -> {
+                    Object value = body.get("actualizados");
+                    if (value instanceof Number number) {
+                        return number.intValue();
+                    }
+                    return 0;
+                });
+    }
+
     public Mono<byte[]> descargarAdjunto(UUID incidenteId, UUID adjuntoId) {
         return webClient()
                 .get()

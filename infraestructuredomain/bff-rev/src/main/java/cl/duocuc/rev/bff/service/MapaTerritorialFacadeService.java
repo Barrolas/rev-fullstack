@@ -67,6 +67,9 @@ public class MapaTerritorialFacadeService {
                     .direccionReferencia(inc.getDireccionReferencia())
                     .origenReporte(inc.getOrigenReporte())
                     .nivelRiesgoZona(lider.getZonaRiesgo() != null ? lider.getZonaRiesgo().getNivel() : "DESCONOCIDO")
+                    .zonaNombre(inc.getZonaNombre() != null
+                            ? inc.getZonaNombre()
+                            : (lider.getZonaRiesgo() != null ? lider.getZonaRiesgo().getNombreZona() : null))
                     .esCanonico(Boolean.TRUE.equals(inc.getEsCanonico()) || inc.getIncidenteCanonicoId() == null)
                     .reportesEnGrupo(miembros.size())
                     .sugerenciasPendientes(sugerencias)

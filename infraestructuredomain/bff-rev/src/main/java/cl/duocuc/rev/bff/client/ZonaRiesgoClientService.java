@@ -17,13 +17,42 @@ public class ZonaRiesgoClientService {
 
     private final WebClient.Builder webClientBuilder;
 
-    public Mono<List<ZonaDto>> listar() {
+    public Mono<List<ZonaDto>> listar(boolean incluirInactivas) {
         return webClient()
                 .get()
-                .uri("/zonas")
+                .uri(uriBuilder -> uriBuilder
+                        .path("/zonas")
+                        .queryParam("incluirInactivas", incluirInactivas)
+                        .build())
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<>() {
                 });
+    }
+
+    public Mono<ZonaDto> crear(ZonaDto request) {
+        return webClient()
+                .post()
+                .uri("/zonas")
+                .bodyValue(request)
+                .retrieve()
+                .bodyToMono(ZonaDto.class);
+    }
+
+    public Mono<ZonaDto> actualizar(Long id, ZonaDto request) {
+        return webClient()
+                .put()
+                .uri("/zonas/{id}", id)
+                .bodyValue(request)
+                .retrieve()
+                .bodyToMono(ZonaDto.class);
+    }
+
+    public Mono<Void> desactivar(Long id) {
+        return webClient()
+                .delete()
+                .uri("/zonas/{id}", id)
+                .retrieve()
+                .bodyToMono(Void.class);
     }
 
     public Mono<ZonaRiesgoDto> evaluar(double lat, double lng) {
@@ -38,6 +67,8 @@ public class ZonaRiesgoClientService {
                 .bodyToMono(RiesgoZonaClientResponse.class)
                 .map(response -> ZonaRiesgoDto.builder()
                         .nivel(response.getNivelRiesgo())
+                        .zonaId(response.getZonaId())
+                        .nombreZona(response.getNombreZona())
                         .lat(lat)
                         .lng(lng)
                         .cached(false)
@@ -46,6 +77,8 @@ public class ZonaRiesgoClientService {
 
     @lombok.Data
     private static class RiesgoZonaClientResponse {
+        private Long zonaId;
+        private String nombreZona;
         private String nivelRiesgo;
     }
 

@@ -29,6 +29,9 @@ public class IncidenteDto {
     private String reportanteContacto;
     private String origenReporte;
     private UUID reportanteUuid;
+    private Long zonaId;
+    private String zonaNombre;
+    private String zonaNivelRiesgo;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private List<AdjuntoDto> adjuntos;

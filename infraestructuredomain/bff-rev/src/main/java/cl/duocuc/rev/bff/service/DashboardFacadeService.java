@@ -59,7 +59,7 @@ public class DashboardFacadeService {
         UUID idDespacho = incidente.getIncidenteCanonicoId() != null
                 ? incidente.getIncidenteCanonicoId()
                 : incidente.getId();
-        ZonaRiesgoDto zonaRiesgo = self.obtenerZonaRiesgo(incidente.getLat(), incidente.getLng());
+        ZonaRiesgoDto zonaRiesgo = self.obtenerZonaRiesgo(incidente);
         RecursosResult recursosResult = self.obtenerRecursos(idDespacho);
 
         return DashboardResponse.builder()
@@ -70,12 +70,36 @@ public class DashboardFacadeService {
                 .build();
     }
 
+    public ZonaRiesgoDto obtenerZonaRiesgo(IncidenteDto incidente) {
+        if (incidente.getZonaNivelRiesgo() != null && !incidente.getZonaNivelRiesgo().isBlank()) {
+            return ZonaRiesgoDto.builder()
+                    .nivel(incidente.getZonaNivelRiesgo())
+                    .zonaId(incidente.getZonaId())
+                    .nombreZona(incidente.getZonaNombre())
+                    .lat(incidente.getLat())
+                    .lng(incidente.getLng())
+                    .cached(true)
+                    .build();
+        }
+        return self.obtenerZonaRiesgoEnVivo(incidente.getLat(), incidente.getLng());
+    }
+
     @CircuitBreaker(name = "zonasRiesgo", fallbackMethod = "zonasRiesgoFallback")
-    public ZonaRiesgoDto obtenerZonaRiesgo(Double lat, Double lng) {
+    public ZonaRiesgoDto obtenerZonaRiesgoEnVivo(Double lat, Double lng) {
+        if (lat == null || lng == null) {
+            return ZonaRiesgoDto.builder()
+                    .nivel("DESCONOCIDO")
+                    .lat(lat)
+                    .lng(lng)
+                    .cached(false)
+                    .build();
+        }
         ZonaRiesgoDto zonaRiesgo = zonaRiesgoClientService.evaluar(lat, lng).block();
         if (zonaRiesgo != null) {
             ZonaRiesgoDto actualizada = ZonaRiesgoDto.builder()
                     .nivel(zonaRiesgo.getNivel())
+                    .zonaId(zonaRiesgo.getZonaId())
+                    .nombreZona(zonaRiesgo.getNombreZona())
                     .lat(lat)
                     .lng(lng)
                     .cached(false)

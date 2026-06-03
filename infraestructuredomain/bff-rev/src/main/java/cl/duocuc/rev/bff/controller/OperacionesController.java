@@ -15,11 +15,14 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -44,8 +47,32 @@ public class OperacionesController {
     }
 
     @GetMapping("/zonas")
-    public List<ZonaDto> listarZonas() {
-        return operacionesFacadeService.listarZonas();
+    public List<ZonaDto> listarZonas(
+            @RequestParam(defaultValue = "false") boolean incluirInactivas) {
+        return operacionesFacadeService.listarZonas(incluirInactivas);
+    }
+
+    @PostMapping("/zonas")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ZonaDto crearZona(@RequestBody ZonaDto request) {
+        return operacionesFacadeService.crearZona(request);
+    }
+
+    @PutMapping("/zonas/{id}")
+    public ZonaDto actualizarZona(@PathVariable Long id, @RequestBody ZonaDto request) {
+        return operacionesFacadeService.actualizarZona(id, request);
+    }
+
+    @DeleteMapping("/zonas/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void desactivarZona(@PathVariable Long id) {
+        operacionesFacadeService.desactivarZona(id);
+    }
+
+    @PostMapping("/incidentes/recalcular-zonas")
+    public java.util.Map<String, Integer> recalcularZonasIncidentes() {
+        int actualizados = operacionesFacadeService.recalcularZonasIncidentes();
+        return java.util.Map.of("actualizados", actualizados);
     }
 
     @GetMapping("/mapa/territorial")

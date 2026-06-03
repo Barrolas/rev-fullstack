@@ -21,4 +21,7 @@ public class ZonaDto {
     private Double centerLat;
     private Double centerLng;
     private Double radioMetros;
+    private String comuna;
+    private String tipo;
+    private Boolean activa;
 }
