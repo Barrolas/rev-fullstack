@@ -1,5 +1,6 @@
 package cl.duocuc.rev.gateway.filter;
 
+import cl.duocuc.rev.gateway.config.RevGatewayProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.server.ServerWebExchange;
 
 @Slf4j
 @Component
@@ -20,11 +22,16 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
 
     private final WebClient.Builder webClientBuilder;
     private final ObjectMapper objectMapper;
+    private final RevGatewayProperties gatewayProperties;
 
-    public AuthenticationFilter(WebClient.Builder webClientBuilder, ObjectMapper objectMapper) {
+    public AuthenticationFilter(
+            WebClient.Builder webClientBuilder,
+            ObjectMapper objectMapper,
+            RevGatewayProperties gatewayProperties) {
         super(Config.class);
         this.webClientBuilder = webClientBuilder;
         this.objectMapper = objectMapper;
+        this.gatewayProperties = gatewayProperties;
     }
 
     @Override
@@ -42,44 +49,40 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
 
             return webClientBuilder.build()
                     .get()
-                    .uri("http://KEYCLOAK-ADAPTER/roles")
+                    .uri(gatewayProperties.getKeycloakRolesUrl())
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + parts[1])
                     .retrieve()
                     .bodyToMono(String.class)
                     .map(json -> parseRoles(json, exchange))
-                    .onErrorMap(error -> {
-                        if (error instanceof ResponseStatusException rse) {
-                            return rse;
-                        }
-                        if (error instanceof WebClientResponseException wcre) {
-                            if (wcre.getStatusCode().value() == HttpStatus.NOT_FOUND.value()) {
-                                log.warn("Keycloak adapter not registered yet: {}", wcre.getMessage());
-                                return new ResponseStatusException(
-                                        HttpStatus.SERVICE_UNAVAILABLE,
-                                        "Auth service not ready",
-                                        error);
-                            }
-                            if (wcre.getStatusCode().value() == HttpStatus.UNAUTHORIZED.value()
-                                    || wcre.getStatusCode().value() == HttpStatus.FORBIDDEN.value()) {
-                                log.warn("Gateway auth rejected: {}", wcre.getMessage());
-                                return new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token invalid or expired", error);
-                            }
-                            if (wcre.getStatusCode().is4xxClientError()) {
-                                log.warn("Gateway auth client error: {}", wcre.getMessage());
-                                return new ResponseStatusException(
-                                        HttpStatus.SERVICE_UNAVAILABLE,
-                                        "Auth service error",
-                                        error);
-                            }
-                        }
-                        log.error("Gateway auth error: {}", error.getMessage());
-                        return new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Auth service unavailable", error);
-                    })
+                    .onErrorMap(this::mapAuthError)
                     .flatMap(chain::filter);
         }, 1);
     }
 
-    private org.springframework.web.server.ServerWebExchange parseRoles(String json, org.springframework.web.server.ServerWebExchange exchange) {
+    private Throwable mapAuthError(Throwable error) {
+        if (error instanceof ResponseStatusException rse) {
+            return rse;
+        }
+        if (error instanceof WebClientResponseException wcre) {
+            if (wcre.getStatusCode().value() == HttpStatus.NOT_FOUND.value()) {
+                log.warn("Keycloak adapter not registered yet: {}", wcre.getMessage());
+                return new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Auth service not ready", error);
+            }
+            if (wcre.getStatusCode().value() == HttpStatus.UNAUTHORIZED.value()
+                    || wcre.getStatusCode().value() == HttpStatus.FORBIDDEN.value()) {
+                log.warn("Gateway auth rejected: {}", wcre.getMessage());
+                return new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token invalid or expired", error);
+            }
+            if (wcre.getStatusCode().is4xxClientError()) {
+                log.warn("Gateway auth client error: {}", wcre.getMessage());
+                return new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Auth service error", error);
+            }
+        }
+        log.error("Gateway auth error: {}", error.getMessage());
+        return new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Auth service unavailable", error);
+    }
+
+    private ServerWebExchange parseRoles(String json, ServerWebExchange exchange) {
         try {
             JsonNode response = objectMapper.readTree(json);
             if (response == null || response.isEmpty()) {
@@ -89,7 +92,8 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                     || response.has("Admin")
                     || response.has("Brigadista");
             if (!authorized) {
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Role Despachador, Admin or Brigadista required");
+                throw new ResponseStatusException(
+                        HttpStatus.UNAUTHORIZED, "Role Despachador, Admin or Brigadista required");
             }
             return exchange;
         } catch (JsonProcessingException ex) {

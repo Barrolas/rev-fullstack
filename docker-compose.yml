@@ -72,6 +72,7 @@ services:
     <<: *java-app
     profiles: ["apps"]
     container_name: rev-eureka
+    hostname: rev-eureka
     ports:
       - "${REV_EUREKA_PORT:-18761}:8761"
     volumes:

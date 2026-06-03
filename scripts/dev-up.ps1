@@ -230,7 +230,7 @@ if (-not $SkipDocker) {
 
     Write-Host 'Esperando microservicios en contenedores...' -ForegroundColor Cyan
 
-    Wait-RevAppsReady
+    Wait-RevAppsReady -ComposeFile $ComposeFile
 
   }
 
@@ -309,6 +309,7 @@ if (-not $SkipBackend -and -not $DockerApps) {
   Start-MavenTerminalJob "api-gateway (:$($script:RevPortMap.Gateway))" $RepoRoot 'infraestructuredomain/api-gateway' $MavenLauncher
 
   Wait-RevGatewayReachable
+  Wait-RevAuthRouteReady -TimeoutSec 90
 
 } elseif ($SkipBackend) {
 
