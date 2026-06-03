@@ -1,6 +1,5 @@
 package cl.duocuc.rev.incidentes.dto;
 
-import cl.duocuc.rev.incidentes.model.OrigenReporte;
 import java.util.UUID;
 import lombok.Data;
 

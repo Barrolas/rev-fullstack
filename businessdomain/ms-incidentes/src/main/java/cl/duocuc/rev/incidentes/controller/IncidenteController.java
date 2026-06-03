@@ -11,8 +11,8 @@ import cl.duocuc.rev.incidentes.service.AdjuntoService;
 import cl.duocuc.rev.incidentes.service.AdjuntoStorageService;
 import cl.duocuc.rev.incidentes.service.IncidenteService;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
@@ -44,6 +44,11 @@ public class IncidenteController {
     @GetMapping
     public List<IncidenteResponse> listar() {
         return incidenteService.listar();
+    }
+
+    @PostMapping("/recalcular-zonas")
+    public Map<String, Integer> recalcularZonas() {
+        return Map.of("actualizados", incidenteService.recalcularZonas());
     }
 
     @GetMapping("/{id}")

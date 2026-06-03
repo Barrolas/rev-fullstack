@@ -4,7 +4,6 @@ import cl.duocuc.rev.incidentes.config.CorrelacionProperties;
 import cl.duocuc.rev.incidentes.entity.Incidente;
 import cl.duocuc.rev.incidentes.model.OrigenReporte;
 import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.springframework.stereotype.Component;

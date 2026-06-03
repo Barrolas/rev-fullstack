@@ -30,6 +30,7 @@ public class IncidenteService {
     private final FolioService folioService;
     private final AdjuntoService adjuntoService;
     private final CorrelacionService correlacionService;
+    private final ZonaAsignacionService zonaAsignacionService;
 
     public List<IncidenteResponse> listar() {
         return incidenteRepository.findAll().stream().map(this::toResponse).toList();
@@ -57,6 +58,7 @@ public class IncidenteService {
                 .createdAt(now)
                 .updatedAt(now)
                 .build();
+        zonaAsignacionService.asignarZonaSiAplica(incidente);
         Incidente guardado = incidenteRepository.save(incidente);
         correlacionService.evaluarNuevoIncidente(guardado.getId());
         return toResponse(guardado);
@@ -88,9 +90,14 @@ public class IncidenteService {
                 .updatedAt(now)
                 .build();
 
+        zonaAsignacionService.asignarZonaSiAplica(incidente);
         Incidente guardado = incidenteRepository.save(incidente);
         correlacionService.evaluarNuevoIncidente(guardado.getId());
         return toResponse(guardado);
+    }
+
+    public int recalcularZonas() {
+        return zonaAsignacionService.recalcularTodas();
     }
 
     @Transactional
@@ -154,6 +161,9 @@ public class IncidenteService {
                 .reportanteContacto(incidente.getReportanteContacto())
                 .origenReporte(incidente.getOrigenReporte())
                 .reportanteUuid(incidente.getReportanteUuid())
+                .zonaId(incidente.getZonaId())
+                .zonaNombre(incidente.getZonaNombre())
+                .zonaNivelRiesgo(incidente.getZonaNivelRiesgo())
                 .createdAt(incidente.getCreatedAt())
                 .updatedAt(incidente.getUpdatedAt())
                 .build();

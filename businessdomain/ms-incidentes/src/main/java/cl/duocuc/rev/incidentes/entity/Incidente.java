@@ -72,6 +72,15 @@ public class Incidente {
     @Column(name = "incidente_canonico_id")
     private UUID incidenteCanonicoId;
 
+    @Column(name = "zona_id")
+    private Long zonaId;
+
+    @Column(name = "zona_nombre", length = 100)
+    private String zonaNombre;
+
+    @Column(name = "zona_nivel_riesgo", length = 30)
+    private String zonaNivelRiesgo;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
