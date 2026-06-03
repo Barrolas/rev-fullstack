@@ -1,5 +1,6 @@
 import type { PathOptions } from 'leaflet';
 
+import type { MapaIncidentePunto } from '../api';
 import { riskVariant } from '../components/RiskBadge';
 
 export function zonaMapStyle(nivel: string, selected = false): PathOptions {
@@ -17,6 +18,19 @@ export function zonaMapStyle(nivel: string, selected = false): PathOptions {
     fillColor: palette.fill,
     fillOpacity: selected ? 0.45 : 0.35,
     dashArray: selected ? undefined : undefined,
+  };
+}
+
+export function incidenteMapStyle(punto: MapaIncidentePunto, selected = false): PathOptions {
+  const pending = punto.sugerenciasPendientes > 0;
+  const grupo = punto.reportesEnGrupo > 1 || punto.tieneGrupoConfirmado;
+  const color = pending ? '#fbbf24' : grupo ? '#3b82f6' : '#e85d04';
+  return {
+    color,
+    weight: selected ? 3 : 2,
+    fillColor: color,
+    fillOpacity: selected ? 0.2 : grupo ? 0.14 : 0.1,
+    dashArray: pending ? '4 6' : undefined,
   };
 }
 

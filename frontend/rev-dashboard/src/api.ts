@@ -74,6 +74,33 @@ export interface Zona {
   maxLat: number;
   minLng: number;
   maxLng: number;
+  centerLat?: number;
+  centerLng?: number;
+  radioMetros?: number;
+}
+
+export interface MapaIncidentePunto {
+  id: string;
+  grupoId: string;
+  folio?: string;
+  tipo: string;
+  estado: string;
+  lat?: number | null;
+  lng?: number | null;
+  direccionReferencia?: string;
+  origenReporte?: string;
+  nivelRiesgoZona: string;
+  esCanonico: boolean;
+  reportesEnGrupo: number;
+  sugerenciasPendientes: number;
+  tieneGrupoConfirmado: boolean;
+}
+
+export interface MapaTerritorial {
+  radioCorrelacionMetros: number;
+  zonas: Zona[];
+  incidentes: MapaIncidentePunto[];
+  incidentesSinUbicacion: number;
 }
 
 export interface BrigadaItem {
@@ -342,6 +369,10 @@ export function adjuntoUrl(incidenteId: string, adjuntoId: string): string {
 
 export async function fetchZonas(): Promise<Zona[]> {
   return apiFetch('/api/zonas');
+}
+
+export async function fetchMapaTerritorial(): Promise<MapaTerritorial> {
+  return apiFetch('/api/mapa/territorial');
 }
 
 export async function fetchRecursos(): Promise<RecursosDisponibles> {

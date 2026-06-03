@@ -88,7 +88,12 @@ export default function IncidentCard({ item }: IncidentCardProps) {
           </div>
           <div className="rev-incident-card__meta-item rev-incident-card__meta-item--coords">
             <i className="bi bi-geo-alt" aria-hidden="true" />
-            <Link to="/zonas" className="rev-incident-card__map-link">Ver en mapa</Link>
+            <Link
+              to={`/zonas?incidente=${incidente.id}`}
+              className="rev-incident-card__map-link"
+            >
+              Ver en mapa
+            </Link>
           </div>
           <div className="rev-incident-card__meta-item">
             <i className="bi bi-truck" aria-hidden="true" />
