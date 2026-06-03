@@ -34,6 +34,10 @@ Tras cambios en codigo Java:
 
 Reconstruye JARs y reinicia contenedores (baje antes con `dev-down.ps1` si hace falta).
 
+Si `/zonas` devuelve 404 en `api/mapa/territorial` pero `api/zonas` responde 200, el contenedor **bff-rev** lleva un JAR anterior: ejecute `-Build` de nuevo. El dashboard puede armar el mapa en cliente como respaldo, pero conviene reconstruir el BFF.
+
+**Login 503 en `/auth/login`:** suele ser el gateway sin instancia de `KEYCLOAK-ADAPTER` en Eureka. En perfil `docker` el gateway enruta por nombre de servicio (`keycloak-adapter:8088`). Tras cambiar `api-gateway`, ejecute `.\scripts\dev-up.ps1 -DockerApps -Build` o `docker compose -p rev up -d --build api-gateway`.
+
 ### URLs
 
 | Servicio | URL |
@@ -132,21 +136,28 @@ En Eureka (http://localhost:18761) debe aparecer **KEYCLOAK-ADAPTER** en estado 
 
 ---
 
-## Mapa territorial (`/zonas`)
+## Mapa territorial y zonas Puente Alto (`/zonas`)
 
-Tras login, abra **Zonas** en el menú del despacho:
+Tras login, abra **Zonas** en el menú del despacho. Valle del Sol = comuna **Puente Alto** (demo académica).
+
+| Pestaña | Descripción |
+|---------|-------------|
+| **Mapa territorial** | OSM, círculos nativos (`centerLat` + `radioMetros`), incidentes y clusters |
+| **Administración de zonas** | CRUD de zonas estratégicas, vista previa del buffer, desactivar (baja lógica), recalcular asignaciones |
 
 | Elemento | Descripción |
 |----------|-------------|
 | Capa OSM | Misma base que el reporte público (OpenStreetMap) |
-| Círculos de zona | Buffer circular derivado del bbox municipal (centro + radio) |
+| Círculos de zona | Buffer Haversine ≤ `radioMetros` (seed Flyway V3 en `ms-zonas-riesgo`) |
 | Círculos de incidente | Radio de correlación (`rev.mapa.radio-correlacion-metros`, default 500 m) |
 | Marcadores agrupados | Cluster al alejar zoom; un marcador por grupo canónico |
-| Detalle | Clic en círculo/marcador → panel lateral y popup |
+| Detalle | Clic en círculo/marcador → panel lateral y popup (incluye `zonaNombre` si hay snapshot) |
 
 **Deep link desde incidentes:** en la tarjeta del dashboard, **Ver en mapa** abre `/zonas?incidente={id}` y centra el mapa.
 
-**API:** `GET http://localhost:18080/api/mapa/territorial` (requiere JWT).
+**API BFF (JWT):** `GET /api/mapa/territorial`, `GET/POST/PUT/DELETE /api/zonas`, `POST /api/incidentes/recalcular-zonas`.
+
+Tras cambios en Flyway (`V3` zonas, `V6` incidente `zona_id`) o en CRUD de zonas del BFF: `.\scripts\dev-up.ps1 -DockerApps -Build` (reconstruye `bff-rev` y `ms-zonas-riesgo`). Si `PUT/POST /api/zonas` devuelve 404, el contenedor BFF suele llevar un JAR anterior.
 
 Estándares y trazabilidad: [estandares-gis-despacho-rev.md](./estandares-gis-despacho-rev.md).
 

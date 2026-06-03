@@ -1,7 +1,7 @@
 # Estándares GIS y despacho — trazabilidad REV
 
-**Proyecto:** Red de Emergencia Valle (REV) — Municipalidad de Valle del Sol  
-**Versión:** 1.0 — alineado con mapa territorial y correlación geo-temporal
+**Proyecto:** Red de Emergencia Valle (REV) — Municipalidad de Valle del Sol (comuna operativa: **Puente Alto**)  
+**Versión:** 1.1 — zonas estratégicas circulares y referencia a incidentes
 
 Este documento relaciona referencias profesionales de emergencias/incendios con decisiones concretas del monorepo REV. Complementa [patrones-y-arquitectura-rev.md](./patrones-y-arquitectura-rev.md) §4.1.1.
 
@@ -31,6 +31,26 @@ Este documento relaciona referencias profesionales de emergencias/incendios con 
 
 ---
 
+## Chile — MINVU, CONAF y Puente Alto
+
+| Fuente | Qué establece | Implementación REV |
+|--------|---------------|-------------------|
+| **MINVU — OGUC art. 2.1.17** | Zonas de riesgo en instrumentos de planificación territorial | REV usa **zonas operativas de respuesta** (círculos), no sustituye el PRC legal |
+| **MINVU — Circular DDU 269** | Incorporar riesgo de incendio en PRC / PRI | `nivelRiesgo` HIGH en sectores de interfaz (Cordillera Oriente, laderas) |
+| **MINVU — [IPT](https://instrumentosdeplanificacion.minvu.cl/)** | PRC y delimitación comunal | Contexto académico; comuna demo = Puente Alto |
+| **CONAF / interfaz urbano-forestal** | Prevención en zona de contacto bosque–ciudad | Zonas `ESTRATEGICA` con radio acotado en interfaz |
+| **CIGIDEN / SERNAFOR (policy)** | Gestión prospectiva del riesgo | Snapshot `zona_id` + `zona_nombre` en cada incidente georreferenciado |
+
+### Regla de asignación REV (zonas estratégicas)
+
+1. Zona activa = círculo (`centerLat`, `centerLng`, `radioMetros`, `nivelRiesgo`).
+2. Punto dentro si distancia Haversine ≤ `radioMetros`.
+3. Si varias zonas contienen el punto: gana la de **menor radio**; empate por **mayor severidad** (HIGH > MEDIUM > LOW).
+4. **Persistencia:** `incidentes.zona_id` + snapshot al crear/actualizar ubicación; **recálculo** vía `POST /api/incidentes/recalcular-zonas` o tras editar zonas.
+5. **Baja lógica:** `DELETE /zonas/{id}` desactiva (`activa=false`), no borra histórico.
+
+---
+
 ## Modelo visual del mapa territorial
 
 ```mermaid
@@ -51,7 +71,7 @@ flowchart TB
   Marker --> Popup
 ```
 
-- **Zona:** rectángulo administrativo en BD; en mapa se muestra como **círculo buffer** (centroide + radio ≈ distancia al vértice del bbox).
+- **Zona:** círculo nativo en BD (`center_lat`, `center_lng`, `radio_metros`); sectores Puente Alto gestionables en `/zonas` → Administración.
 - **Incidente:** punto + **círculo de influencia** (`radioCorrelacionMetros`, default 500 m, alineado a `rev.correlacion.default-radio-metros`).
 - **Conjunto confirmado:** un marcador por grupo canónico con badge de reportes vinculados.
 - **Sugerencias pendientes:** badge y enlace a correlaciones; sin merge automático.
@@ -74,7 +94,10 @@ flowchart TB
 | Método | Ruta | Descripción |
 |--------|------|-------------|
 | GET | `/api/mapa/territorial` | Zonas con buffer, puntos de incidente agrupables, radio de correlación |
-| GET | `/api/zonas` | Listado de zonas (incluye `centerLat`, `centerLng`, `radioMetros`) |
+| GET | `/api/zonas` | Listado de zonas activas |
+| POST/PUT/DELETE | `/api/zonas` | CRUD (baja lógica en DELETE) |
+| GET | `/zonas/resolver` (MS) | Resuelve zona para `lat`/`lng` |
+| POST | `/api/incidentes/recalcular-zonas` | Recalcula snapshot de zona en incidentes con GPS |
 
 ---
 
