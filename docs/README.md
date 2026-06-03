@@ -10,7 +10,7 @@
 |-----------|-------------|
 | [eva2-fullstack-rubrica.md](eva2-fullstack-rubrica.md) | Rúbrica oficial EVA2: indicadores, ponderación, formato de entrega y checklist REV |
 | [informe-sistema-rev.md](informe-sistema-rev.md) | Informe integral: UI, backend, API, permisos, design system |
-| [informe-tecnico-integral-rev.html](informe-tecnico-integral-rev.html) | **Informe técnico integral EVA2** — arquitectura, patrones, evidencias (HTML → PDF) |
+| [informe-tecnico-integral-rev.html](informe-tecnico-integral-rev.html) | **Informe técnico integral EVA2** — A4 vertical, HTML → PDF ([contrato A4](informe-tecnico-A4-contrato.md)) |
 | [presentacion-rev-final.md](presentacion-rev-final.md) | **Presentación Marp** — defensa oral DSY1106 (22 slides, export PPTX/PDF) |
 | [patrones-y-arquitectura-rev.md](patrones-y-arquitectura-rev.md) | Arquitectura, arquetipos, patrones backend/frontend, trazabilidad al código |
 | [guia-entorno-local.md](guia-entorno-local.md) | Arranque con Docker, Maven y Vite |

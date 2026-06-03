@@ -1,0 +1,20 @@
+---
+description: Formato A4 y mantenimiento del informe técnico HTML REV
+globs:
+  - docs/informe-tecnico-integral-rev.html
+  - docs/informe-tecnico-A4-contrato.md
+---
+
+# Informe técnico integral REV — reglas de edición
+
+Al modificar `docs/informe-tecnico-integral-rev.html`:
+
+1. **Leer** `docs/informe-tecnico-A4-contrato.md` antes de cambiar layout o CSS.
+2. **Conservar** el bloque de comentario `CONTRATO DE FORMATO A4` dentro del `<style>`.
+3. **Una hoja = un `<section class="page page-break">`** con `sheet-head`, `sheet-main`, `sheet-foot`. Portada: `page--cover`.
+4. **No alterar** `--a4-w: 210mm`, `--a4-h: 297mm`, ni `.page { height: 297mm; overflow: hidden; }`.
+5. **Dividir** contenido que no quepa en ~240 mm de `sheet-main` en páginas adicionales (`capX-2`, etc.).
+6. **Tema informe:** fondo blanco, navy, acento `#F97316`. No revertir a tema oscuro.
+7. Tras re-particionar capítulos, puede usarse `node docs/informe-wrap-pages.mjs` (actualizar splits en el script).
+
+Export PDF: A4 vertical, gráficos de fondo ON, escala 100%.
