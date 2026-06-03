@@ -7,8 +7,10 @@ import ModuleHub from '../components/layout/ModuleHub';
 import Topbar from '../components/layout/Topbar';
 import StateView from '../components/primitives/StateView';
 import RiskBadge, { riskVariant } from '../components/RiskBadge';
+import ZonasAdminPanel from '../components/zonas/ZonasAdminPanel';
 import ZonasFilters from '../components/zonas/ZonasFilters';
 import ZonasMap from '../components/zonas/ZonasMap';
+import ZonasModuleTabs, { type ZonasModuleView } from '../components/zonas/ZonasModuleTabs';
 import ZonaIncidentePopup from '../components/zonas/ZonaIncidentePopup';
 import { useApiQuery } from '../hooks/useApiQuery';
 import {
@@ -81,6 +83,7 @@ function ZonaListItem({
 }
 
 export default function ZonasPage() {
+  const [moduleView, setModuleView] = useState<ZonasModuleView>('mapa');
   const [searchParams] = useSearchParams();
   const incidenteQuery = searchParams.get('incidente');
 
@@ -164,10 +167,16 @@ export default function ZonasPage() {
     <>
       <Topbar
         title="Zonas de riesgo"
-        subtitle="Mapa territorial OSM · incidentes y buffers"
+        subtitle="Puente Alto (Valle del Sol) · buffers estratégicos y despacho"
         breadcrumbs={[{ label: 'Despacho', to: '/' }, { label: 'Zonas' }]}
       />
       <AppPage>
+        <ZonasModuleTabs active={moduleView} onChange={setModuleView} />
+        {moduleView === 'administracion' ? (
+          <div className="mt-3">
+            <ZonasAdminPanel />
+          </div>
+        ) : (
         <ModuleHub toolbar={toolbar}>
           <StateView
             state={viewState}
@@ -412,6 +421,7 @@ export default function ZonasPage() {
             )}
           </StateView>
         </ModuleHub>
+        )}
       </AppPage>
     </>
   );

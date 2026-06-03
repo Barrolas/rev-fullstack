@@ -436,6 +436,30 @@ html.rev-boot-done .rev-login__shell {
 }
 
 /* Error */
+.rev-login__notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.65rem 0.85rem;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--login-text-secondary);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--login-border);
+  border-radius: 8px;
+}
+
+.rev-login__notice code {
+  font-size: 0.8em;
+  color: var(--login-orange);
+}
+
+.rev-login__notice--warn {
+  border-color: rgba(249, 115, 22, 0.35);
+  background: rgba(249, 115, 22, 0.08);
+}
+
 .rev-login__error {
   display: flex;
   align-items: flex-start;
@@ -859,6 +883,11 @@ html.rev-boot-done .rev-login__shell {
 .rev-map-marker__svg {
   display: block;
   filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.45));
+}
+
+.rev-map-marker--zone.leaflet-div-icon {
+  background: transparent;
+  border: none;
 }
 
 .rev-map-marker__pulse {

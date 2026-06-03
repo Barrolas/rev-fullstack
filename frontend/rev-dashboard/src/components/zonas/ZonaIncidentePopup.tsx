@@ -33,6 +33,11 @@ export default function ZonaIncidentePopup({ punto }: ZonaIncidentePopupProps) {
         <p className="rev-zones-map__popup-hint small mb-2">{punto.direccionReferencia}</p>
       )}
       <div className="mb-2">
+        {punto.zonaNombre && (
+          <p className="rev-zones-map__popup-meta small mb-1">
+            Zona: <strong>{punto.zonaNombre}</strong>
+          </p>
+        )}
         <RiskBadge nivel={punto.nivelRiesgoZona} />
       </div>
       {pending && (

@@ -958,6 +958,105 @@
   color: var(--rev-text-tertiary);
 }
 
+/* —— Administración de zonas —— */
+.rev-zones-admin .rev-card:hover {
+  transform: none !important;
+  box-shadow: var(--rev-shadow-md);
+}
+
+.rev-zones-admin__section-pad,
+.rev-zones-admin__alert {
+  padding-left: var(--rev-space-3);
+  padding-right: var(--rev-space-3);
+}
+
+.rev-zones-admin__form-card,
+.rev-zones-admin__map-card,
+.rev-zones-admin__list-card {
+  padding: var(--rev-space-4) !important;
+}
+
+.rev-zones-admin__form-card .form-label,
+.rev-zones-admin__list-card .list-group-item {
+  padding-top: var(--rev-space-2);
+  padding-bottom: var(--rev-space-2);
+}
+
+.rev-zones-admin__form-card .form-control,
+.rev-zones-admin__form-card .form-select {
+  padding: 0.5rem 0.75rem;
+}
+
+.rev-zones-admin__coords {
+  padding: var(--rev-space-2) var(--rev-space-3);
+  background: var(--rev-bg-secondary);
+  border: 1px solid var(--rev-border);
+  border-radius: var(--rev-radius-sm);
+}
+
+.rev-zones-admin__map-card {
+  overflow: hidden;
+}
+
+.rev-zones-admin__map-card:hover {
+  transform: none !important;
+}
+
+.rev-zones-admin-map-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rev-space-2);
+}
+
+.rev-zones-admin-map__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rev-space-2);
+}
+
+.rev-zones-admin-map {
+  display: flex;
+  flex-direction: column;
+  height: min(420px, 52vh);
+  min-height: 280px;
+  border: 1px solid var(--rev-border);
+  border-radius: var(--rev-radius-sm);
+  overflow: hidden;
+}
+
+.rev-zones-admin-map--modal {
+  height: min(70vh, 640px);
+  min-height: 360px;
+}
+
+.rev-zones-admin__editor-row--stacked .rev-zones-admin-map {
+  height: min(480px, 58vh);
+}
+
+.rev-zones-admin-map__hint {
+  padding: var(--rev-space-2) var(--rev-space-3);
+  background: var(--rev-bg-secondary);
+  border-top: 1px solid var(--rev-border);
+}
+
+.rev-zones-admin-map .rev-zones-map__canvas {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+.rev-map-marker--zone .rev-map-marker__pulse {
+  display: none;
+}
+
+.rev-map-marker__wrap--zone {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
+}
+
+.rev-zones-admin-map-modal .modal-body {
+  padding: var(--rev-space-3);
+}
+
 @media (max-width: 991.98px) {
   .rev-zones-layout {
     grid-template-columns: 1fr;
