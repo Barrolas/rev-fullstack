@@ -31,6 +31,24 @@ public class Zona {
     @Column(name = "nivel_riesgo", nullable = false, length = 30)
     private String nivelRiesgo;
 
+    @Column(name = "center_lat", nullable = false)
+    private Double centerLat;
+
+    @Column(name = "center_lng", nullable = false)
+    private Double centerLng;
+
+    @Column(name = "radio_metros", nullable = false)
+    private Double radioMetros;
+
+    @Column(nullable = false, length = 80)
+    private String comuna;
+
+    @Column(nullable = false, length = 30)
+    private String tipo;
+
+    @Column(nullable = false)
+    private boolean activa;
+
     @Column(name = "min_lat", nullable = false)
     private Double minLat;
 
