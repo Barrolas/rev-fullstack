@@ -39,6 +39,25 @@ const LOGIN_FEATURES = [
   },
 ] as const;
 
+/** Resumen en columna izquierda — misma línea visual que las tarjetas de Ingresar */
+const REPORT_HERO_ITEMS = [
+  {
+    icon: 'bi-fire',
+    title: 'Describa la emergencia',
+    text: 'Tipo de incidente y lo que observa en el lugar.',
+  },
+  {
+    icon: 'bi-geo-alt',
+    title: 'Indique la ubicación',
+    text: 'GPS, mapa o referencia para llegar al punto correcto.',
+  },
+  {
+    icon: 'bi-shield-check',
+    title: 'Envíe con confianza',
+    text: 'Reporte anónimo o identificado; sin cuenta obligatoria.',
+  },
+] as const;
+
 export default function LoginPage() {
   const [activeTab, setActiveTab] = useState<LoginTab>('ingresar');
   const [user, setUser] = useState('');
@@ -73,8 +92,10 @@ export default function LoginPage() {
     }
   };
 
+  const isReportTab = activeTab === 'reportar';
+
   return (
-    <div className="rev-login">
+    <div className={`rev-login${isReportTab ? ' rev-login--report' : ''}`}>
       <div className="rev-login__ambient" aria-hidden="true" />
       <div className="rev-login__viewport">
         <div className="rev-login__shell">
@@ -91,60 +112,81 @@ export default function LoginPage() {
             </div>
 
             <div className="rev-login__hero-body">
-              <RevLogo
-                variant="horizontalLightTagline"
-                size="lg"
-                className="rev-login__hero-logo rev-login__hero-logo--wide"
-              />
-              <RevLogo
-                variant="emblemLight"
-                size="lg"
-                className="rev-login__hero-logo rev-login__hero-logo--compact"
-              />
+              <div className="rev-login__hero-brand">
+                <RevLogo
+                  variant="horizontalLightTagline"
+                  size="lg"
+                  className="rev-login__hero-logo rev-login__hero-logo--wide"
+                />
+                <RevLogo
+                  variant="emblemLight"
+                  size="lg"
+                  className="rev-login__hero-logo rev-login__hero-logo--compact"
+                />
 
-              <p className="rev-login__hero-tagline">{REV_BRAND.tagline}</p>
-              <p className="rev-login__hero-org">{REV_BRAND.municipality}</p>
-
-              <div className="rev-login__features-wrap">
-                <p className="rev-login__features-heading">Lo que REV le ofrece</p>
-                <ul className="rev-login__features">
-                  {LOGIN_FEATURES.map(({ id, icon, title, description }) => {
-                    const isExpanded = expandedFeature === id;
-                    return (
-                      <li key={id}>
-                        <button
-                          type="button"
-                          className={`rev-login__feature-card${isExpanded ? ' rev-login__feature-card--open' : ''}`}
-                          onClick={() => toggleFeature(id)}
-                          aria-expanded={isExpanded}
-                          aria-controls={`login-feature-${id}`}
-                        >
-                          <span className="rev-login__feature-head">
-                            <span className="rev-login__feature-icon" aria-hidden="true">
-                              <i className={`bi ${icon}`} />
-                            </span>
-                            <span className="rev-login__feature-copy">
-                              <span className="rev-login__feature-title">{title}</span>
-                            </span>
-                            <i
-                              className={`bi bi-chevron-down rev-login__feature-chevron${isExpanded ? ' rev-login__feature-chevron--open' : ''}`}
-                              aria-hidden="true"
-                            />
-                          </span>
-                          <div
-                            id={`login-feature-${id}`}
-                            className="rev-login__feature-detail"
-                            role="region"
-                            aria-hidden={!isExpanded}
-                          >
-                            <p>{description}</p>
-                          </div>
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
+                <p className="rev-login__hero-tagline">{REV_BRAND.tagline}</p>
+                <p className="rev-login__hero-org">{REV_BRAND.municipality}</p>
               </div>
+
+              {isReportTab ? (
+                <div className="rev-login__hero-report">
+                  <p className="rev-login__features-heading">Cómo reportar</p>
+                  <ul className="rev-login__hero-report-list">
+                    {REPORT_HERO_ITEMS.map(({ icon, title, text }) => (
+                      <li key={title} className="rev-login__hero-report-item">
+                        <span className="rev-login__feature-icon" aria-hidden="true">
+                          <i className={`bi ${icon}`} />
+                        </span>
+                        <span className="rev-login__hero-report-copy">
+                          <span className="rev-login__feature-title">{title}</span>
+                          <span className="rev-login__hero-report-text">{text}</span>
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : (
+                <div className="rev-login__features-wrap">
+                  <p className="rev-login__features-heading">Lo que REV le ofrece</p>
+                  <ul className="rev-login__features">
+                    {LOGIN_FEATURES.map(({ id, icon, title, description }) => {
+                      const isExpanded = expandedFeature === id;
+                      return (
+                        <li key={id}>
+                          <button
+                            type="button"
+                            className={`rev-login__feature-card${isExpanded ? ' rev-login__feature-card--open' : ''}`}
+                            onClick={() => toggleFeature(id)}
+                            aria-expanded={isExpanded}
+                            aria-controls={`login-feature-${id}`}
+                          >
+                            <span className="rev-login__feature-head">
+                              <span className="rev-login__feature-icon" aria-hidden="true">
+                                <i className={`bi ${icon}`} />
+                              </span>
+                              <span className="rev-login__feature-copy">
+                                <span className="rev-login__feature-title">{title}</span>
+                              </span>
+                              <i
+                                className={`bi bi-chevron-down rev-login__feature-chevron${isExpanded ? ' rev-login__feature-chevron--open' : ''}`}
+                                aria-hidden="true"
+                              />
+                            </span>
+                            <div
+                              id={`login-feature-${id}`}
+                              className="rev-login__feature-detail"
+                              role="region"
+                              aria-hidden={!isExpanded}
+                            >
+                              <p>{description}</p>
+                            </div>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              )}
             </div>
           </section>
 
@@ -291,13 +333,38 @@ export default function LoginPage() {
               </div>
                 </>
               ) : (
-                <div id="panel-reportar" role="tabpanel" aria-labelledby="tab-reportar">
-                  <header className="rev-login__form-header">
-                    <span className="rev-login__eyebrow">Ciudadano</span>
-                    <h1 className="rev-login__title">Reportar emergencia</h1>
-                    <p className="rev-login__subtitle">
-                      Envíe un reporte anónimo o identificado. No requiere cuenta.
-                    </p>
+                <div
+                  id="panel-reportar"
+                  className="rev-login__report-panel"
+                  role="tabpanel"
+                  aria-labelledby="tab-reportar"
+                >
+                  <header className="rev-login__report-head">
+                    <div className="rev-login__report-intro">
+                      <span className="rev-login__eyebrow">Ciudadano</span>
+                      <h1 className="rev-login__title">Reportar emergencia</h1>
+                      <p className="rev-login__subtitle rev-login__subtitle--compact">
+                        Sin cuenta. Cuatro pasos hasta enviar su alerta al despacho.
+                      </p>
+                    </div>
+                    <ol className="rev-login__report-steps" aria-label="Pasos del reporte">
+                      <li className="rev-login__report-step">
+                        <span className="rev-login__report-step-num">1</span>
+                        <span>Situación</span>
+                      </li>
+                      <li className="rev-login__report-step">
+                        <span className="rev-login__report-step-num">2</span>
+                        <span>Ubicación</span>
+                      </li>
+                      <li className="rev-login__report-step">
+                        <span className="rev-login__report-step-num">3</span>
+                        <span>Evidencia</span>
+                      </li>
+                      <li className="rev-login__report-step">
+                        <span className="rev-login__report-step-num">4</span>
+                        <span>Enviar</span>
+                      </li>
+                    </ol>
                   </header>
                   <PublicReportForm
                     onSuccess={() => undefined}

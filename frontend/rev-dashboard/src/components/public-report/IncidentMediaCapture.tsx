@@ -102,55 +102,54 @@ export default function IncidentMediaCapture({
 
   const removeVideo = () => onChange({ ...value, video: null });
 
+  const tileDisabled = disabled || hashing;
+
   return (
     <div className="rev-public-media">
-      <p className="rev-field__label mb-2">Evidencia multimedia (opcional)</p>
-      <p className="small text-muted mb-3">
-        Hasta {MAX_PHOTOS} fotos y 1 video. En celular puede usar la cámara directamente.
-      </p>
-
-      <div className="d-flex flex-wrap gap-2 mb-3">
-        <label className={`rev-public-media__btn${disabled || hashing ? ' rev-public-media__btn--disabled' : ''}`}>
-          <i className="bi bi-camera me-1" />
-          Agregar foto ({value.fotos.length}/{MAX_PHOTOS})
+      <div className="rev-public-media__actions">
+        <label
+          className={`rev-public-media__tile${tileDisabled || value.fotos.length >= MAX_PHOTOS ? ' rev-public-media__tile--disabled' : ''}`}
+        >
+          <i className="bi bi-camera" aria-hidden="true" />
+          <span>Foto ({value.fotos.length}/{MAX_PHOTOS})</span>
           <input
             type="file"
             accept="image/jpeg,image/png,image/webp,image/*"
             capture="environment"
             multiple
             hidden
-            disabled={disabled || hashing || value.fotos.length >= MAX_PHOTOS}
+            disabled={tileDisabled || value.fotos.length >= MAX_PHOTOS}
             onChange={onPhotosChange}
           />
         </label>
 
-        <label className={`rev-public-media__btn${disabled || hashing ? ' rev-public-media__btn--disabled' : ''}`}>
-          <i className="bi bi-camera-video me-1" />
-          {value.video ? 'Cambiar video' : 'Agregar video'}
+        <label className={`rev-public-media__tile${tileDisabled ? ' rev-public-media__tile--disabled' : ''}`}>
+          <i className="bi bi-camera-video" aria-hidden="true" />
+          <span>{value.video ? 'Cambiar video' : 'Video (1)'}</span>
           <input
             type="file"
             accept="video/mp4,video/webm,video/*"
             capture="environment"
             hidden
-            disabled={disabled || hashing}
+            disabled={tileDisabled}
             onChange={onVideoChange}
           />
         </label>
       </div>
 
-      {hashing && <p className="small text-muted">Verificando archivos…</p>}
+      {hashing && <p className="rev-public-location__status">Verificando archivos…</p>}
       {error && (
-        <p className="small text-warning mb-2" role="alert">
+        <p className="rev-public-location__status rev-public-location__status--warn" role="alert">
           {error}
         </p>
       )}
 
       {value.fotos.length > 0 && (
-        <ul className="rev-public-media__list list-unstyled mb-2">
+        <ul className="rev-public-media__list">
           {value.fotos.map((foto, index) => (
             <li key={`${foto.name}-${index}`} className="rev-public-media__item">
               <span>
-                <i className="bi bi-image me-1" />
+                <i className="bi bi-image" aria-hidden="true" />
                 {foto.name} ({(foto.size / 1024 / 1024).toFixed(1)} MB)
               </span>
               <button
@@ -160,7 +159,7 @@ export default function IncidentMediaCapture({
                 disabled={disabled}
                 aria-label="Quitar foto"
               >
-                <i className="bi bi-x-lg" />
+                <i className="bi bi-x-lg" aria-hidden="true" />
               </button>
             </li>
           ))}
@@ -168,9 +167,9 @@ export default function IncidentMediaCapture({
       )}
 
       {value.video && (
-        <div className="rev-public-media__item mb-0">
+        <div className="rev-public-media__item">
           <span>
-            <i className="bi bi-film me-1" />
+            <i className="bi bi-film" aria-hidden="true" />
             {value.video.name} ({(value.video.size / 1024 / 1024).toFixed(1)} MB)
           </span>
           <button
@@ -180,7 +179,7 @@ export default function IncidentMediaCapture({
             disabled={disabled}
             aria-label="Quitar video"
           >
-            <i className="bi bi-x-lg" />
+            <i className="bi bi-x-lg" aria-hidden="true" />
           </button>
         </div>
       )}

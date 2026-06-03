@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { submitPublicReport, PublicReportPayload, PublicReportResult } from '../../api';
 import IncidentLocationPicker, { LocationValue } from './IncidentLocationPicker';
 import IncidentMediaCapture, { MediaCaptureValue } from './IncidentMediaCapture';
+import PublicReportSection from './PublicReportSection';
 import ReporterIdentitySection, { ReporterIdentityValue } from './ReporterIdentitySection';
 
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined;
@@ -85,12 +86,12 @@ export default function PublicReportForm({ onSuccess, onGoToLogin }: PublicRepor
 
   const missingForSubmit = useMemo(() => {
     const missing: string[] = [];
-    if (!tipo.trim()) missing.push('tipo de emergencia');
+    if (!tipo.trim()) missing.push('tipo');
     if (!descripcion.trim()) missing.push('descripción');
-    if (!hasValidLocation) missing.push('ubicación (mapa, GPS o referencia)');
+    if (!hasValidLocation) missing.push('ubicación');
     if (!identity.anonimo && identity.registrarme) {
       if (!identity.registroUsername.trim() || !identity.registroPassword.trim()) {
-        missing.push('usuario y clave de registro');
+        missing.push('usuario y clave');
       }
     }
     return missing;
@@ -102,7 +103,7 @@ export default function PublicReportForm({ onSuccess, onGoToLogin }: PublicRepor
     if (submitting) return null;
     if (!consent) return 'Debe autorizar el tratamiento de datos para enviar el reporte.';
     if (missingForSubmit.length > 0) {
-      return `Antes de enviar complete: ${missingForSubmit.join(', ')}.`;
+      return `Complete: ${missingForSubmit.join(', ')}.`;
     }
     return null;
   }, [submitting, consent, missingForSubmit]);
@@ -205,22 +206,22 @@ export default function PublicReportForm({ onSuccess, onGoToLogin }: PublicRepor
         <div className="rev-public-success__icon" aria-hidden="true">
           <i className="bi bi-check-circle-fill" />
         </div>
-        <h2 className="h5 mb-2">Reporte recibido</h2>
-        <p className="mb-2">{success.mensaje}</p>
+        <h2 className="rev-public-success__title">Reporte recibido</h2>
+        <p className="rev-public-success__text">{success.mensaje}</p>
         {success.folio && (
-          <p className="rev-public-success__folio mb-3">
+          <p className="rev-public-success__folio">
             Folio: <strong>{success.folio}</strong>
           </p>
         )}
-        <p className="small text-muted mb-4">
+        <p className="rev-public-success__note">
           Conserve su folio. Si la situación es de riesgo vital, llame al <strong>132</strong>.
         </p>
-        <div className="d-flex flex-wrap gap-2">
+        <div className="rev-public-success__actions">
           <button type="button" className="rev-login__submit" onClick={resetForm}>
             Reportar otro
           </button>
           {onGoToLogin && (
-            <button type="button" className="rev-login__dev-chip" onClick={onGoToLogin}>
+            <button type="button" className="rev-public-success__secondary" onClick={onGoToLogin}>
               Ingresar al sistema
             </button>
           )}
@@ -231,133 +232,157 @@ export default function PublicReportForm({ onSuccess, onGoToLogin }: PublicRepor
 
   return (
     <form className="rev-public-form" onSubmit={handleSubmit} noValidate>
-      <div className="rev-public-form__alert mb-3" role="note">
-        <i className="bi bi-exclamation-triangle-fill me-2" aria-hidden="true" />
-        Si hay riesgo vital, llame al <strong>132</strong> antes de completar este formulario.
-      </div>
-
-      <div className="rev-field mb-3">
-        <label className="rev-field__label" htmlFor="public-tipo">
-          Tipo de emergencia *
-        </label>
-        <select
-          id="public-tipo"
-          className="rev-field__input w-100"
-          value={tipo}
-          onChange={(e) => setTipo(e.target.value)}
-          disabled={submitting}
-          required
-        >
-          <option value="">Seleccionar…</option>
-          <option value="FORESTAL">Forestal / vegetación</option>
-          <option value="URBANO">Urbano / basura / pastizal</option>
-          <option value="ESTRUCTURAL">Estructural / vivienda</option>
-        </select>
-      </div>
-
-      <div className="rev-field mb-3">
-        <label className="rev-field__label" htmlFor="public-descripcion">
-          Descripción *
-        </label>
-        <textarea
-          id="public-descripcion"
-          className="rev-field__input w-100"
-          rows={3}
-          value={descripcion}
-          onChange={(e) => setDescripcion(e.target.value)}
-          disabled={submitting}
-          placeholder="Indique qué observa, humo, fuego visible, personas en riesgo…"
-          required
-        />
-      </div>
-
-      <div className="mb-3">
-        <IncidentLocationPicker value={location} onChange={setLocation} disabled={submitting} />
-      </div>
-
-      <div className="mb-3">
-        <IncidentMediaCapture value={media} onChange={setMedia} disabled={submitting} />
-      </div>
-
-      <div className="mb-3">
-        <ReporterIdentitySection value={identity} onChange={setIdentity} disabled={submitting} />
-      </div>
-
-      <label
-        className={`rev-public-identity__check d-flex align-items-start gap-2${consent ? ' mb-3' : ' mb-2'}`}
-      >
-        <input
-          type="checkbox"
-          checked={consent}
-          onChange={(e) => {
-            setConsent(e.target.checked);
-            if (e.target.checked) setError('');
-          }}
-          disabled={submitting}
-          required
-          aria-required="true"
-        />
-        <span className="small">
-          Autorizo el tratamiento de los datos de este reporte para coordinar la respuesta de
-          emergencia municipal, conforme a la normativa vigente.{' '}
-          <strong className="text-warning">(obligatorio)</strong>
+      <div className="rev-public-form__banner" role="note">
+        <i className="bi bi-exclamation-triangle-fill" aria-hidden="true" />
+        <span>
+          Si hay riesgo vital, llame al <strong>132</strong> antes de completar este formulario.
         </span>
-      </label>
-      {!consent && !submitting && (
-        <p className="small text-muted mb-3" id="consent-hint">
-          Marque esta casilla para habilitar el envío del reporte.
-        </p>
-      )}
-      {consent && missingForSubmit.length > 0 && !submitting && (
-        <p className="small text-warning mb-3" id="form-pending-hint" role="status">
-          <i className="bi bi-info-circle me-1" aria-hidden="true" />
-          Falta completar: {missingForSubmit.join(', ')}.
-        </p>
-      )}
+      </div>
 
-      {TURNSTILE_SITE_KEY && TURNSTILE_SITE_KEY !== 'disabled' && (
-        <div ref={turnstileRef} className="mb-3" />
-      )}
-
-      <input
-        type="text"
-        name="website"
-        value={honeypot}
-        onChange={(e) => setHoneypot(e.target.value)}
-        tabIndex={-1}
-        autoComplete="off"
-        aria-hidden="true"
-        className="rev-public-honeypot"
-      />
-
-      {error && (
-        <div className="rev-login__error mb-3" role="alert">
-          <i className="bi bi-exclamation-circle" aria-hidden="true" />
-          <span>{error}</span>
+      <PublicReportSection step={1} icon="bi-fire" title="Situación" hint="Tipo y descripción del hecho">
+        <div className="rev-public-form__grid-2">
+          <div className="rev-public-form__field">
+            <label className="rev-field__label" htmlFor="public-tipo">
+              Tipo de emergencia *
+            </label>
+            <select
+              id="public-tipo"
+              className="rev-public-form__select"
+              value={tipo}
+              onChange={(e) => setTipo(e.target.value)}
+              disabled={submitting}
+              required
+            >
+              <option value="">Seleccionar…</option>
+              <option value="FORESTAL">Forestal / vegetación</option>
+              <option value="URBANO">Urbano / basura / pastizal</option>
+              <option value="ESTRUCTURAL">Estructural / vivienda</option>
+            </select>
+          </div>
+          <div className="rev-public-form__field">
+            <label className="rev-field__label" htmlFor="public-descripcion">
+              Descripción *
+            </label>
+            <textarea
+              id="public-descripcion"
+              className="rev-public-form__textarea"
+              rows={3}
+              value={descripcion}
+              onChange={(e) => setDescripcion(e.target.value)}
+              disabled={submitting}
+              placeholder="Humo, fuego visible, personas en riesgo…"
+              required
+            />
+          </div>
         </div>
-      )}
+      </PublicReportSection>
 
-      <button
-        type="submit"
-        className="rev-login__submit w-100"
-        disabled={submitting || !canSubmit}
-        title={submitDisabledReason ?? undefined}
-        aria-describedby={
-          !consent ? 'consent-hint' : missingForSubmit.length > 0 ? 'form-pending-hint' : undefined
-        }
+      <PublicReportSection
+        step={2}
+        icon="bi-geo-alt"
+        title="Ubicación"
+        hint="Mapa, GPS o referencia escrita"
       >
-        {submitting ? (
-          <>
-            <span className="rev-login__spinner" aria-hidden="true" />
-            Enviando reporte…
-          </>
-        ) : (
-          <>
-            Enviar reporte de emergencia
-            <i className="bi bi-send" aria-hidden="true" />
-          </>
+        <IncidentLocationPicker value={location} onChange={setLocation} disabled={submitting} />
+      </PublicReportSection>
+
+      <PublicReportSection
+        step={3}
+        icon="bi-camera"
+        title="Evidencia"
+        hint="Fotos o video del lugar"
+        optional
+        collapsible
+        defaultOpen={media.fotos.length > 0 || media.video != null}
+      >
+        <IncidentMediaCapture value={media} onChange={setMedia} disabled={submitting} />
+      </PublicReportSection>
+
+      <PublicReportSection
+        step={4}
+        icon="bi-person"
+        title="Identidad"
+        hint="Anónimo o con datos de contacto"
+        optional
+        collapsible
+        defaultOpen={!identity.anonimo}
+      >
+        <ReporterIdentitySection value={identity} onChange={setIdentity} disabled={submitting} />
+      </PublicReportSection>
+
+      <div className="rev-public-form__footer">
+        <label className="rev-public-form__consent">
+          <input
+            type="checkbox"
+            checked={consent}
+            onChange={(e) => {
+              setConsent(e.target.checked);
+              if (e.target.checked) setError('');
+            }}
+            disabled={submitting}
+            required
+            aria-required="true"
+          />
+          <span>
+            Autorizo el tratamiento de los datos de este reporte para coordinar la respuesta municipal.{' '}
+            <strong>(obligatorio)</strong>
+          </span>
+        </label>
+
+        {!consent && !submitting && (
+          <p className="rev-public-form__hint" id="consent-hint">
+            Marque la casilla para habilitar el envío.
+          </p>
         )}
-      </button>
+        {consent && missingForSubmit.length > 0 && !submitting && (
+          <p className="rev-public-form__hint rev-public-form__hint--warn" id="form-pending-hint" role="status">
+            <i className="bi bi-info-circle me-1" aria-hidden="true" />
+            Falta: {missingForSubmit.join(', ')}.
+          </p>
+        )}
+
+        {TURNSTILE_SITE_KEY && TURNSTILE_SITE_KEY !== 'disabled' && <div ref={turnstileRef} />}
+
+        <input
+          type="text"
+          name="website"
+          value={honeypot}
+          onChange={(e) => setHoneypot(e.target.value)}
+          tabIndex={-1}
+          autoComplete="off"
+          aria-hidden="true"
+          className="rev-public-honeypot"
+        />
+
+        {error && (
+          <div className="rev-login__error" role="alert">
+            <i className="bi bi-exclamation-circle" aria-hidden="true" />
+            <span>{error}</span>
+          </div>
+        )}
+
+        <button
+          type="submit"
+          className="rev-login__submit"
+          disabled={submitting || !canSubmit}
+          title={submitDisabledReason ?? undefined}
+          aria-describedby={
+            !consent ? 'consent-hint' : missingForSubmit.length > 0 ? 'form-pending-hint' : undefined
+          }
+        >
+          {submitting ? (
+            <>
+              <span className="rev-login__spinner" aria-hidden="true" />
+              Enviando reporte…
+            </>
+          ) : (
+            <>
+              Enviar reporte de emergencia
+              <i className="bi bi-send" aria-hidden="true" />
+            </>
+          )}
+        </button>
+      </div>
     </form>
   );
 }

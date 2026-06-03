@@ -25,7 +25,7 @@ export default function ReporterIdentitySection({
 
   return (
     <div className="rev-public-identity">
-      <label className="rev-public-identity__check d-flex align-items-start gap-2 mb-3">
+      <label className="rev-public-identity__toggle">
         <input
           type="checkbox"
           checked={value.anonimo}
@@ -33,62 +33,59 @@ export default function ReporterIdentitySection({
           disabled={disabled}
         />
         <span>
-          <strong>Reporte anónimo</strong>
-          <span className="d-block small text-muted">
-            Si lo desmarca, puede indicar sus datos de contacto de forma opcional.
+          <span className="rev-public-identity__toggle-title">Reporte anónimo</span>
+          <span className="rev-public-identity__toggle-desc">
+            Activado por defecto. Desmárquelo para dejar sus datos de contacto.
           </span>
         </span>
       </label>
 
       {!value.anonimo && (
-        <>
-          <div className="row g-2 mb-2">
-            <div className="col-sm-6">
+        <div className="rev-public-identity__fields">
+          <div className="rev-public-identity__grid">
+            <div className="rev-public-form__field">
               <label className="rev-field__label" htmlFor="reportante-nombre">
                 Nombre
               </label>
               <input
                 id="reportante-nombre"
-                className="rev-field__input w-100"
+                className="rev-public-form__input"
                 value={value.nombre}
                 onChange={(e) => update({ nombre: e.target.value })}
                 disabled={disabled}
               />
             </div>
-            <div className="col-sm-6">
+            <div className="rev-public-form__field">
               <label className="rev-field__label" htmlFor="reportante-apellido">
                 Apellido
               </label>
               <input
                 id="reportante-apellido"
-                className="rev-field__input w-100"
+                className="rev-public-form__input"
                 value={value.apellido}
                 onChange={(e) => update({ apellido: e.target.value })}
                 disabled={disabled}
               />
             </div>
-          </div>
-
-          <div className="row g-2 mb-2">
-            <div className="col-sm-6">
+            <div className="rev-public-form__field">
               <label className="rev-field__label" htmlFor="reportante-rut">
                 RUT (opcional)
               </label>
               <input
                 id="reportante-rut"
-                className="rev-field__input w-100"
+                className="rev-public-form__input"
                 value={value.rut}
                 onChange={(e) => update({ rut: e.target.value })}
                 disabled={disabled}
               />
             </div>
-            <div className="col-sm-6">
+            <div className="rev-public-form__field">
               <label className="rev-field__label" htmlFor="reportante-contacto">
                 Teléfono o email
               </label>
               <input
                 id="reportante-contacto"
-                className="rev-field__input w-100"
+                className="rev-public-form__input"
                 value={value.contacto}
                 onChange={(e) => update({ contacto: e.target.value })}
                 disabled={disabled}
@@ -96,7 +93,7 @@ export default function ReporterIdentitySection({
             </div>
           </div>
 
-          <label className="rev-public-identity__check d-flex align-items-start gap-2 mb-2">
+          <label className="rev-public-identity__toggle">
             <input
               type="checkbox"
               checked={value.registrarme}
@@ -104,49 +101,49 @@ export default function ReporterIdentitySection({
               disabled={disabled}
             />
             <span>
-              <strong>Crear cuenta Ciudadano REV</strong>
-              <span className="d-block small text-muted">
+              <span className="rev-public-identity__toggle-title">Crear cuenta Ciudadano REV</span>
+              <span className="rev-public-identity__toggle-desc">
                 Podrá ingresar después para ver el estado de sus reportes.
               </span>
             </span>
           </label>
 
           {value.registrarme && (
-            <div className="rev-public-identity__register p-3 mb-2">
-              <div className="mb-2">
+            <div className="rev-public-identity__register">
+              <div className="rev-public-form__field">
                 <label className="rev-field__label" htmlFor="registro-username">
                   Usuario *
                 </label>
                 <input
                   id="registro-username"
-                  className="rev-field__input w-100"
+                  className="rev-public-form__input"
                   value={value.registroUsername}
                   onChange={(e) => update({ registroUsername: e.target.value })}
                   disabled={disabled}
                   required={value.registrarme}
                 />
               </div>
-              <div className="mb-2">
+              <div className="rev-public-form__field">
                 <label className="rev-field__label" htmlFor="registro-email">
                   Email
                 </label>
                 <input
                   id="registro-email"
                   type="email"
-                  className="rev-field__input w-100"
+                  className="rev-public-form__input"
                   value={value.registroEmail}
                   onChange={(e) => update({ registroEmail: e.target.value })}
                   disabled={disabled}
                 />
               </div>
-              <div>
+              <div className="rev-public-form__field">
                 <label className="rev-field__label" htmlFor="registro-password">
                   Clave *
                 </label>
                 <input
                   id="registro-password"
                   type="password"
-                  className="rev-field__input w-100"
+                  className="rev-public-form__input"
                   value={value.registroPassword}
                   onChange={(e) => update({ registroPassword: e.target.value })}
                   disabled={disabled}
@@ -156,7 +153,7 @@ export default function ReporterIdentitySection({
               </div>
             </div>
           )}
-        </>
+        </div>
       )}
     </div>
   );

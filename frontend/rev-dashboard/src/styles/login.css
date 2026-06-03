@@ -772,6 +772,182 @@ html.rev-boot-done .rev-login__shell {
   }
 }
 
+/* Modo reporte — columnas alineadas arriba y carga visual equilibrada */
+.rev-login--report .rev-login__shell {
+  max-width: 58rem;
+  min-height: min(38rem, calc(100dvh - 1.5rem));
+  grid-template-columns: 0.92fr 1.08fr;
+  align-items: stretch;
+}
+
+.rev-login--report .rev-login__hero-banner {
+  height: clamp(5rem, 13vh, 6.75rem);
+}
+
+.rev-login--report .rev-login__hero-body {
+  justify-content: flex-start;
+  padding-top: 0.5rem;
+  padding-bottom: var(--rev-space-2);
+  margin-top: -1.5rem;
+}
+
+.rev-login--report .rev-login__hero-brand {
+  margin-bottom: var(--rev-space-2);
+}
+
+.rev-login--report .rev-login__hero-logo--wide {
+  max-width: 13.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.rev-login--report .rev-login__hero-org {
+  margin-bottom: 0;
+}
+
+.rev-login--report .rev-login__panel-body {
+  justify-content: flex-start;
+  padding-top: 0.5rem;
+  padding-bottom: var(--rev-space-2);
+}
+
+.rev-login--report .rev-login__tabs {
+  margin-bottom: 0.85rem;
+}
+
+/* Bloque izquierdo en reporte — misma familia que tarjetas de Ingresar */
+.rev-login__hero-brand {
+  flex-shrink: 0;
+}
+
+.rev-login__hero-report {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.rev-login__hero-report-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.rev-login__hero-report-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  padding: 0.5rem 0.6rem;
+  background: rgba(16, 35, 62, 0.35);
+  border: 1px solid var(--login-border);
+  border-radius: var(--rev-radius-sm);
+}
+
+.rev-login__hero-report-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.rev-login__hero-report-text {
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  color: var(--login-text-secondary);
+}
+
+.rev-login__report-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+
+.rev-login__report-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.65rem;
+  margin-bottom: 0.65rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid var(--login-border-subtle);
+  flex-shrink: 0;
+}
+
+.rev-login__report-head .rev-login__form-header::before {
+  display: none;
+}
+
+.rev-login__report-intro {
+  flex: 1;
+  min-width: 10rem;
+}
+
+.rev-login__report-intro .rev-login__eyebrow {
+  margin-bottom: 4px;
+}
+
+.rev-login__subtitle--compact {
+  max-width: 18rem;
+}
+
+.rev-login__report-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rev-login__report-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.45rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: var(--login-text-tertiary);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--login-border-subtle);
+  border-radius: 6px;
+}
+
+.rev-login__report-step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  font-size: 0.5625rem;
+  color: var(--login-orange);
+  background: var(--login-orange-muted);
+  border-radius: 50%;
+}
+
+@media (max-width: 991.98px) {
+  .rev-login--report .rev-login__shell {
+    max-width: 32rem;
+    grid-template-columns: 1fr;
+  }
+
+  .rev-login--report .rev-login__hero-banner {
+    height: clamp(6rem, 16vh, 8rem);
+  }
+
+  .rev-login--report .rev-login__hero-body {
+    margin-top: -1rem;
+  }
+
+  .rev-login__report-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
 /* Pestañas login + reporte público */
 .rev-login__tabs {
   display: flex;
@@ -800,42 +976,6 @@ html.rev-boot-done .rev-login__shell {
   color: #fff;
   background: var(--login-accent-soft);
   box-shadow: inset 0 0 0 1px rgba(249, 115, 22, 0.35);
-}
-
-.rev-public-form__alert {
-  padding: 0.75rem 1rem;
-  border-radius: 10px;
-  background: rgba(249, 115, 22, 0.12);
-  border: 1px solid rgba(249, 115, 22, 0.25);
-  font-size: 0.875rem;
-  color: #fde68a;
-}
-
-.rev-public-honeypot {
-  position: absolute;
-  left: -9999px;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.rev-public-map {
-  height: 220px;
-  width: 100%;
-  border-radius: 10px;
-  border: 1px solid var(--login-border);
-  z-index: 0;
-  cursor: crosshair;
-}
-
-.rev-public-map--disabled {
-  cursor: not-allowed;
-  opacity: 0.75;
-}
-
-.rev-public-location__map-hint {
-  margin-bottom: 0.35rem;
 }
 
 /* Marcador SVG REV (DivIcon) — sin márgenes extra: Leaflet ya aplica iconAnchor */
@@ -895,89 +1035,6 @@ html.rev-boot-done .rev-login__shell {
 
 .leaflet-marker-dragging .rev-map-marker {
   cursor: grabbing;
-}
-
-.rev-public-location__results {
-  max-height: 160px;
-  overflow-y: auto;
-  border: 1px solid var(--login-border);
-  border-radius: 8px;
-  background: var(--login-surface);
-}
-
-.rev-public-location__result-btn {
-  display: block;
-  width: 100%;
-  text-align: left;
-  border: none;
-  background: transparent;
-  color: var(--login-text-secondary);
-  padding: 0.5rem 0.75rem;
-  font-size: 0.8rem;
-  cursor: pointer;
-}
-
-.rev-public-location__result-btn:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: #fff;
-}
-
-.rev-public-media__btn {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.45rem 0.85rem;
-  border-radius: 8px;
-  border: 1px dashed var(--login-border);
-  color: var(--login-text-secondary);
-  font-size: 0.85rem;
-  cursor: pointer;
-}
-
-.rev-public-media__btn--disabled {
-  opacity: 0.5;
-  pointer-events: none;
-}
-
-.rev-public-media__item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.4rem 0;
-  font-size: 0.85rem;
-  color: var(--login-text-secondary);
-}
-
-.rev-public-media__remove {
-  border: none;
-  background: transparent;
-  color: #f87171;
-  cursor: pointer;
-}
-
-.rev-public-identity__check input {
-  margin-top: 0.2rem;
-}
-
-.rev-public-identity__register {
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--login-border-subtle);
-}
-
-.rev-public-success {
-  text-align: center;
-  padding: 1rem 0;
-}
-
-.rev-public-success__icon {
-  font-size: 2.5rem;
-  color: #4ade80;
-  margin-bottom: 0.75rem;
-}
-
-.rev-public-success__folio {
-  font-size: 1.1rem;
 }
 
 .rev-adjunto-card {

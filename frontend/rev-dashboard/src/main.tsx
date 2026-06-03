@@ -7,6 +7,7 @@ import 'leaflet/dist/leaflet.css';
 import './theme.css';
 import './styles/branding.css';
 import './styles/login.css';
+import './styles/public-report.css';
 import './styles/shell.css';
 import './styles/topbar.css';
 import './styles/module-hub.css';

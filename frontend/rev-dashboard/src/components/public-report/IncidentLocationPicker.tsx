@@ -168,43 +168,45 @@ export default function IncidentLocationPicker({
   };
 
   const busy = geoLoading || resolvingAddress;
+  const gpsLabel = geoLoading
+    ? 'Obteniendo…'
+    : resolvingAddress
+      ? 'Ubicando…'
+      : 'Mi ubicación';
 
   return (
     <div className="rev-public-location">
-      <div className="d-flex flex-wrap gap-2 mb-2">
+      <div className="rev-public-location__toolbar">
         <button
           type="button"
-          className="rev-login__dev-chip"
+          className="rev-public-location__gps"
           onClick={useMyLocation}
           disabled={disabled || busy}
         >
-          <i className={`bi ${busy ? 'bi-arrow-repeat' : 'bi-geo-alt'} me-1`} />
-          {geoLoading
-            ? 'Obteniendo ubicación…'
-            : resolvingAddress
-              ? 'Buscando dirección…'
-              : 'Usar mi ubicación'}
+          <i className={`bi ${busy ? 'bi-arrow-repeat' : 'bi-crosshair'}`} aria-hidden="true" />
+          {gpsLabel}
         </button>
         {value.lat != null && value.lng != null && (
-          <span className="small text-muted align-self-center">
+          <span className="rev-public-location__coords">
             {value.lat.toFixed(5)}, {value.lng.toFixed(5)}
           </span>
         )}
       </div>
 
       {geoError && (
-        <p className="small text-warning mb-2" role="alert">
+        <p className="rev-public-location__status rev-public-location__status--warn" role="alert">
           {geoError}
         </p>
       )}
 
-      <div className="rev-public-location__search mb-2">
+      <div className="rev-public-location__search-wrap">
         <label className="rev-field__label" htmlFor="location-search">
-          Buscar dirección o referencia
+          Buscar dirección
         </label>
+        <i className="bi bi-search rev-public-location__search-icon" aria-hidden="true" />
         <input
           id="location-search"
-          className="rev-field__input w-100"
+          className="rev-public-location__search-input"
           type="search"
           placeholder="Ej: Av. Principal 120, sector norte"
           value={searchQuery}
@@ -212,9 +214,9 @@ export default function IncidentLocationPicker({
           disabled={disabled}
           autoComplete="off"
         />
-        {searching && <p className="small text-muted mt-1 mb-0">Buscando…</p>}
+        {searching && <p className="rev-public-location__status">Buscando…</p>}
         {searchResults.length > 0 && (
-          <ul className="rev-public-location__results list-unstyled mb-0 mt-1">
+          <ul className="rev-public-location__results">
             {searchResults.map((r) => (
               <li key={`${r.lat}-${r.lon}-${r.display_name}`}>
                 <button
@@ -230,10 +232,10 @@ export default function IncidentLocationPicker({
         )}
       </div>
 
-      <div className="rev-public-location__map mb-2">
-        <p className="rev-public-location__map-hint small text-muted mb-1">
-          <i className="bi bi-cursor me-1" aria-hidden="true" />
-          Toque el mapa o arrastre el pin para indicar el punto del incidente
+      <div className="rev-public-location__map-block">
+        <p className="rev-public-location__map-label">
+          <i className="bi bi-hand-index-thumb" aria-hidden="true" />
+          Toque el mapa o arrastre el pin
         </p>
         <MapContainer
           center={mapCenter}
@@ -267,15 +269,15 @@ export default function IncidentLocationPicker({
         </MapContainer>
       </div>
 
-      <div className="rev-field">
+      <div className="rev-public-form__field">
         <label className="rev-field__label" htmlFor="direccion-referencia">
           Referencia de ubicación *
         </label>
         <textarea
           id="direccion-referencia"
-          className="rev-field__input w-100"
+          className="rev-public-form__textarea"
           rows={2}
-          placeholder="Indique calle, sector, punto de referencia o marque en el mapa"
+          placeholder="Calle, sector o punto de referencia"
           value={value.direccionReferencia}
           onChange={(e) => {
             setSearchQuery(e.target.value);
@@ -284,8 +286,8 @@ export default function IncidentLocationPicker({
           disabled={disabled}
           required
         />
-        <p className="small text-muted mt-1 mb-0">
-          Al usar GPS o marcar en el mapa se completa una dirección de referencia automáticamente.
+        <p className="rev-public-location__ref-note">
+          Con GPS o mapa se completa automáticamente; puede editarla si hace falta.
         </p>
       </div>
     </div>
