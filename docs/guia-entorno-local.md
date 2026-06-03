@@ -132,6 +132,26 @@ En Eureka (http://localhost:18761) debe aparecer **KEYCLOAK-ADAPTER** en estado 
 
 ---
 
+## Mapa territorial (`/zonas`)
+
+Tras login, abra **Zonas** en el menú del despacho:
+
+| Elemento | Descripción |
+|----------|-------------|
+| Capa OSM | Misma base que el reporte público (OpenStreetMap) |
+| Círculos de zona | Buffer circular derivado del bbox municipal (centro + radio) |
+| Círculos de incidente | Radio de correlación (`rev.mapa.radio-correlacion-metros`, default 500 m) |
+| Marcadores agrupados | Cluster al alejar zoom; un marcador por grupo canónico |
+| Detalle | Clic en círculo/marcador → panel lateral y popup |
+
+**Deep link desde incidentes:** en la tarjeta del dashboard, **Ver en mapa** abre `/zonas?incidente={id}` y centra el mapa.
+
+**API:** `GET http://localhost:18080/api/mapa/territorial` (requiere JWT).
+
+Estándares y trazabilidad: [estandares-gis-despacho-rev.md](./estandares-gis-despacho-rev.md).
+
+---
+
 ## Detener
 
 ```powershell
