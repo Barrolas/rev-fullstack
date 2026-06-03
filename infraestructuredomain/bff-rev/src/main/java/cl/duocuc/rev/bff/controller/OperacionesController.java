@@ -3,8 +3,10 @@ package cl.duocuc.rev.bff.controller;
 import cl.duocuc.rev.bff.dto.AdjuntoDto;
 import cl.duocuc.rev.bff.dto.IncidenteCreateRequest;
 import cl.duocuc.rev.bff.dto.IncidenteDto;
+import cl.duocuc.rev.bff.dto.MapaTerritorialResponse;
 import cl.duocuc.rev.bff.dto.ZonaDto;
 import cl.duocuc.rev.bff.client.IncidenteClientService;
+import cl.duocuc.rev.bff.service.MapaTerritorialFacadeService;
 import cl.duocuc.rev.bff.service.OperacionesFacadeService;
 import java.util.List;
 import java.util.UUID;
@@ -27,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class OperacionesController {
 
     private final OperacionesFacadeService operacionesFacadeService;
+    private final MapaTerritorialFacadeService mapaTerritorialFacadeService;
     private final IncidenteClientService incidenteClientService;
 
     @PostMapping("/incidentes")
@@ -43,6 +46,11 @@ public class OperacionesController {
     @GetMapping("/zonas")
     public List<ZonaDto> listarZonas() {
         return operacionesFacadeService.listarZonas();
+    }
+
+    @GetMapping("/mapa/territorial")
+    public MapaTerritorialResponse mapaTerritorial() {
+        return mapaTerritorialFacadeService.obtenerMapaTerritorial();
     }
 
     @GetMapping("/incidentes/{id}/adjuntos")
