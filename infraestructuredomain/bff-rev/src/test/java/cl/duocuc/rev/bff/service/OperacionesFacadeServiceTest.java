@@ -72,7 +72,7 @@ class OperacionesFacadeServiceTest {
     @Test
     void listarZonas_retornaListaDelCliente() {
         ZonaDto zona = ZonaDto.builder().id(1L).nombre("Test").nivelRiesgo("HIGH").build();
-        when(zonaRiesgoClientService.listar()).thenReturn(Mono.just(List.of(zona)));
+        when(zonaRiesgoClientService.listar(false)).thenReturn(Mono.just(List.of(zona)));
 
         List<ZonaDto> result = operacionesFacadeService.listarZonas();
 

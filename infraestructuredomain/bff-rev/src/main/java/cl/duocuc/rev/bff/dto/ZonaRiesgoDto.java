@@ -12,6 +12,8 @@ import lombok.NoArgsConstructor;
 public class ZonaRiesgoDto {
 
     private String nivel;
+    private Long zonaId;
+    private String nombreZona;
     private Double lat;
     private Double lng;
     private boolean cached;

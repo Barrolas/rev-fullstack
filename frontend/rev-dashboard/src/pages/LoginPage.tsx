@@ -1,6 +1,6 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login } from '../api';
+import { login, waitForAuthLogin } from '../api';
 import { REV_BRAND, REV_IMAGES } from '../branding';
 import RevLogo from '../components/branding/RevLogo';
 import PublicReportForm from '../components/public-report/PublicReportForm';
@@ -66,7 +66,18 @@ export default function LoginPage() {
   const [showDevHint, setShowDevHint] = useState(false);
   const [expandedFeature, setExpandedFeature] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [authReady, setAuthReady] = useState<'checking' | 'ready' | 'pending'>('checking');
   const navigate = useNavigate();
+
+  useEffect(() => {
+    let cancelled = false;
+    waitForAuthLogin().then((ok) => {
+      if (!cancelled) setAuthReady(ok ? 'ready' : 'pending');
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const toggleFeature = (id: string) => {
     setExpandedFeature((current) => (current === id ? null : id));
@@ -268,6 +279,23 @@ export default function LoginPage() {
                   </div>
                 </div>
 
+                {authReady === 'checking' && (
+                  <div className="rev-login__notice" role="status">
+                    <i className="bi bi-hourglass-split" aria-hidden="true" />
+                    <span>Conectando con el servicio de autenticación…</span>
+                  </div>
+                )}
+
+                {authReady === 'pending' && !error && (
+                  <div className="rev-login__notice rev-login__notice--warn" role="status">
+                    <i className="bi bi-info-circle" aria-hidden="true" />
+                    <span>
+                      El gateway aún no enruta a KEYCLOAK-ADAPTER. Espere unos segundos o reinicie{' '}
+                      <code>keycloak-adapter</code> y <code>api-gateway</code> en Docker.
+                    </span>
+                  </div>
+                )}
+
                 {error && (
                   <div className="rev-login__error" role="alert">
                     <i className="bi bi-exclamation-circle" aria-hidden="true" />
@@ -278,7 +306,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   className="rev-login__submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || authReady === 'checking'}
                 >
                   {isSubmitting ? (
                     <>

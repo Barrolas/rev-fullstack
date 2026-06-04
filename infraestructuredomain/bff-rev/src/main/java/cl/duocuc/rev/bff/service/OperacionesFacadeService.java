@@ -28,9 +28,35 @@ public class OperacionesFacadeService {
         return incidenteClientService.crear(request).block();
     }
 
-    public List<ZonaDto> listarZonas() {
-        List<ZonaDto> zonas = zonaRiesgoClientService.listar().block();
+    public List<ZonaDto> listarZonas(boolean incluirInactivas) {
+        List<ZonaDto> zonas = zonaRiesgoClientService.listar(incluirInactivas).block();
         return zonas != null ? zonas : List.of();
+    }
+
+    public List<ZonaDto> listarZonas() {
+        return listarZonas(false);
+    }
+
+    public ZonaDto crearZona(ZonaDto request) {
+        if (request.getNombre() == null || request.getNombre().isBlank()) {
+            throw new IllegalArgumentException("El nombre de la zona es obligatorio");
+        }
+        if (request.getCenterLat() == null || request.getCenterLng() == null || request.getRadioMetros() == null) {
+            throw new IllegalArgumentException("Centro y radio en metros son obligatorios");
+        }
+        return zonaRiesgoClientService.crear(request).block();
+    }
+
+    public ZonaDto actualizarZona(Long id, ZonaDto request) {
+        return zonaRiesgoClientService.actualizar(id, request).block();
+    }
+
+    public void desactivarZona(Long id) {
+        zonaRiesgoClientService.desactivar(id).block();
+    }
+
+    public int recalcularZonasIncidentes() {
+        return incidenteClientService.recalcularZonas().block();
     }
 
     public RecursosDisponiblesDto listarRecursosDisponibles() {

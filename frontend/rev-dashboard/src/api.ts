@@ -21,6 +21,9 @@ export interface DashboardItem {
     cantidadReportesVinculados?: number;
     sugerenciasPendientes?: number;
     scoreMaximoPendiente?: number;
+    zonaId?: number;
+    zonaNombre?: string;
+    zonaNivelRiesgo?: string;
   };
   zonaRiesgo: {
     nivel: string;
@@ -70,10 +73,51 @@ export interface Zona {
   id: number;
   nombre: string;
   nivelRiesgo: string;
-  minLat: number;
-  maxLat: number;
-  minLng: number;
-  maxLng: number;
+  minLat?: number;
+  maxLat?: number;
+  minLng?: number;
+  maxLng?: number;
+  centerLat?: number;
+  centerLng?: number;
+  radioMetros?: number;
+  comuna?: string;
+  tipo?: string;
+  activa?: boolean;
+}
+
+export interface ZonaPayload {
+  nombre: string;
+  nivelRiesgo: string;
+  centerLat: number;
+  centerLng: number;
+  radioMetros: number;
+  comuna?: string;
+  tipo?: string;
+}
+
+export interface MapaIncidentePunto {
+  id: string;
+  grupoId: string;
+  folio?: string;
+  tipo: string;
+  estado: string;
+  lat?: number | null;
+  lng?: number | null;
+  direccionReferencia?: string;
+  origenReporte?: string;
+  nivelRiesgoZona: string;
+  zonaNombre?: string;
+  esCanonico: boolean;
+  reportesEnGrupo: number;
+  sugerenciasPendientes: number;
+  tieneGrupoConfirmado: boolean;
+}
+
+export interface MapaTerritorial {
+  radioCorrelacionMetros: number;
+  zonas: Zona[];
+  incidentes: MapaIncidentePunto[];
+  incidentesSinUbicacion: number;
 }
 
 export interface BrigadaItem {
@@ -152,7 +196,12 @@ export interface AsignarRecurso {
 
 import { formatApiError } from './utils/apiErrors';
 import { formatLoginError, formatLoginNetworkError } from './utils/loginErrors';
-import { API_RETRY_DELAYS_MS, isRetryableHttpStatus, sleep } from './utils/apiRetry';
+import {
+  API_RETRY_DELAYS_MS,
+  isRetryableHttpStatus,
+  LOGIN_RETRY_DELAYS_MS,
+  sleep,
+} from './utils/apiRetry';
 
 const TOKEN_KEY = 'rev_token';
 
@@ -173,36 +222,73 @@ export function clearToken() {
   localStorage.removeItem(TOKEN_KEY);
 }
 
+/** Comprueba si POST /auth/login ya enruta (200/401/400 = listo; 503 = Eureka pendiente). */
+export async function waitForAuthLogin(maxWaitMs = 28_000): Promise<boolean> {
+  const deadline = Date.now() + maxWaitMs;
+  const probe = new URLSearchParams({ username: '__rev_probe__', password: 'probe' });
+  while (Date.now() < deadline) {
+    try {
+      const res = await fetch('/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: probe,
+      });
+      if (res.ok || res.status === 401 || res.status === 400) {
+        return true;
+      }
+      if (!isRetryableHttpStatus(res.status)) {
+        return false;
+      }
+    } catch {
+      /* gateway aún no responde */
+    }
+    await sleep(1200);
+  }
+  return false;
+}
+
 export async function login(username: string, password: string): Promise<void> {
   const body = new URLSearchParams({ username, password });
-  let res: Response;
-  try {
-    res = await fetch('/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body,
-    });
-  } catch {
-    throw new Error(formatLoginNetworkError());
-  }
+  const delays = LOGIN_RETRY_DELAYS_MS;
+  const maxAttempts = delays.length;
 
-  const text = await res.text();
-  if (!res.ok) {
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    if (attempt > 0) {
+      await sleep(delays[attempt]);
+    }
+
+    let res: Response;
+    try {
+      res = await fetch('/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body,
+      });
+    } catch {
+      if (attempt < maxAttempts - 1) continue;
+      throw new Error(formatLoginNetworkError());
+    }
+
+    const text = await res.text();
+    if (res.ok) {
+      let data: { access_token?: string };
+      try {
+        data = JSON.parse(text) as { access_token?: string };
+      } catch {
+        throw new Error('Respuesta de login inválida. Intente de nuevo.');
+      }
+      if (!data.access_token) {
+        throw new Error('Respuesta de login sin token. Verifique Keycloak y el adaptador.');
+      }
+      setToken(data.access_token);
+      return;
+    }
+
+    if (isRetryableHttpStatus(res.status) && attempt < maxAttempts - 1) {
+      continue;
+    }
     throw new Error(formatLoginError(text, res.status));
   }
-
-  let data: { access_token?: string };
-  try {
-    data = JSON.parse(text) as { access_token?: string };
-  } catch {
-    throw new Error('Respuesta de login inválida. Intente de nuevo.');
-  }
-
-  if (!data.access_token) {
-    throw new Error('Respuesta de login sin token. Verifique Keycloak y el adaptador.');
-  }
-
-  setToken(data.access_token);
 }
 
 function handleAuthFailure(text: string, status: number): never {
@@ -340,8 +426,50 @@ export function adjuntoUrl(incidenteId: string, adjuntoId: string): string {
   return `/api/incidentes/${incidenteId}/adjuntos/${adjuntoId}`;
 }
 
-export async function fetchZonas(): Promise<Zona[]> {
-  return apiFetch('/api/zonas');
+export async function fetchZonas(incluirInactivas = false): Promise<Zona[]> {
+  const q = incluirInactivas ? '?incluirInactivas=true' : '';
+  return apiFetch(`/api/zonas${q}`);
+}
+
+export async function createZona(data: ZonaPayload): Promise<Zona> {
+  return apiFetch('/api/zonas', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function updateZona(id: number, data: ZonaPayload): Promise<Zona> {
+  return apiFetch(`/api/zonas/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+}
+
+export async function deactivateZona(id: number): Promise<void> {
+  await apiFetch(`/api/zonas/${id}`, { method: 'DELETE' });
+}
+
+export async function recalcularZonasIncidentes(): Promise<{ actualizados: number }> {
+  return apiFetch('/api/incidentes/recalcular-zonas', { method: 'POST' });
+}
+
+export async function fetchMapaTerritorial(): Promise<MapaTerritorial> {
+  const res = await fetch('/api/mapa/territorial', {
+    headers: {
+      'Content-Type': 'application/json',
+      ...authHeaders(),
+    },
+  });
+
+  if (res.status === 404) {
+    const { buildMapaTerritorialFromDashboard } = await import('./utils/territorialMapUtils');
+    const [zonas, dashboard] = await Promise.all([fetchZonas(), fetchDashboard()]);
+    return buildMapaTerritorialFromDashboard(zonas, dashboard);
+  }
+
+  if (!res.ok) {
+    const text = await res.text();
+    if (res.status === 401 || res.status === 403) {
+      handleAuthFailure(text, res.status);
+    }
+    throw new Error(formatApiError(text, res.status));
+  }
+
+  return res.json() as Promise<MapaTerritorial>;
 }
 
 export async function fetchRecursos(): Promise<RecursosDisponibles> {

@@ -1,6 +1,10 @@
 server:
   port: ${SERVER_PORT:18080}
 
+rev:
+  gateway:
+    keycloak-roles-url: http://KEYCLOAK-ADAPTER/roles
+
 spring:
   application:
     name: api-gateway

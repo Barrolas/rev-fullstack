@@ -1,21 +1,19 @@
+import { parseHttpErrorBody } from './httpErrorBody';
+
 export function formatLoginError(text: string, status: number): string {
   if (status === 401 || status === 400) {
     return 'Usuario o clave incorrectos.';
   }
+
+  const parsed = parseHttpErrorBody(text, status);
+  if (parsed) {
+    return parsed;
+  }
+
   if (status === 404) {
-    return 'El servicio de autenticación no está disponible (ruta no encontrada). Verifique que el gateway esté en ejecución.';
+    return 'El servicio de autenticación no está disponible (ruta no encontrada). Verifique que el gateway esté en el puerto 18080.';
   }
-  if (status === 502 || status === 503 || status === 504) {
-    return 'Servicios aún iniciando. Espere unos segundos e intente de nuevo.';
-  }
-  try {
-    const json = JSON.parse(text) as { message?: string; error?: string };
-    if (json.message) return json.message;
-    if (json.error) return json.error;
-  } catch {
-    /* cuerpo no JSON */
-  }
-  if (text?.trim()) return text;
+
   return `No se pudo iniciar sesión (error ${status}).`;
 }
 

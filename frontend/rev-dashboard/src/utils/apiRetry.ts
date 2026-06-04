@@ -12,6 +12,9 @@ export function sleep(ms: number): Promise<void> {
 /** Esperas entre reintentos (ms): 0 + 600 + 1200 + 2400 ≈ 4,2 s total. */
 export const API_RETRY_DELAYS_MS = [0, 600, 1200, 2400] as const;
 
+/** Login: más margen mientras KEYCLOAK-ADAPTER se registra en Eureka (~20 s). */
+export const LOGIN_RETRY_DELAYS_MS = [0, 1000, 2000, 3000, 5000, 5000] as const;
+
 export function maxApiAttempts(): number {
   return API_RETRY_DELAYS_MS.length;
 }

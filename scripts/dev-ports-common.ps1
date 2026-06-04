@@ -425,6 +425,53 @@ function Initialize-RevKeycloakDevUser {
   }
 }
 
+function Wait-RevServiceInEureka {
+  param(
+    [string]$ServiceName,
+    [int]$TimeoutSec = 120
+  )
+  $eurekaPort = $script:RevPortMap.Eureka
+  Write-Host "Esperando $ServiceName en Eureka (:$eurekaPort)..." -ForegroundColor Cyan
+  $deadline = (Get-Date).AddSeconds($TimeoutSec)
+  while ((Get-Date) -lt $deadline) {
+    try {
+      $xml = curl.exe -s "http://127.0.0.1:$eurekaPort/eureka/apps/$ServiceName" 2>$null
+      if ($xml -and $xml -match '<status>UP</status>') {
+        Write-Host "  OK: $ServiceName registrado en Eureka." -ForegroundColor Green
+        return $true
+      }
+    } catch {
+      /* reintento */
+    }
+    Start-Sleep -Seconds 2
+  }
+  Write-Warning "$ServiceName no aparece UP en Eureka dentro de ${TimeoutSec}s."
+  return $false
+}
+
+function Wait-RevAuthRouteReady {
+  param(
+    [int]$TimeoutSec = 90,
+    [string]$Username = 'admin',
+    [string]$Password = 'rev123'
+  )
+  $gatewayPort = $script:RevPortMap.Gateway
+  Write-Host "Esperando /auth/login en gateway (:$gatewayPort, max. ${TimeoutSec}s)..." -ForegroundColor Cyan
+  $deadline = (Get-Date).AddSeconds($TimeoutSec)
+  while ((Get-Date) -lt $deadline) {
+    $code = curl.exe -s -o NUL -w '%{http_code}' -X POST "http://127.0.0.1:$gatewayPort/auth/login" `
+      -H 'Content-Type: application/x-www-form-urlencoded' `
+      -d "username=$Username&password=$Password" 2>$null
+    if ($code -eq '200') {
+      Write-Host '  OK: /auth/login responde (KEYCLOAK-ADAPTER en Eureka).' -ForegroundColor Green
+      return $true
+    }
+    Start-Sleep -Seconds 2
+  }
+  Write-Warning "auth/login no devolvio 200 en ${TimeoutSec}s. El login en el navegador puede fallar unos segundos; reintente."
+  return $false
+}
+
 function Wait-RevGatewayReachable {
   param([int]$TimeoutSec = 180)
   $gatewayPort = $script:RevPortMap.Gateway
@@ -507,13 +554,25 @@ function Invoke-RevMavenPackage {
 }
 
 function Wait-RevAppsReady {
+  param([string]$ComposeFile = 'docker-compose.yml')
   Wait-TcpPort -Port $script:RevPortMap.Eureka -TimeoutSec 180 -Label "Eureka ($($script:RevPortMap.Eureka))" | Out-Null
   Wait-TcpPort -Port $script:RevPortMap.MsIncidentes -TimeoutSec 180 -Label "MS Incidentes ($($script:RevPortMap.MsIncidentes))" | Out-Null
   Wait-TcpPort -Port $script:RevPortMap.MsZonas -TimeoutSec 180 -Label "MS Zonas ($($script:RevPortMap.MsZonas))" | Out-Null
   Wait-TcpPort -Port $script:RevPortMap.MsRecursos -TimeoutSec 180 -Label "MS Recursos ($($script:RevPortMap.MsRecursos))" | Out-Null
   Wait-TcpPort -Port $script:RevPortMap.Bff -TimeoutSec 180 -Label "BFF ($($script:RevPortMap.Bff))" | Out-Null
   Wait-TcpPort -Port $script:RevPortMap.KeycloakAdapter -TimeoutSec 180 -Label "Keycloak adapter ($($script:RevPortMap.KeycloakAdapter))" | Out-Null
+  $null = Wait-RevServiceInEureka -ServiceName 'KEYCLOAK-ADAPTER' -TimeoutSec 120
   Wait-RevGatewayReachable -TimeoutSec 240
+  $authOk = Wait-RevAuthRouteReady -TimeoutSec 90
+  if (-not $authOk) {
+    Write-Host 'Reintentando registro auth (restart gateway + keycloak-adapter)...' -ForegroundColor Cyan
+    $null = Invoke-RevCompose -ComposeFile $ComposeFile -Profiles @('apps') -Arguments @(
+      'restart', 'keycloak-adapter', 'api-gateway'
+    )
+    Start-Sleep -Seconds 8
+    $null = Wait-RevServiceInEureka -ServiceName 'KEYCLOAK-ADAPTER' -TimeoutSec 90
+    Wait-RevAuthRouteReady -TimeoutSec 90 | Out-Null
+  }
 }
 
 function Get-RevMavenLauncher {

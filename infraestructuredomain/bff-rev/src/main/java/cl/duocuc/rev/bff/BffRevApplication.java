@@ -1,5 +1,6 @@
 package cl.duocuc.rev.bff;
 
+import cl.duocuc.rev.bff.config.MapaTerritorialProperties;
 import cl.duocuc.rev.bff.config.PublicReportProperties;
 import java.time.Duration;
 import org.springframework.boot.SpringApplication;
@@ -14,7 +15,7 @@ import reactor.netty.http.client.HttpClient;
 
 @SpringBootApplication
 @EnableDiscoveryClient
-@EnableConfigurationProperties(PublicReportProperties.class)
+@EnableConfigurationProperties({PublicReportProperties.class, MapaTerritorialProperties.class})
 public class BffRevApplication {
 
     public static void main(String[] args) {

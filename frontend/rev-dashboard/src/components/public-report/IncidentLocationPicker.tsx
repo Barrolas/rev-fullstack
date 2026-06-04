@@ -9,6 +9,7 @@ import {
   searchAddress,
 } from '../../utils/nominatim';
 import MapViewController from './MapViewController';
+import { OSM_ATTRIBUTION, OSM_TILE_URL } from '../../utils/mapConfig';
 
 const VALLE_CENTER: [number, number] = [-33.452, -70.664];
 
@@ -243,10 +244,7 @@ export default function IncidentLocationPicker({
           scrollWheelZoom={!disabled}
           className={`rev-public-map${disabled ? ' rev-public-map--disabled' : ''}`}
         >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
+          <TileLayer attribution={OSM_ATTRIBUTION} url={OSM_TILE_URL} />
           {flyToCenter && <MapViewController center={flyToCenter} zoom={17} fly />}
           <MapClickHandler
             onSelect={(lat, lng) => void applyLocation(lat, lng)}

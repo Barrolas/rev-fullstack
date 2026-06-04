@@ -1,100 +1,129 @@
 import { useEffect } from 'react';
-import { MapContainer, Popup, Rectangle, TileLayer, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import L from 'leaflet';
 
-import type { Zona } from '../../api';
-import { riskLabel, zonaMapStyle } from '../../utils/zonaMapStyles';
+import type { MapaIncidentePunto, Zona } from '../../api';
+import {
+  DEFAULT_MAP_ZOOM,
+  INCIDENT_DETAIL_ZOOM,
+  OSM_ATTRIBUTION,
+  OSM_TILE_URL,
+  VALLE_DEL_SOL_CENTER,
+} from '../../utils/mapConfig';
+import { toZonaCircleViews, type ZonaCircleView } from '../../utils/territorialMapUtils';
+import TerritorialMapLayers from './TerritorialMapLayers';
 
 interface ZonasMapProps {
   zonas: Zona[];
-  selectedId?: number | null;
+  incidentes: MapaIncidentePunto[];
+  radioCorrelacionMetros: number;
+  selectedZoneId?: number | null;
+  selectedIncidenteId?: string | null;
   onSelectZone?: (id: number) => void;
+  onSelectIncidente?: (id: string) => void;
 }
 
-function FitBounds({ zonas }: { zonas: Zona[] }) {
+function FitBounds({
+  zonas,
+  incidentes,
+}: {
+  zonas: ZonaCircleView[];
+  incidentes: MapaIncidentePunto[];
+}) {
   const map = useMap();
 
   useEffect(() => {
-    if (zonas.length === 0) {
-      map.setView([-33.45, -70.65], 9);
+    const points: [number, number][] = [];
+    zonas.forEach((z) => points.push([z.centerLat, z.centerLng]));
+    incidentes.forEach((p) => {
+      if (p.lat != null && p.lng != null) points.push([p.lat, p.lng]);
+    });
+    if (points.length === 0) {
+      map.setView(VALLE_DEL_SOL_CENTER, DEFAULT_MAP_ZOOM);
       return;
     }
-    const points = zonas.flatMap((z) => [
-      [z.minLat, z.minLng] as [number, number],
-      [z.maxLat, z.maxLng] as [number, number],
-    ]);
     const bounds = L.latLngBounds(points);
     map.fitBounds(bounds, { padding: [36, 36], maxZoom: 11 });
-  }, [map, zonas]);
+  }, [map, zonas, incidentes]);
 
   return null;
 }
 
-function FocusZone({ zonas, selectedId }: { zonas: Zona[]; selectedId?: number | null }) {
+function FocusSelection({
+  zonas,
+  incidentes,
+  selectedZoneId,
+  selectedIncidenteId,
+}: {
+  zonas: ZonaCircleView[];
+  incidentes: MapaIncidentePunto[];
+  selectedZoneId?: number | null;
+  selectedIncidenteId?: string | null;
+}) {
   const map = useMap();
 
   useEffect(() => {
-    if (selectedId == null) return;
-    const zone = zonas.find((z) => z.id === selectedId);
+    if (selectedIncidenteId) {
+      const p = incidentes.find(
+        (i) => i.id === selectedIncidenteId || i.grupoId === selectedIncidenteId,
+      );
+      if (p?.lat != null && p?.lng != null) {
+        map.setView([p.lat, p.lng], INCIDENT_DETAIL_ZOOM, { animate: true });
+        return;
+      }
+    }
+    if (selectedZoneId == null) return;
+    const zone = zonas.find((z) => z.id === selectedZoneId);
     if (!zone) return;
-    const bounds = L.latLngBounds([
-      [zone.minLat, zone.minLng],
-      [zone.maxLat, zone.maxLng],
-    ]);
-    map.fitBounds(bounds, { padding: [48, 48], maxZoom: 12 });
-  }, [map, zonas, selectedId]);
+    map.setView([zone.centerLat, zone.centerLng], 11, { animate: true });
+  }, [map, zonas, incidentes, selectedZoneId, selectedIncidenteId]);
 
   return null;
 }
 
-export default function ZonasMap({ zonas, selectedId, onSelectZone }: ZonasMapProps) {
-  const defaultCenter: [number, number] = [-33.45, -70.65];
+export default function ZonasMap({
+  zonas,
+  incidentes,
+  radioCorrelacionMetros,
+  selectedZoneId,
+  selectedIncidenteId,
+  onSelectZone,
+  onSelectIncidente,
+}: ZonasMapProps) {
+  const zonaCircles = toZonaCircleViews(zonas);
 
   return (
     <div className="rev-zones-map">
       <MapContainer
-        center={defaultCenter}
-        zoom={9}
+        center={VALLE_DEL_SOL_CENTER}
+        zoom={DEFAULT_MAP_ZOOM}
         className="rev-zones-map__canvas"
         scrollWheelZoom
         zoomControl
       >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; CARTO'
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+        <TileLayer attribution={OSM_ATTRIBUTION} url={OSM_TILE_URL} />
+        <FitBounds zonas={zonaCircles} incidentes={incidentes} />
+        <FocusSelection
+          zonas={zonaCircles}
+          incidentes={incidentes}
+          selectedZoneId={selectedZoneId}
+          selectedIncidenteId={selectedIncidenteId}
         />
-        <FitBounds zonas={zonas} />
-        <FocusZone zonas={zonas} selectedId={selectedId} />
-        {zonas.map((z) => {
-          const selected = selectedId === z.id;
-          const bounds: L.LatLngBoundsExpression = [
-            [z.minLat, z.minLng],
-            [z.maxLat, z.maxLng],
-          ];
-          return (
-            <Rectangle
-              key={z.id}
-              bounds={bounds}
-              pathOptions={zonaMapStyle(z.nivelRiesgo, selected)}
-              eventHandlers={{
-                click: () => onSelectZone?.(z.id),
-              }}
-            >
-              <Popup className="rev-zones-map__popup">
-                <div className="rev-zones-map__popup-title">{z.nombre}</div>
-                <div className="rev-zones-map__popup-meta">
-                  Nivel: <strong>{riskLabel(z.nivelRiesgo)}</strong>
-                </div>
-                <p className="rev-zones-map__popup-hint">Toque la zona en el mapa para más detalle</p>
-              </Popup>
-            </Rectangle>
-          );
-        })}
+        <TerritorialMapLayers
+          zonas={zonaCircles}
+          incidentes={incidentes}
+          radioCorrelacionMetros={radioCorrelacionMetros}
+          selectedZoneId={selectedZoneId}
+          selectedIncidenteId={selectedIncidenteId}
+          onSelectZone={onSelectZone}
+          onSelectIncidente={onSelectIncidente}
+        />
       </MapContainer>
       <div className="rev-zones-map__legend" aria-hidden="true">
-        <span className="rev-zones-map__legend-item rev-zones-map__legend-item--high">Alto</span>
-        <span className="rev-zones-map__legend-item rev-zones-map__legend-item--medium">Medio</span>
-        <span className="rev-zones-map__legend-item rev-zones-map__legend-item--low">Bajo</span>
+        <span className="rev-zones-map__legend-item rev-zones-map__legend-item--high">Zona alto</span>
+        <span className="rev-zones-map__legend-item rev-zones-map__legend-item--medium">Zona medio</span>
+        <span className="rev-zones-map__legend-item rev-zones-map__legend-item--incident">Incidente</span>
+        <span className="rev-zones-map__legend-item rev-zones-map__legend-item--cluster">Agrupado</span>
       </div>
     </div>
   );

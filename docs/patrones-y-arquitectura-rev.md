@@ -262,6 +262,8 @@ sequenceDiagram
 
 **API:** `GET /incidentes/correlaciones/pendientes`, `POST .../confirmar`, `GET /incidentes/folio/{folio}`, `POST /incidentes/correlaciones/resumen` (batch dashboard).
 
+**Estándares GIS/despacho:** ver [estandares-gis-despacho-rev.md](./estandares-gis-despacho-rev.md) (NENA, FSGDM, CAD duplicados, NIMS, mapa territorial con círculos y clusters).
+
 ### 4.2 Adapter — fuente de datos climáticos
 
 **Microservicio:** `ms-zonas-riesgo`
@@ -664,6 +666,7 @@ Priorizadas para reforzar la evaluación académica sin reescribir el sistema:
 
 | Prioridad | Evolución | Patrón reforzado |
 |-----------|-----------|------------------|
+| — | Mapa territorial OSM + buffers circulares + clusters | GIS/CAD (ver [estandares-gis-despacho-rev.md](./estandares-gis-despacho-rev.md)) |
 | Alta | UI de transición de estados | Factory + State visible en frontend |
 | Media | `ApplicationEvent` al crear incidente | Observer explícito |
 | Media | Segundo adaptador de clima (REST) | Adapter + Strategy |

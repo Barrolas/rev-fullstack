@@ -1,10 +1,43 @@
+# Docker: enrutamiento directo por nombre de servicio (evita 503 si Eureka no registra a tiempo).
+rev:
+  gateway:
+    keycloak-roles-url: http://keycloak-adapter:8088/roles
+
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://eureka-server:8761/eureka/
+      defaultZone: http://rev-eureka:8761/eureka/
   instance:
     hostname: api-gateway
     prefer-ip-address: false
 
 server:
   port: 8080
+
+spring:
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: bff_public_route
+              uri: http://bff-rev:8085
+              predicates:
+                - Path=/api/public/**
+              filters:
+                - name: PublicRateLimitFilter
+                  args:
+                    maxRequests: 5
+                    windowSeconds: 3600
+            - id: bff_route
+              uri: http://bff-rev:8085
+              predicates:
+                - Path=/api/**
+              filters:
+                - AuthenticationFilter
+            - id: auth_route
+              uri: http://keycloak-adapter:8088
+              predicates:
+                - Path=/auth/**
+              filters:
+                - StripPrefix=1

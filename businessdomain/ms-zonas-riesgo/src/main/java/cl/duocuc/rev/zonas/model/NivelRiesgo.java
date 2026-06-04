@@ -16,4 +16,16 @@ public enum NivelRiesgo {
             return false;
         }
     }
+
+    public static int severidad(String value) {
+        if (value == null) {
+            return 0;
+        }
+        return switch (value.toUpperCase()) {
+            case "HIGH" -> 3;
+            case "MEDIUM" -> 2;
+            case "LOW" -> 1;
+            default -> 0;
+        };
+    }
 }
