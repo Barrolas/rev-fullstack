@@ -447,29 +447,62 @@ export async function recalcularZonasIncidentes(): Promise<{ actualizados: numbe
   return apiFetch('/api/incidentes/recalcular-zonas', { method: 'POST' });
 }
 
+async function loadMapaTerritorialFallback(): Promise<MapaTerritorial> {
+  const { buildMapaTerritorialFromDashboard } = await import('./utils/territorialMapUtils');
+  const [zonas, dashboard] = await Promise.all([fetchZonas(), fetchDashboard()]);
+  return buildMapaTerritorialFromDashboard(zonas, dashboard);
+}
+
+/** Mapa territorial: reintentos Eureka + fallback cliente si el endpoint BFF no está listo. */
 export async function fetchMapaTerritorial(): Promise<MapaTerritorial> {
-  const res = await fetch('/api/mapa/territorial', {
-    headers: {
-      'Content-Type': 'application/json',
-      ...authHeaders(),
-    },
-  });
+  const maxAttempts = API_RETRY_DELAYS_MS.length;
+  let lastError = 'Error al cargar el mapa territorial';
 
-  if (res.status === 404) {
-    const { buildMapaTerritorialFromDashboard } = await import('./utils/territorialMapUtils');
-    const [zonas, dashboard] = await Promise.all([fetchZonas(), fetchDashboard()]);
-    return buildMapaTerritorialFromDashboard(zonas, dashboard);
-  }
-
-  if (!res.ok) {
-    const text = await res.text();
-    if (res.status === 401 || res.status === 403) {
-      handleAuthFailure(text, res.status);
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    if (attempt > 0) {
+      await sleep(API_RETRY_DELAYS_MS[attempt]);
     }
-    throw new Error(formatApiError(text, res.status));
+    try {
+      const res = await fetch('/api/mapa/territorial', {
+        headers: {
+          'Content-Type': 'application/json',
+          ...authHeaders(),
+        },
+      });
+
+      if (res.ok) {
+        return (await res.json()) as MapaTerritorial;
+      }
+
+      const text = await res.text();
+      if (res.status === 401 || res.status === 403) {
+        handleAuthFailure(text, res.status);
+      }
+
+      if (res.status === 404) {
+        return loadMapaTerritorialFallback();
+      }
+
+      lastError = formatApiError(text, res.status);
+      if (!isRetryableHttpStatus(res.status)) {
+        break;
+      }
+    } catch (err) {
+      if (err instanceof Error && (err.message.includes('sesión') || err.message.includes('sesion'))) {
+        throw err;
+      }
+      lastError =
+        err instanceof Error
+          ? err.message
+          : 'No se pudo conectar con el servidor. Verifique que el gateway esté en ejecución.';
+    }
   }
 
-  return res.json() as Promise<MapaTerritorial>;
+  try {
+    return await loadMapaTerritorialFallback();
+  } catch {
+    throw new Error(lastError);
+  }
 }
 
 export async function fetchRecursos(): Promise<RecursosDisponibles> {
