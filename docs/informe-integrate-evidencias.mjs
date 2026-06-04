@@ -38,6 +38,15 @@ function imgFig(num, title, src, desc, alt = title) {
 </figure>`;
 }
 
+function appImgFig(num, title, src, desc, alt = title) {
+  return `<figure class="fig-real">
+  <p class="fig-num">Figura ${num}</p>
+  <p class="fig-title">${title}</p>
+  <img class="fig-img fig-img--app" src="${src}" alt="${esc(alt)}" loading="lazy" />
+  <p class="fig-desc">${desc}</p>
+</figure>`;
+}
+
 function configFig(num, title, file, code, desc) {
   return codeFig(num, title, file, code, desc);
 }
@@ -223,12 +232,12 @@ replaceFig(
 
 replaceFig(
   '7b',
-  imgFig(
+  appImgFig(
     '7b',
     'Correlaciones — vista operacional (referencia UI)',
-    'informe-evidencias/fig15-zonas.png',
-    'Referencia visual del módulo territorial/correlación en panel REV. Complementar con captura de <code>/incidentes</code> en entorno local.',
-    'Mapa operacional REV — zonas e incidentes',
+    'informe-evidencias/fig15b-zonas.png',
+    'Captura real de <code>/zonas</code> — módulo territorial con Leaflet/PostGIS.',
+    'Zonas REV',
   ),
 );
 
@@ -298,41 +307,45 @@ replaceFig(
 
 replaceFig(
   '14',
-  imgFig(
+  appImgFig(
     14,
-    'Dashboard Despacho — centro de operaciones REV',
+    'Dashboard Despacho — panel operacional',
     'informe-evidencias/fig14-dispatch.png',
-    'Evidencia visual del panel operacional: operador con monitores de incidentes, mapa y KPIs. Asset oficial en <code>public/assets/images/rev-about-dispatch.png</code>.',
+    'Captura real de <code>/</code> con sesión despachador: KPIs, incidente activo y módulos Zonas/Recursos.',
+    'Dashboard Despacho REV',
   ),
 );
 
 replaceFig(
   '15',
-  imgFig(
+  appImgFig(
     15,
-    'Zonas e incidentes — mapa territorial',
-    'informe-evidencias/fig15-zonas.png',
-    'Visualización de riesgo territorial y marcadores operacionales. Referencia de módulo Zonas / despacho georreferenciado.',
+    'Módulo Incidentes — listado y correlaciones',
+    'informe-evidencias/fig15-incidentes.png',
+    'Captura real de <code>/incidentes</code>: filtros, vista listado y panel de distribución.',
+    'Módulo Incidentes REV',
   ),
 );
 
 replaceFig(
   '16',
-  imgFig(
+  appImgFig(
     16,
-    'Login — canal ciudadano (hero + reporte)',
-    'informe-evidencias/fig16-login.jpg',
-    'Pantalla de acceso con pestaña Reportar emergencia integrada. Asset <code>login-hero.jpg</code> del frontend REV.',
+    'Login — pestaña Reportar emergencia',
+    'informe-evidencias/fig16-login-reporte.png',
+    'Captura real de <code>/login</code>: formulario por pasos, mapa OSM y guía ciudadana.',
+    'Login REV — reporte público',
   ),
 );
 
 replaceFig(
   '16b',
-  imgFig(
+  appImgFig(
     '16b',
     'Portal ciudadano — reporte en terreno',
     'informe-evidencias/fig16b-portal.png',
-    'Canal público sin registro previo: kiosco/portal con mapa OSM y flujo de reporte.',
+    'Captura real de <code>/portal</code>: landing pública sin registro previo.',
+    'Portal REV',
   ),
 );
 

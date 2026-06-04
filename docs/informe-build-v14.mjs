@@ -42,6 +42,16 @@ function imgFig(num, title, src, desc, alt = title) {
 </figure>`;
 }
 
+function appImgFig(num, title, src, desc, alt = title, wide = false) {
+  const cls = wide ? 'fig-real fig-real--wide' : 'fig-real';
+  return `<figure class="${cls}">
+  <p class="fig-num">Figura ${num}</p>
+  <p class="fig-title">${title}</p>
+  <img class="fig-img fig-img--app" src="${src}" alt="${esc(alt)}" loading="lazy" />
+  <p class="fig-desc">${desc}</p>
+</figure>`;
+}
+
 function gitFig(num, title, text, desc) {
   return `<figure class="fig-real"><p class="fig-num">Figura ${num}</p><p class="fig-title">${title}</p><div class="git-evidence">${esc(text.trim())}</div><p class="fig-desc">${desc}</p></figure>`;
 }
@@ -127,7 +137,7 @@ pages[pages.length - 3] = wrap(
   'cap13',
   'Cap. 13 — Evidencias (1/2)',
   cap13full.slice(0, cap13tableEnd) +
-    `\n  <h3>Capturas UX (figuras 14–16)</h3>\n  <div class="fig-grid">\n    <!-- UX figs injected -->\n  </div>`,
+    `\n  <h3>Capturas UX (figuras 14–16b)</h3>\n  <p>Pantallas capturadas del dashboard REV (<code>frontend/rev-dashboard</code>) con datos reales del stack Docker local.</p>\n  <div class="fig-grid">\n    <!-- UX figs injected -->\n  </div>`,
 );
 pages[pages.length - 2] = wrap(
   'cap13-2',
@@ -168,29 +178,41 @@ const figs = {
       '\n# Gateway: lb://BFF-REV, lb://KEYCLOAK-ADAPTER',
     'Service discovery en puerto 8761 (host 18761).',
   ),
-  '16b': imgFig(
+  '16b': appImgFig(
     '16b',
     'Portal ciudadano',
     'informe-evidencias/fig16b-portal.png',
-    'Canal público — asset <code>rev-about-portal.png</code>.',
+    'Ruta <code>/portal</code> · landing pública.',
+    'Portal REV',
+    true,
   ),
-  '16': imgFig(
+  '16': appImgFig(
     16,
-    'Login — hero y reporte',
-    'informe-evidencias/fig16-login.jpg',
-    'Pantalla de acceso con canal ciudadano — <code>login-hero.jpg</code>.',
+    'Login — reporte ciudadano',
+    'informe-evidencias/fig16-login-reporte.png',
+    'Ruta <code>/login</code> · pestaña Reportar.',
+    'Login reporte REV',
   ),
-  '15': imgFig(
+  '15b': appImgFig(
+    '15b',
+    'Zonas de riesgo — mapa Leaflet',
+    'informe-evidencias/fig15b-zonas.png',
+    'Ruta <code>/zonas</code> · mapa territorial.',
+    'Zonas REV',
+  ),
+  '15': appImgFig(
     15,
-    'Zonas e incidentes — mapa',
-    'informe-evidencias/fig15-zonas.png',
-    'Visualización territorial — <code>rev-about-map.png</code>.',
+    'Incidentes — seguimiento',
+    'informe-evidencias/fig15-incidentes.png',
+    'Ruta <code>/incidentes</code> · listado y filtros.',
+    'Incidentes REV',
   ),
-  '14': imgFig(
+  '14': appImgFig(
     14,
-    'Dashboard Despacho',
+    'Despacho — centro de operaciones',
     'informe-evidencias/fig14-dispatch.png',
-    'Centro de operaciones — <code>rev-about-dispatch.png</code>.',
+    'Ruta <code>/</code> · monitoreo operacional.',
+    'Despacho REV',
   ),
   '13': codeFig(
     13,
@@ -232,11 +254,12 @@ const figs = {
     `* dev\n  main\n  remotes/origin/dev\n  remotes/origin/main\n  remotes/origin/feature/public-report-incidente-login`,
     'GitFlow simplificado: <code>main</code> estable, <code>dev</code> integración.',
   ),
-  '7b': imgFig(
+  '7b': appImgFig(
     '7b',
     'Referencia UI — mapa operacional',
-    'informe-evidencias/fig15-zonas.png',
-    'Complemento visual del ecosistema REV (módulo territorial).',
+    'informe-evidencias/fig15b-zonas.png',
+    'Captura real de <code>/zonas</code> — módulo territorial con Leaflet/PostGIS.',
+    'Zonas REV',
   ),
   '7': codeFig(
     7,
@@ -311,7 +334,7 @@ for (const num of Object.keys(figs).sort((a, b) => {
 // Inyectar figuras UX/infra en cap13
 body = body.replace(
   '<!-- UX figs injected -->',
-  [figs['14'], figs['15'], figs['16'], figs['16b']].join('\n    '),
+  [figs['14'], figs['15'], figs['15b'], figs['16'], figs['16b']].join('\n    '),
 );
 body = body.replace(
   '<!-- infra figs injected -->',
@@ -360,8 +383,11 @@ const head = `<!DOCTYPE html>
       --rev-text: #0B172A; --rev-text-secondary: #475569; --rev-text-tertiary: #64748B;
       --rev-border: rgba(11,23,42,0.1); --rev-border-strong: rgba(11,23,42,0.16);
       --a4-w: 210mm; --a4-h: 297mm;
+      --print-margin-y: 14mm;
+      --print-margin-x: 16mm;
+      --print-body-h: calc(var(--a4-h) - (var(--print-margin-y) * 2));
     }
-    @page { size: 210mm 297mm; margin: 15mm 18mm; }
+    @page { size: 210mm 297mm; margin: var(--print-margin-y) var(--print-margin-x); }
     * { box-sizing: border-box; }
     html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     body.informe-rev { margin: 0; font-family: 'Segoe UI', Inter, system-ui, sans-serif; background: #94A3B8; color: var(--rev-text); line-height: 1.55; font-size: 10.5pt; counter-reset: sheet-num; }
@@ -386,8 +412,8 @@ const head = `<!DOCTYPE html>
     .sheet-head { flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; padding: 8mm 16mm 3mm; border-bottom: 2px solid var(--rev-orange); background: linear-gradient(180deg,var(--rev-bg-secondary),var(--rev-bg)); }
     .sheet-head__brand { font-size: 7.5pt; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--rev-navy-soft); }
     .sheet-head__title { font-size: 7.5pt; color: var(--rev-text-tertiary); }
-    .sheet-main { flex: 1; padding: 5mm 16mm 3mm; min-height: 0; }
-    .sheet-foot { flex-shrink: 0; display: flex; justify-content: space-between; padding: 3mm 16mm 7mm; border-top: 1px solid var(--rev-border); font-size: 7pt; color: var(--rev-text-tertiary); }
+    .sheet-main { flex: 1 1 auto; padding: 5mm 16mm 3mm; min-height: 0; }
+    .sheet-foot { flex-shrink: 0; margin-top: auto; display: flex; justify-content: space-between; align-items: flex-end; padding: 3mm 16mm 0; border-top: 1px solid var(--rev-border); font-size: 7pt; color: var(--rev-text-tertiary); }
     .sheet-foot__num::before { content: counter(sheet-num); }
     .sheet-main h1 { font-size: 1.45rem; margin: 0 0 0.65rem; }
     .sheet-main h3 { margin-top: 0.85rem; margin-bottom: 0.35rem; font-size: 0.95rem; color: var(--rev-navy-mid); }
@@ -416,19 +442,58 @@ const head = `<!DOCTYPE html>
     .fig-real .fig-file { margin: 0 0 0.2rem; padding: 0 0.55rem; font-size: 7pt; color: var(--rev-text-tertiary); font-family: monospace; }
     .fig-real .fig-desc { margin: 0.3rem 0 0.45rem; padding: 0 0.55rem; font-size: 7.5pt; color: var(--rev-text-secondary); }
     .fig-img { display: block; width: 100%; max-height: 55mm; object-fit: cover; object-position: top; border-top: 1px solid var(--rev-border); border-bottom: 1px solid var(--rev-border); }
+    .fig-img--app { object-fit: contain; max-height: 62mm; background: #0a1628; padding: 0.15rem; }
+    .fig-real--wide { grid-column: 1 / -1; }
     pre.code-capture { margin: 0; border: none; border-radius: 0; border-top: 1px solid var(--rev-border); max-height: 48mm; overflow: hidden; font-size: 6.5pt; line-height: 1.35; }
     .git-evidence { margin: 0; padding: 0.5rem 0.65rem; background: #0d1117; color: #c9d1d9; font-family: Consolas, monospace; font-size: 7pt; line-height: 1.45; white-space: pre-wrap; border-top: 1px solid var(--rev-border); }
     .fig-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.35rem; }
+    .fig-grid--stack { grid-template-columns: 1fr; }
     @media screen {
       .page { min-height: var(--a4-h); height: auto; max-height: none; overflow: visible; }
       .sheet-main { overflow: visible; }
     }
     @media print {
-      .page { width: 210mm; min-height: 297mm; height: auto; max-height: none; margin: 0; box-shadow: none; border: none; overflow: visible; }
-      .sheet-main { overflow: visible; }
+      body.informe-rev { background: #fff; }
+      .page {
+        width: 100%;
+        min-height: var(--print-body-h);
+        height: auto;
+        max-height: none;
+        margin: 0;
+        box-shadow: none;
+        border: none;
+        overflow: visible;
+        display: flex;
+        flex-direction: column;
+        break-after: page;
+        page-break-after: always;
+      }
+      .page--cover { min-height: var(--a4-h); display: block; }
+      .page:last-of-type { break-after: auto; page-break-after: auto; }
+      .sheet-head { flex-shrink: 0; break-inside: avoid; break-after: avoid; }
+      .sheet-foot {
+        flex-shrink: 0;
+        margin-top: auto;
+        break-inside: avoid;
+        break-before: avoid;
+        padding-bottom: 0;
+      }
+      .sheet-main { flex: 1 1 auto; overflow: visible; break-inside: auto; padding: 4mm 16mm 2mm; }
       .no-print { display: none !important; }
-      .fig-real, table, pre, .mermaid, .exec-box { break-inside: avoid; }
-      @page { size: 210mm 297mm; margin: 15mm 18mm; }
+      .fig-img { max-height: 42mm; }
+      .fig-img--app { max-height: 46mm; }
+      pre.code-capture { max-height: 36mm; font-size: 6pt; line-height: 1.3; }
+      .git-evidence { max-height: 26mm; overflow: hidden; font-size: 6.5pt; }
+      .mermaid { break-inside: avoid; max-height: 76mm; overflow: hidden; padding: 0.3rem; margin: 0.3rem 0; }
+      .mermaid svg { max-height: 72mm !important; width: 100% !important; }
+      .fig-real { break-inside: avoid; margin: 0.28rem 0; }
+      .fig-grid { display: block; }
+      .fig-grid .fig-real { width: 100%; margin-bottom: 0.3rem; }
+      .fig-real--wide { grid-column: auto; }
+      table, .exec-box, .chapter-intro, .chapter-end { break-inside: avoid; }
+      .sheet-main h1, .sheet-main h3 { break-after: avoid; }
+      .sheet-main table { font-size: 8pt; }
+      @page { size: 210mm 297mm; margin: var(--print-margin-y) var(--print-margin-x); }
     }
   </style>
 </head>

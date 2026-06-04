@@ -14,8 +14,11 @@
       --rev-text: #0B172A; --rev-text-secondary: #475569; --rev-text-tertiary: #64748B;
       --rev-border: rgba(11,23,42,0.1); --rev-border-strong: rgba(11,23,42,0.16);
       --a4-w: 210mm; --a4-h: 297mm;
+      --print-margin-y: 14mm;
+      --print-margin-x: 16mm;
+      --print-body-h: calc(var(--a4-h) - (var(--print-margin-y) * 2));
     }
-    @page { size: 210mm 297mm; margin: 15mm 18mm; }
+    @page { size: 210mm 297mm; margin: var(--print-margin-y) var(--print-margin-x); }
     * { box-sizing: border-box; }
     html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     body.informe-rev { margin: 0; font-family: 'Segoe UI', Inter, system-ui, sans-serif; background: #94A3B8; color: var(--rev-text); line-height: 1.55; font-size: 10.5pt; counter-reset: sheet-num; }
@@ -37,26 +40,26 @@
     .cover-meta__label { display: block; font-size: 6.5pt; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--rev-text-tertiary); }
     .cover-meta__value { display: block; font-size: 8.5pt; color: var(--rev-text); }
     .cover-bottom { padding: 3mm 14mm 6mm; text-align: center; font-size: 7pt; background: var(--rev-navy); color: rgba(255,255,255,0.75); }
-    .sheet-head { flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; padding: 8mm 16mm 3mm; border-bottom: 2px solid var(--rev-orange); background: linear-gradient(180deg,var(--rev-bg-secondary),var(--rev-bg)); }
+    .sheet-head { flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; padding: 6mm 14mm 2.5mm; border-bottom: 2px solid var(--rev-orange); background: linear-gradient(180deg,var(--rev-bg-secondary),var(--rev-bg)); }
     .sheet-head__brand { font-size: 7.5pt; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--rev-navy-soft); }
     .sheet-head__title { font-size: 7.5pt; color: var(--rev-text-tertiary); }
-    .sheet-main { flex: 1; padding: 5mm 16mm 3mm; min-height: 0; }
-    .sheet-foot { flex-shrink: 0; display: flex; justify-content: space-between; padding: 3mm 16mm 7mm; border-top: 1px solid var(--rev-border); font-size: 7pt; color: var(--rev-text-tertiary); }
+    .sheet-main { flex: 1 1 auto; padding: 4mm 14mm 2mm; min-height: 0; }
+    .sheet-foot { flex-shrink: 0; margin-top: auto; display: flex; justify-content: space-between; align-items: flex-end; padding: 2.5mm 14mm 0; border-top: 1px solid var(--rev-border); font-size: 7pt; color: var(--rev-text-tertiary); }
     .sheet-foot__num::before { content: counter(sheet-num); }
-    .sheet-main h1 { font-size: 1.45rem; margin: 0 0 0.65rem; }
-    .sheet-main h3 { margin-top: 0.85rem; margin-bottom: 0.35rem; font-size: 0.95rem; color: var(--rev-navy-mid); }
-    .sheet-main p, .sheet-main li { margin: 0.35rem 0; font-size: 10pt; color: var(--rev-text-secondary); }
-    .sheet-main table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 8.5pt; }
+    .sheet-main h1 { font-size: 1.35rem; margin: 0 0 0.5rem; }
+    .sheet-main h3 { margin-top: 0.65rem; margin-bottom: 0.28rem; font-size: 0.92rem; color: var(--rev-navy-mid); }
+    .sheet-main p, .sheet-main li { margin: 0.28rem 0; font-size: 9.75pt; color: var(--rev-text-secondary); line-height: 1.48; }
+    .sheet-main table { width: 100%; border-collapse: collapse; margin: 0.38rem 0; font-size: 8.25pt; }
     .sheet-main th { background: var(--rev-navy-soft); color: #fff; padding: 0.35rem 0.5rem; border: 1px solid var(--rev-navy-soft); }
     .sheet-main td { padding: 0.35rem 0.5rem; border: 1px solid var(--rev-border); vertical-align: top; }
     tr:nth-child(even) td { background: var(--rev-bg-secondary); }
-    .exec-box, .chapter-intro, .chapter-end { margin: 0.5rem 0; padding: 0.55rem 0.75rem; border-radius: 8px; }
+    .exec-box, .chapter-intro, .chapter-end { margin: 0.38rem 0; padding: 0.48rem 0.65rem; border-radius: 8px; }
     .exec-box { background: var(--rev-bg-secondary); border-left: 4px solid var(--rev-orange); }
     .chapter-intro { border-left: 3px solid var(--rev-orange); background: var(--rev-orange-muted); font-style: italic; }
     .chapter-end { background: var(--rev-orange-muted); border: 1px solid rgba(249,115,22,0.25); }
     .chapter-end strong { color: var(--rev-orange-hover); }
     pre, code { font-family: Consolas, monospace; }
-    pre { background: var(--rev-bg-secondary); border-left: 3px solid var(--rev-orange); padding: 0.55rem 0.65rem; font-size: 7pt; overflow-x: auto; }
+    pre { background: var(--rev-bg-secondary); border-left: 3px solid var(--rev-orange); padding: 0.45rem 0.55rem; font-size: 6.75pt; overflow-x: auto; margin: 0.28rem 0; }
     code { background: var(--rev-surface); padding: 0.1em 0.3em; border-radius: 4px; font-size: 0.9em; }
     .mermaid { background: var(--rev-bg-secondary); border: 1px solid var(--rev-border); border-radius: 8px; padding: 0.45rem; margin: 0.4rem 0; overflow: visible; }
     .mermaid svg { max-width: 100% !important; height: auto !important; }
@@ -64,25 +67,73 @@
     .toc li { padding: 0.28rem 0; border-bottom: 1px dotted var(--rev-border); }
     .toc a { color: var(--rev-text-secondary); text-decoration: none; }
     .toc-l2 { padding-left: 1.1rem; font-size: 9pt; }
-    .fig-real { margin: 0.4rem 0; border: 1px solid var(--rev-border-strong); border-radius: 8px; overflow: hidden; break-inside: avoid; }
+    .fig-real { margin: 0.28rem 0; border: 1px solid var(--rev-border-strong); border-radius: 8px; overflow: hidden; break-inside: avoid; }
     .fig-real .fig-num { font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--rev-orange); font-weight: 700; padding: 0.4rem 0.55rem 0; margin: 0; }
     .fig-real .fig-title { margin: 0.1rem 0.25rem; padding: 0 0.55rem; font-weight: 600; font-size: 0.88rem; color: var(--rev-text); }
     .fig-real .fig-file { margin: 0 0 0.2rem; padding: 0 0.55rem; font-size: 7pt; color: var(--rev-text-tertiary); font-family: monospace; }
     .fig-real .fig-desc { margin: 0.3rem 0 0.45rem; padding: 0 0.55rem; font-size: 7.5pt; color: var(--rev-text-secondary); }
     .fig-img { display: block; width: 100%; max-height: 55mm; object-fit: cover; object-position: top; border-top: 1px solid var(--rev-border); border-bottom: 1px solid var(--rev-border); }
-    pre.code-capture { margin: 0; border: none; border-radius: 0; border-top: 1px solid var(--rev-border); max-height: 48mm; overflow: hidden; font-size: 6.5pt; line-height: 1.35; }
+    .fig-img--app { object-fit: contain; max-height: 62mm; background: #0a1628; padding: 0.15rem; }
+    .fig-real--wide { grid-column: 1 / -1; }
+    pre.code-capture { margin: 0; border: none; border-radius: 0; border-top: 1px solid var(--rev-border); max-height: 40mm; overflow: hidden; font-size: 6.25pt; line-height: 1.32; }
     .git-evidence { margin: 0; padding: 0.5rem 0.65rem; background: #0d1117; color: #c9d1d9; font-family: Consolas, monospace; font-size: 7pt; line-height: 1.45; white-space: pre-wrap; border-top: 1px solid var(--rev-border); }
     .fig-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.35rem; }
+    .fig-grid--stack { grid-template-columns: 1fr; }
     @media screen {
       .page { min-height: var(--a4-h); height: auto; max-height: none; overflow: visible; }
       .sheet-main { overflow: visible; }
     }
     @media print {
-      .page { width: 210mm; min-height: 297mm; height: auto; max-height: none; margin: 0; box-shadow: none; border: none; overflow: visible; }
-      .sheet-main { overflow: visible; }
+      body.informe-rev { background: #fff; }
+      .page {
+        width: 100%;
+        min-height: var(--print-body-h);
+        height: auto;
+        max-height: none;
+        margin: 0;
+        box-shadow: none;
+        border: none;
+        overflow: visible;
+        display: flex;
+        flex-direction: column;
+        break-after: page;
+        page-break-after: always;
+      }
+      .page--cover { min-height: var(--a4-h); display: block; }
+      .page:last-of-type { break-after: auto; page-break-after: auto; }
+      .sheet-head { flex-shrink: 0; break-inside: avoid; break-after: avoid; }
+      .sheet-foot {
+        flex-shrink: 0;
+        margin-top: auto;
+        break-inside: avoid;
+        break-before: avoid;
+        padding-bottom: 0;
+      }
+      .sheet-head { padding: 4mm 14mm 2mm; }
+      .sheet-foot { padding-top: 2mm; }
+      .sheet-main { flex: 1 1 auto; overflow: visible; break-inside: auto; padding: 3mm 14mm 1.5mm; }
       .no-print { display: none !important; }
-      .fig-real, table, pre, .mermaid, .exec-box { break-inside: avoid; }
-      @page { size: 210mm 297mm; margin: 15mm 18mm; }
+      .fig-img { max-height: 38mm; }
+      .fig-img--app { max-height: 42mm; }
+      pre.code-capture { max-height: 30mm; font-size: 5.75pt; line-height: 1.28; }
+      .git-evidence { max-height: 22mm; overflow: hidden; font-size: 6pt; line-height: 1.35; }
+      .mermaid { break-inside: avoid; max-height: 68mm; overflow: hidden; padding: 0.25rem; margin: 0.25rem 0; }
+      .mermaid svg { max-height: 64mm !important; width: 100% !important; }
+      .fig-real { break-inside: avoid; margin: 0.2rem 0; }
+      .fig-real .fig-title { font-size: 0.82rem; }
+      .fig-real .fig-desc { font-size: 7pt; margin-bottom: 0.35rem; }
+      .sheet-main h1 { font-size: 1.28rem; margin-bottom: 0.4rem; }
+      .sheet-main h3 { margin-top: 0.5rem; margin-bottom: 0.2rem; font-size: 0.88rem; }
+      .sheet-main p, .sheet-main li { margin: 0.2rem 0; font-size: 9.25pt; }
+      .sheet-main table { margin: 0.3rem 0; font-size: 7.75pt; }
+      .exec-box, .chapter-intro, .chapter-end { margin: 0.3rem 0; padding: 0.4rem 0.6rem; }
+      .fig-grid { display: block; }
+      .fig-grid .fig-real { width: 100%; margin-bottom: 0.3rem; }
+      .fig-real--wide { grid-column: auto; }
+      table, .exec-box, .chapter-intro, .chapter-end { break-inside: avoid; }
+      .sheet-main h1, .sheet-main h3 { break-after: avoid; }
+      .sheet-main table { font-size: 8pt; }
+      @page { size: 210mm 297mm; margin: var(--print-margin-y) var(--print-margin-x); }
     }
   </style>
 </head>
@@ -107,9 +158,9 @@
       <div class="cover-meta__item"><span class="cover-meta__label">Integrantes</span><span class="cover-meta__value">Nicolás Barra · Giannina Guerrero</span></div>
       <div class="cover-meta__item"><span class="cover-meta__label">Profesor(a)</span><span class="cover-meta__value">Israel Alejandro Villagra Riquelme</span></div>
       <div class="cover-meta__item"><span class="cover-meta__label">Fecha</span><span class="cover-meta__value">Mayo 2026</span></div>
-      <div class="cover-meta__item"><span class="cover-meta__label">Versión</span><span class="cover-meta__value">1.4 — evidencias integradas · rama dev</span></div>
+      <div class="cover-meta__item"><span class="cover-meta__label">Versión</span><span class="cover-meta__value">Informe integral · rama dev · Mayo 2026</span></div>
     </div>
-    <div class="cover-bottom"><strong>REV</strong> · Informe académico EVA2 · Formato A4 (210 × 297 mm)</div>
+    <div class="cover-bottom"><strong>REV</strong> · Red de Emergencia Valle · Informe académico EVA2</div>
   </div>
 </section>
 
@@ -162,6 +213,19 @@
     <li><a href="#cap13">13. Evidencias del sistema</a></li>
     <li><a href="#cap14">14. Conclusiones</a></li>
   </ol>
+
+  <h3>Metodología del informe</h3>
+  <p>Cada afirmación técnica se vincula a artefactos verificables del monorepo <code>rev-fullstack</code>: código fuente, migraciones Flyway, configuración Docker/Keycloak, capturas del dashboard y evidencia Git. Los capítulos 5, 9 y 13 incluyen figuras numeradas que corresponden a extractos reales del repositorio.</p>
+  <table>
+    <caption>Estructura del monorepo</caption>
+    <thead><tr><th>Carpeta</th><th>Contenido</th></tr></thead>
+    <tbody>
+      <tr><td><code>businessdomain/</code></td><td>Microservicios de negocio (incidentes, zonas, recursos)</td></tr>
+      <tr><td><code>infraestructuredomain/</code></td><td>Gateway, BFF, Eureka, Keycloak adapter, Spring Boot Admin</td></tr>
+      <tr><td><code>frontend/rev-dashboard/</code></td><td>SPA React — despacho y portal ciudadano</td></tr>
+      <tr><td><code>docker/</code> · <code>archetypes/</code></td><td>Orquestación local y plantillas Maven</td></tr>
+    </tbody>
+  </table>
   </div>
   <footer class="sheet-foot"><span>Duoc UC · DSY1106 · REV</span><span class="sheet-foot__num"></span></footer>
 </section>
@@ -321,6 +385,13 @@ flowchart TB
     </tbody>
   </table>
 
+  </div>
+  <footer class="sheet-foot"><span>Duoc UC · DSY1106 · REV</span><span class="sheet-foot__num"></span></footer>
+</section>
+
+<section class="page page-break" id="cap3-3">
+  <header class="sheet-head"><span class="sheet-head__brand">REV · Informe Técnico</span><span class="sheet-head__title">Cap. 3 — Arquitectura (3/3)</span></header>
+  <div class="sheet-main">
   <h3>3.4 Flujo de datos (Dashboard)</h3>
   <div class="mermaid">
 sequenceDiagram
@@ -347,7 +418,19 @@ sequenceDiagram
     BFF-->>FE: DashboardResponse[] (degraded si fallback)
     FE-->>U: Vista unificada
   </div>
-  <div class="chapter-end"><strong>Conclusión:</strong> La arquitectura separa claramente perímetro, agregación y dominio, con tres bases de datos independientes.</div>
+
+  <h3>3.5 Despliegue local y perfiles Docker</h3>
+  <p>El stack se levanta con <code>docker compose --profile apps up</code>. Cada microservicio empaqueta su JAR en imagen <code>eclipse-temurin:21-jre-alpine</code> y se registra en Eureka al arrancar. El frontend consume el Gateway en <code>:18080</code> mediante proxy Vite en desarrollo.</p>
+  <table>
+    <thead><tr><th>Perfil / servicio</th><th>Función operacional</th></tr></thead>
+    <tbody>
+      <tr><td>PostgreSQL ×3</td><td>Persistencia aislada por bounded context (incidentes, zonas PostGIS, recursos)</td></tr>
+      <tr><td>Keycloak + realm <code>rev</code></td><td>Identidad, roles y usuarios de prueba (despachador, brigadista)</td></tr>
+      <tr><td>Eureka + Gateway + BFF</td><td>Descubrimiento, perímetro JWT y agregación para el dashboard</td></tr>
+      <tr><td>MS de negocio</td><td>APIs REST independientes con Flyway y Actuator <code>health,info</code></td></tr>
+    </tbody>
+  </table>
+  <div class="chapter-end"><strong>Conclusión:</strong> La arquitectura separa claramente perímetro, agregación y dominio, con tres bases de datos independientes y despliegue reproducible en entorno local.</div>
   </div>
   <footer class="sheet-foot"><span>Duoc UC · DSY1106 · REV</span><span class="sheet-foot__num"></span></footer>
 </section>
@@ -425,24 +508,25 @@ sequenceDiagram
 </figure>
 
   <h3>4.3 Arquetipo hexagonal (parcial) — ms-zonas-riesgo</h3>
+  <p>El módulo de zonas aplica <strong>ports &amp; adapters</strong> para desacoplar la fuente de datos climáticos. El dominio depende de la interfaz <code>WeatherDataPort</code>; la implementación concreta (<code>FakeWeatherAdapter</code>) puede reemplazarse por una API meteorológica real sin modificar <code>ZonaService</code>.</p>
   <table>
-    <thead><tr><th>Concepto</th><th>Archivo</th></tr></thead>
+    <thead><tr><th>Concepto</th><th>Archivo</th><th>Rol</th></tr></thead>
     <tbody>
-      <tr><td>Puerto</td><td><code>port/WeatherDataPort.java</code></td></tr>
-      <tr><td>Adaptador</td><td><code>adapter/FakeWeatherAdapter.java</code></td></tr>
-      <tr><td>Orquestación</td><td><code>service/ZonaService.java</code> inyecta el puerto</td></tr>
+      <tr><td>Puerto</td><td><code>port/WeatherDataPort.java</code></td><td>Contrato de obtención de condiciones</td></tr>
+      <tr><td>Adaptador</td><td><code>adapter/FakeWeatherAdapter.java</code></td><td>Implementación simulada para desarrollo</td></tr>
+      <tr><td>Orquestación</td><td><code>service/ZonaService.java</code></td><td>Inyecta el puerto; calcula riesgo territorial</td></tr>
     </tbody>
   </table>
-  <div class="chapter-end"><strong>Conclusión:</strong> REV estandariza la estructura de MS mediante arquetipo Maven y capas Spring; ms-zonas-riesgo extiende con ports/adapters.</div>
+  <div class="chapter-end"><strong>Conclusión:</strong> REV estandariza la estructura de MS mediante arquetipo Maven y capas Spring; ms-zonas-riesgo demuestra extensión hexagonal donde el dominio lo exige.</div>
   </div>
   <footer class="sheet-foot"><span>Duoc UC · DSY1106 · REV</span><span class="sheet-foot__num"></span></footer>
 </section>
 
 <section class="page page-break" id="cap5">
-  <header class="sheet-head"><span class="sheet-head__brand">REV · Informe Técnico</span><span class="sheet-head__title">Cap. 5 — Patrones (1/2)</span></header>
+  <header class="sheet-head"><span class="sheet-head__brand">REV · Informe Técnico</span><span class="sheet-head__title">Cap. 5 — Patrones (1/3)</span></header>
   <div class="sheet-main">
 <h1>5. Patrones de diseño</h1>
-  <p class="chapter-intro">Patrones GoF y de conveniencia Spring verificados en código. Formato: objetivo → problema → ubicación → beneficio → evidencia.</p>
+  <p class="chapter-intro">Patrones GoF y de conveniencia Spring verificados en código. Cada patrón se analiza con: objetivo, problema, ubicación en el repo, beneficio operacional y evidencia en figura.</p>
 
   <h3>5.1 Factory Method — <code>IncidentStateFactory</code></h3>
   <table>
@@ -454,13 +538,6 @@ sequenceDiagram
       <tr><td>Beneficio</td><td>Registro automático vía Spring (<code>List&lt;IncidentStateHandler&gt;</code>) en <code>EnumMap</code></td></tr>
     </tbody>
   </table>
-  <pre>@Component
-public class IncidentStateFactory {
-    public void validarTransicion(Incidente incidente, EstadoIncidente destino) {
-        IncidentStateHandler handler = handlers.get(incidente.getEstado());
-        handler.validarTransicion(incidente, destino);
-    }
-}</pre>
   <figure class="fig-real">
   <p class="fig-num">Figura 2</p>
   <p class="fig-title">Factory Method — IncidentStateFactory</p>
@@ -490,7 +567,13 @@ public class IncidentStateFactory {
 // …</code></pre>
   <p class="fig-desc">Resuelve handler por estado actual vía <code>EnumMap</code>.</p>
 </figure>
+  </div>
+  <footer class="sheet-foot"><span>Duoc UC · DSY1106 · REV</span><span class="sheet-foot__num"></span></footer>
+</section>
 
+<section class="page page-break" id="cap5-1b">
+  <header class="sheet-head"><span class="sheet-head__brand">REV · Informe Técnico</span><span class="sheet-head__title">Cap. 5 — Patrones (2/3)</span></header>
+  <div class="sheet-main">
   <h3>5.2 State — handlers de transición</h3>
   <table>
     <thead><tr><th>Clase</th><th>Estado</th><th>Regla destacada</th></tr></thead>
@@ -536,7 +619,7 @@ public class ReportadoState extends BaseIncidentState {
 </section>
 
 <section class="page page-break" id="cap5-2">
-  <header class="sheet-head"><span class="sheet-head__brand">REV · Informe Técnico</span><span class="sheet-head__title">Cap. 5 — Patrones (2/2)</span></header>
+  <header class="sheet-head"><span class="sheet-head__brand">REV · Informe Técnico</span><span class="sheet-head__title">Cap. 5 — Patrones (3/4)</span></header>
   <div class="sheet-main">
 <h3>5.3 Adapter — clima simulado</h3>
   <table>
@@ -615,6 +698,13 @@ public class DashboardFacadeService {
   <p class="fig-desc">Agregación con <code>@CircuitBreaker</code> y flag <code>degraded</code>.</p>
 </figure>
 
+  </div>
+  <footer class="sheet-foot"><span>Duoc UC · DSY1106 · REV</span><span class="sheet-foot__num"></span></footer>
+</section>
+
+<section class="page page-break" id="cap5-3">
+  <header class="sheet-head"><span class="sheet-head__brand">REV · Informe Técnico</span><span class="sheet-head__title">Cap. 5 — Patrones (4/4)</span></header>
+  <div class="sheet-main">
   <h3>5.5 Repository — Spring Data JPA</h3>
   <p>Interfaces en cada MS: <code>IncidenteRepository</code>, <code>ZonaRepository</code>, <code>BrigadaRepository</code>, etc. Abstraen persistencia PostgreSQL/PostGIS.</p>
   <figure class="fig-real">
@@ -712,7 +802,7 @@ resilience4j.circuitbreaker.instances.zonasRiesgo.waitDurationInOpenState=5s</pr
 </section>
 
 <section class="page page-break" id="cap7">
-  <header class="sheet-head"><span class="sheet-head__brand">REV · Informe Técnico</span><span class="sheet-head__title">Cap. 7 — Branching</span></header>
+  <header class="sheet-head"><span class="sheet-head__brand">REV · Informe Técnico</span><span class="sheet-head__title">Cap. 7 — Branching (1/2)</span></header>
   <div class="sheet-main">
 <h1>7. Estrategia de branching</h1>
   <p class="chapter-intro">Documentado en <code>docs/CONTRIBUTING.md</code>. GitFlow simplificado con dos ramas principales.</p>
@@ -739,8 +829,24 @@ gitGraph
   commit id: "feature UX"
   </div>
 
-  <p><strong>Commits atómicos:</strong> formato <code>[ TIPO ]: descripción</code> — FEAT, FIX, DOCS, INFRA, etc.</p>
-  <p><strong>CI:</strong> <code>.github/workflows/ci.yml</code> dispara en push/PR a <code>main</code>, <code>dev</code>, <code>develop</code>.</p>
+  <p><strong>Commits atómicos:</strong> convención <code>[ TIPO ]: descripción</code> — FEAT, FIX, DOCS, INFRA, etc. Un commit = una unidad lógica verificable.</p>
+  <p><strong>CI:</strong> <code>.github/workflows/ci.yml</code> ejecuta build Maven y tests en push/PR a <code>main</code> y <code>dev</code>.</p>
+
+  </div>
+  <footer class="sheet-foot"><span>Duoc UC · DSY1106 · REV</span><span class="sheet-foot__num"></span></footer>
+</section>
+
+<section class="page page-break" id="cap7-2">
+  <header class="sheet-head"><span class="sheet-head__brand">REV · Informe Técnico</span><span class="sheet-head__title">Cap. 7 — Branching (2/2)</span></header>
+  <div class="sheet-main">
+  <h3>7.1 Flujo de integración y trazabilidad</h3>
+  <ul>
+    <li>Desarrollo en <code>dev</code> o ramas <code>feature/*</code> con commits atómicos.</li>
+    <li>Pull Request hacia <code>dev</code> con revisión de pares antes de merge.</li>
+    <li>Promoción a <code>main</code> solo cuando el sprint o entrega EVA está validado.</li>
+    <li>Documentación de arquitectura y guías en <code>docs/</code> versionadas junto al código.</li>
+  </ul>
+  <p>La correlación entre commits, ramas y funcionalidades permite defender oralmente cada decisión técnica con evidencia en GitHub.</p>
 
   <figure class="fig-real"><p class="fig-num">Figura 8</p><p class="fig-title">Ramas Git — rev-fullstack</p><div class="git-evidence">* dev
   main
@@ -749,9 +855,9 @@ gitGraph
   remotes/origin/feature/public-report-incidente-login</div><p class="fig-desc">GitFlow simplificado: <code>main</code> estable, <code>dev</code> integración.</p></figure>
   <figure class="fig-real"><p class="fig-num">Figura 9</p><p class="fig-title">Historial reciente — rama dev</p><div class="git-evidence">df4dd37 [ DOCS ]: Actualizar mapa de ramas EVA2
 b347d18 [ DOCS ]: Documentar correlacion y login
-718460d [ FEAT ]: Reporte publico con mapa OSM</div><p class="fig-desc">Commits atómicos <code>[ TIPO ]: descripción</code> — CI en GitHub Actions.</p></figure>
+718460d [ FEAT ]: Reporte publico con mapa OSM</div><p class="fig-desc">Trazabilidad entre funcionalidad, documentación e integración continua.</p></figure>
 
-  <div class="chapter-end"><strong>Conclusión:</strong> La estrategia protege <code>main</code> y canaliza el trabajo colaborativo en <code>dev</code>.</div>
+  <div class="chapter-end"><strong>Conclusión:</strong> La estrategia protege <code>main</code>, canaliza el trabajo colaborativo en <code>dev</code> y deja evidencia auditable para la evaluación.</div>
   </div>
   <footer class="sheet-foot"><span>Duoc UC · DSY1106 · REV</span><span class="sheet-foot__num"></span></footer>
 </section>
@@ -775,7 +881,12 @@ b347d18 [ DOCS ]: Documentar correlacion y login
       <tr><td><strong>Frontend modular</strong></td><td>Componentes por dominio (<code>inicio/</code>, <code>incidentes/</code>, <code>zonas/</code>)</td></tr>
     </tbody>
   </table>
-  <div class="chapter-end"><strong>Conclusión:</strong> El monorepo aplica convenciones consistentes que facilitan onboarding y evaluación académica.</div>
+
+  <h3>8.1 Convenciones del monorepo</h3>
+  <p>El parent POM <code>rev-parent</code> centraliza versiones de Spring Boot 4, Spring Cloud y dependencias compartidas. Cada módulo expone su README con puerto, endpoints y orden de arranque. Los DTOs de frontera evitan filtrar entidades JPA al exterior; las excepciones de negocio se traducen a respuestas HTTP coherentes mediante <code>ApiExceptionHandler</code>.</p>
+  <p>Las migraciones Flyway son la única fuente de verdad del esquema (<code>ddl-auto=validate</code>). En frontend, el cliente API centraliza rutas hacia el Gateway y normaliza errores para <code>StateView</code> y toasts.</p>
+
+  <div class="chapter-end"><strong>Conclusión:</strong> El monorepo aplica convenciones consistentes que facilitan onboarding, revisión de código y evaluación académica.</div>
   </div>
   <footer class="sheet-foot"><span>Duoc UC · DSY1106 · REV</span><span class="sheet-foot__num"></span></footer>
 </section>
@@ -827,7 +938,15 @@ sequenceDiagram
       <tr><td><code>/auth/**</code></td><td>N/A</td><td>Login, roles, refresh</td></tr>
     </tbody>
   </table>
-  <p><strong>Nota:</strong> Los microservicios de negocio no implementan <code>@PreAuthorize</code>; el perímetro de seguridad está en Gateway + adapter (decisión documentada).</p>
+  <p><strong>Nota:</strong> Los microservicios de negocio no implementan <code>@PreAuthorize</code>; el perímetro de seguridad está en Gateway + adapter — decisión documentada que concentra políticas de acceso y simplifica los MS de dominio.</p>
+
+  <h3>9.3 Implicancias del modelo perimetral</h3>
+  <ul>
+    <li>El Gateway valida JWT antes de enrutar a <code>BFF-REV</code> o microservicios.</li>
+    <li>El adapter traduce credenciales Keycloak y expone roles para autorización coarse-grained.</li>
+    <li>Rutas públicas (<code>/api/public/**</code>) permiten reporte ciudadano sin token, con validación en MS.</li>
+    <li>Los MS confían en la red interna Docker; en producción se reforzaría con mTLS o service mesh.</li>
+  </ul>
 
   <figure class="fig-real">
   <p class="fig-num">Figura 10</p>
@@ -858,6 +977,14 @@ sequenceDiagram
 // …</code></pre>
   <p class="fig-desc">Roles Despachador, Brigadista, Admin, Ciudadano importados al arranque.</p>
 </figure>
+
+  </div>
+  <footer class="sheet-foot"><span>Duoc UC · DSY1106 · REV</span><span class="sheet-foot__num"></span></footer>
+</section>
+
+<section class="page page-break" id="cap9-3">
+  <header class="sheet-head"><span class="sheet-head__brand">REV · Informe Técnico</span><span class="sheet-head__title">Cap. 9 — Seguridad (3/3)</span></header>
+  <div class="sheet-main">
   <figure class="fig-real">
   <p class="fig-num">Figura 11</p>
   <p class="fig-title">AuthenticationFilter — Gateway</p>
@@ -1034,7 +1161,7 @@ CREATE TABLE transiciones_estado (
 </section>
 
 <section class="page page-break" id="cap12">
-  <header class="sheet-head"><span class="sheet-head__brand">REV · Informe Técnico</span><span class="sheet-head__title">Cap. 12 — UX/UI</span></header>
+  <header class="sheet-head"><span class="sheet-head__brand">REV · Informe Técnico</span><span class="sheet-head__title">Cap. 12 — UX/UI (1/2)</span></header>
   <div class="sheet-main">
 <h1>12. UX/UI y experiencia de usuario</h1>
 
@@ -1058,6 +1185,13 @@ CREATE TABLE transiciones_estado (
     </tbody>
   </table>
 
+  </div>
+  <footer class="sheet-foot"><span>Duoc UC · DSY1106 · REV</span><span class="sheet-foot__num"></span></footer>
+</section>
+
+<section class="page page-break" id="cap12-2">
+  <header class="sheet-head"><span class="sheet-head__brand">REV · Informe Técnico</span><span class="sheet-head__title">Cap. 12 — UX/UI (2/2)</span></header>
+  <div class="sheet-main">
   <h3>12.3 Arquitectura de información (páginas)</h3>
   <table>
     <thead><tr><th>Módulo</th><th>Ruta</th><th>Función UX</th></tr></thead>
@@ -1073,30 +1207,32 @@ CREATE TABLE transiciones_estado (
 
   <h3>12.4 Componentes y decisiones de diseño</h3>
   <ul>
-    <li><strong>OperationalAmbient</strong> — fondo decorativo mapa/radar (sin interacción).</li>
-    <li><strong>ModuleHub</strong> — patrón layout KPIs + toolbar + rail reutilizable.</li>
-    <li><strong>StateView</strong> — estados loading / empty / error unificados.</li>
-    <li><strong>DegradedAlert</strong> — mensaje «información parcial» al usuario (no «circuit breaker»).</li>
-    <li><strong>Glass cards</strong> — superficies semitransparentes en <code>theme.css</code>.</li>
+    <li><strong>OperationalAmbient</strong> — contexto visual de operación (mapa/radar) sin distraer del dato crítico.</li>
+    <li><strong>ModuleHub</strong> — layout reutilizable: KPIs + toolbar + panel lateral de detalle.</li>
+    <li><strong>StateView</strong> — estados loading / empty / error unificados en todos los módulos.</li>
+    <li><strong>DegradedAlert</strong> — comunica «información parcial» cuando el BFF activa fallback; evita jerga técnica al despachador.</li>
+    <li><strong>Glass cards</strong> — superficies semitransparentes definidas en <code>theme.css</code> para jerarquía visual.</li>
   </ul>
 
+  <h3>12.5 Capturas de pantalla</h3>
+  <p>Evidencia visual del dashboard con datos reales del stack local.</p>
   <figure class="fig-real">
   <p class="fig-num">Figura 14</p>
-  <p class="fig-title">Dashboard Despacho</p>
-  <img class="fig-img" src="informe-evidencias/fig14-dispatch.png" alt="Dashboard Despacho" loading="lazy" />
-  <p class="fig-desc">Centro de operaciones — <code>rev-about-dispatch.png</code>.</p>
+  <p class="fig-title">Dashboard Despacho — panel operacional</p>
+  <img class="fig-img fig-img--app" src="informe-evidencias/fig14-dispatch.png" alt="Dashboard Despacho REV" loading="lazy" />
+  <p class="fig-desc">Captura real de <code>/</code> con sesión despachador: KPIs, incidente activo y módulos Zonas/Recursos.</p>
 </figure>
   <figure class="fig-real">
   <p class="fig-num">Figura 15</p>
-  <p class="fig-title">Zonas e incidentes — mapa</p>
-  <img class="fig-img" src="informe-evidencias/fig15-zonas.png" alt="Zonas e incidentes — mapa" loading="lazy" />
-  <p class="fig-desc">Visualización territorial — <code>rev-about-map.png</code>.</p>
+  <p class="fig-title">Módulo Incidentes — listado y correlaciones</p>
+  <img class="fig-img fig-img--app" src="informe-evidencias/fig15-incidentes.png" alt="Módulo Incidentes REV" loading="lazy" />
+  <p class="fig-desc">Captura real de <code>/incidentes</code>: filtros, vista listado y panel de distribución.</p>
 </figure>
   <figure class="fig-real">
   <p class="fig-num">Figura 16</p>
-  <p class="fig-title">Login — hero y reporte</p>
-  <img class="fig-img" src="informe-evidencias/fig16-login.jpg" alt="Login — hero y reporte" loading="lazy" />
-  <p class="fig-desc">Pantalla de acceso con canal ciudadano — <code>login-hero.jpg</code>.</p>
+  <p class="fig-title">Login — pestaña Reportar emergencia</p>
+  <img class="fig-img fig-img--app" src="informe-evidencias/fig16-login-reporte.png" alt="Login REV — reporte público" loading="lazy" />
+  <p class="fig-desc">Captura real de <code>/login</code>: formulario por pasos, mapa OSM y guía ciudadana.</p>
 </figure>
 
   <div class="chapter-end"><strong>Conclusión:</strong> UI coherente con identidad REV, orientada al despachador y al vecino, con design tokens centralizados.</div>
@@ -1105,7 +1241,7 @@ CREATE TABLE transiciones_estado (
 </section>
 
 <section class="page page-break" id="cap13">
-  <header class="sheet-head"><span class="sheet-head__brand">REV · Informe Técnico</span><span class="sheet-head__title">Cap. 13 — Evidencias (1/2)</span></header>
+  <header class="sheet-head"><span class="sheet-head__brand">REV · Informe Técnico</span><span class="sheet-head__title">Cap. 13 — Evidencias (1/3)</span></header>
   <div class="sheet-main">
 <h1>13. Evidencias del sistema</h1>
   <p class="chapter-intro">Galería de evidencias integradas desde el repositorio <code>rev-fullstack</code>: extractos de código, configuración, assets UI e historial Git verificables en el monorepo.</p>
@@ -1117,38 +1253,60 @@ CREATE TABLE transiciones_estado (
       <tr><td>8–9</td><td>GitHub branching</td><td>main, dev, PR</td></tr>
       <tr><td>10–12</td><td>Seguridad Keycloak + JWT</td><td>Realm, filtro, adapter</td></tr>
       <tr><td>13</td><td>Base de datos</td><td>Flyway / PostgreSQL</td></tr>
-      <tr><td>14–16</td><td>Frontend UX</td><td>Pantallas operativas</td></tr>
+      <tr><td>14–16b</td><td>Frontend UX</td><td>Pantallas operativas</td></tr>
       <tr><td>17</td><td>Eureka Dashboard</td><td>Instancias registradas :8761</td></tr>
       <tr><td>18</td><td>Spring Boot Admin</td><td>Health de microservicios :8099</td></tr>
       <tr><td>19</td><td>Swagger / OpenAPI</td><td>Documentación MS incidentes</td></tr>
       <tr><td>20</td><td>Docker Compose</td><td><code>docker compose ps</code> servicios activos</td></tr>
     </tbody>
   </table>
-  <h3>Capturas UX (figuras 14–16)</h3>
-  <div class="fig-grid">
+
+  <h3>13.1 Criterio de evidencia</h3>
+  <p>Las figuras UX (14–16b) corresponden a capturas del dashboard en ejecución con datos reales del stack Docker. Las figuras de infraestructura (17–20) muestran configuración de discovery, monitorización, API y orquestación. Todas son reproducibles clonando el repositorio y siguiendo el README raíz.</p>
+
+  <h3>13.2 Panel operacional — figuras 14 y 15</h3>
+  <div class="fig-grid fig-grid--stack">
     <figure class="fig-real">
   <p class="fig-num">Figura 14</p>
-  <p class="fig-title">Dashboard Despacho</p>
-  <img class="fig-img" src="informe-evidencias/fig14-dispatch.png" alt="Dashboard Despacho" loading="lazy" />
-  <p class="fig-desc">Centro de operaciones — <code>rev-about-dispatch.png</code>.</p>
+  <p class="fig-title">Despacho — centro de operaciones</p>
+  <img class="fig-img fig-img--app" src="informe-evidencias/fig14-dispatch.png" alt="Despacho REV" loading="lazy" />
+  <p class="fig-desc">Vista <code>/</code>: KPIs del día, incidente activo (FORESTAL) y acceso rápido a Zonas y Recursos. El despachador obtiene situación operacional sin navegar múltiples sistemas.</p>
 </figure>
     <figure class="fig-real">
   <p class="fig-num">Figura 15</p>
-  <p class="fig-title">Zonas e incidentes — mapa</p>
-  <img class="fig-img" src="informe-evidencias/fig15-zonas.png" alt="Zonas e incidentes — mapa" loading="lazy" />
-  <p class="fig-desc">Visualización territorial — <code>rev-about-map.png</code>.</p>
+  <p class="fig-title">Incidentes — seguimiento</p>
+  <img class="fig-img fig-img--app" src="informe-evidencias/fig15-incidentes.png" alt="Incidentes REV" loading="lazy" />
+  <p class="fig-desc">Vista <code>/incidentes</code>: filtros por estado/tipo, listado con correlaciones y panel de distribución geográfica.</p>
+</figure>
+  </div>
+  </div>
+  <footer class="sheet-foot"><span>Duoc UC · DSY1106 · REV</span><span class="sheet-foot__num"></span></footer>
+</section>
+
+<section class="page page-break" id="cap13-ux2">
+  <header class="sheet-head"><span class="sheet-head__brand">REV · Informe Técnico</span><span class="sheet-head__title">Cap. 13 — Evidencias (2/3)</span></header>
+  <div class="sheet-main">
+  <h3>13.3 Canal territorial y ciudadano — figuras 15b–16b</h3>
+  <p>El módulo Zonas integra Leaflet con datos PostGIS del microservicio <code>ms-zonas-riesgo</code>. Login y Portal habilitan reporte sin registro previo mediante <code>POST /api/public/incidentes</code>, alineado al rol Ciudadano del realm Keycloak.</p>
+  <p>En operación, el despachador consulta riesgo territorial antes de asignar brigadas; el vecino reporta desde terreno con georreferenciación obligatoria, alimentando el mismo ciclo de vida gestionado por <code>ms-incidentes</code>.</p>
+  <div class="fig-grid fig-grid--stack">
+    <figure class="fig-real">
+  <p class="fig-num">Figura 15b</p>
+  <p class="fig-title">Zonas de riesgo — mapa Leaflet</p>
+  <img class="fig-img fig-img--app" src="informe-evidencias/fig15b-zonas.png" alt="Zonas REV" loading="lazy" />
+  <p class="fig-desc">Mapa <code>/zonas</code> con polígonos de riesgo, marcadores Leaflet y correlación visual con incidentes activos.</p>
 </figure>
     <figure class="fig-real">
   <p class="fig-num">Figura 16</p>
-  <p class="fig-title">Login — hero y reporte</p>
-  <img class="fig-img" src="informe-evidencias/fig16-login.jpg" alt="Login — hero y reporte" loading="lazy" />
-  <p class="fig-desc">Pantalla de acceso con canal ciudadano — <code>login-hero.jpg</code>.</p>
+  <p class="fig-title">Login — reporte ciudadano</p>
+  <img class="fig-img fig-img--app" src="informe-evidencias/fig16-login-reporte.png" alt="Login reporte REV" loading="lazy" />
+  <p class="fig-desc">Pestaña Reportar en <code>/login</code>: formulario por pasos, georreferenciación OSM y guía para el vecino.</p>
 </figure>
-    <figure class="fig-real">
+    <figure class="fig-real fig-real--wide">
   <p class="fig-num">Figura 16b</p>
   <p class="fig-title">Portal ciudadano</p>
-  <img class="fig-img" src="informe-evidencias/fig16b-portal.png" alt="Portal ciudadano" loading="lazy" />
-  <p class="fig-desc">Canal público — asset <code>rev-about-portal.png</code>.</p>
+  <img class="fig-img fig-img--app" src="informe-evidencias/fig16b-portal.png" alt="Portal REV" loading="lazy" />
+  <p class="fig-desc">Landing <code>/portal</code>: acceso directo al flujo de reporte para vecinos sin cuenta municipal.</p>
 </figure>
   </div>
   </div>
@@ -1156,10 +1314,11 @@ CREATE TABLE transiciones_estado (
 </section>
 
 <section class="page page-break" id="cap13-2">
-  <header class="sheet-head"><span class="sheet-head__brand">REV · Informe Técnico</span><span class="sheet-head__title">Cap. 13 — Evidencias (2/2)</span></header>
+  <header class="sheet-head"><span class="sheet-head__brand">REV · Informe Técnico</span><span class="sheet-head__title">Cap. 13 — Evidencias (3/3)</span></header>
   <div class="sheet-main">
-<h3>Infraestructura (figuras 17–20)</h3>
-  <div class="fig-grid">
+  <h3>13.4 Infraestructura y orquestación — figuras 17–20</h3>
+  <p>Evidencia de service discovery, monitorización, contrato REST y despliegue local. Complementa los diagramas del capítulo 3 con extractos del repositorio.</p>
+  <div class="fig-grid fig-grid--stack">
     <figure class="fig-real">
   <p class="fig-num">Figura 17</p>
   <p class="fig-title">Eureka Server</p>
@@ -1188,28 +1347,17 @@ depends_on:
   <p class="fig-file">ms-incidentes/.../IncidenteController.java</p>
   <pre class="code-capture"><code>package cl.duocuc.rev.incidentes.controller;
 
-import cl.duocuc.rev.incidentes.dto.AdjuntoResponse;
 import cl.duocuc.rev.incidentes.dto.IncidenteRequest;
 import cl.duocuc.rev.incidentes.dto.IncidenteResponse;
 import cl.duocuc.rev.incidentes.dto.PublicIncidenteRequest;
-import cl.duocuc.rev.incidentes.dto.TransicionRequest;
-import cl.duocuc.rev.incidentes.entity.IncidenteAdjunto;
-import cl.duocuc.rev.incidentes.model.TipoAdjunto;
-import cl.duocuc.rev.incidentes.service.AdjuntoService;
-import cl.duocuc.rev.incidentes.service.AdjuntoStorageService;
 import cl.duocuc.rev.incidentes.service.IncidenteService;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 // …</code></pre>
-  <p class="fig-desc">Endpoints REST documentados vía springdoc en runtime.</p>
+  <p class="fig-desc">Contrato REST del bounded context incidentes — incluye reporte público y transiciones.</p>
 </figure>
     <figure class="fig-real">
   <p class="fig-num">Figura 20</p>
@@ -1219,28 +1367,19 @@ import org.springframework.http.MediaType;
 
 x-java-app: &amp;java-app
   image: eclipse-temurin:21-jre-alpine
-  restart: on-failure
   environment:
     SPRING_PROFILES_ACTIVE: docker
-  command: ["java", "-jar", "/opt/app.jar"]
 
 services:
   postgres-incidentes:
     image: postgres:16-alpine
     environment:
       POSTGRES_DB: rev_incidentes
-      POSTGRES_USER: rev
-      POSTGRES_PASSWORD: rev123
-    ports:
-      - "${REV_PG_INCIDENTES_PORT:-15432}:5432"
-    volumes:
-      - pg_incidentes:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U rev -d rev_incidentes"]
 // …</code></pre>
-  <p class="fig-desc">Orquestación local: PostgreSQL ×3, Keycloak, Eureka, MS, BFF, Gateway (perfil <code>apps</code>).</p>
+  <p class="fig-desc">Orquestación local: PostgreSQL ×3, Keycloak, Eureka, MS, BFF y Gateway (perfil <code>apps</code>).</p>
 </figure>
   </div>
+  <div class="chapter-end"><strong>Conclusión del capítulo:</strong> Las evidencias cubren patrones, seguridad, UX e infraestructura con trazabilidad directa al monorepo.</div>
   </div>
   <footer class="sheet-foot"><span>Duoc UC · DSY1106 · REV</span><span class="sheet-foot__num"></span></footer>
 </section>
@@ -1285,13 +1424,8 @@ services:
     <p><strong>Síntesis final:</strong> REV es una plataforma de emergencias municipal implementada con stack moderno, patrones documentados y evidencia en repositorio — apta para auditoría técnica académica y evolución hacia producción institucional.</p>
   </div>
 
-  <p class="footer-note">Documento generado a partir del repositorio <code>rev-fullstack</code> · Duoc UC · DSY1106 · Mayo 2026<br/>
-  Complementos: <code>docs/informe-sistema-rev.md</code> · <code>docs/patrones-y-arquitectura-rev.md</code></p>
+  <p class="footer-note">Documento elaborado a partir del repositorio <code>rev-fullstack</code> · Duoc UC · DSY1106 · Mayo 2026</p>
   </div>
   <footer class="sheet-foot"><span>Duoc UC · DSY1106 · REV</span><span class="sheet-foot__num"></span></footer>
 </section>
-<p class="no-print footer-note" style="width:210mm;max-width:calc(100% - 2rem);margin:12mm auto 2rem;padding:1rem;text-align:center;background:#fff;border:1px solid var(--rev-border-strong);border-radius:8px;">
-  <strong>23 hojas A4</strong> — tema claro · evidencias del repositorio · v1.4<br/>
-  PDF: <kbd>Ctrl+P</kbd> → A4 → vertical → Gráficos de fondo ON → escala 100%
-</p>
 </body></html>

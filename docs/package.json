@@ -1,0 +1,19 @@
+{
+  "name": "docs",
+  "version": "1.0.0",
+  "description": "Índice de documentación del proyecto **Red de Emergencia Valle** (DSY1106 — Duoc UC).",
+  "main": "index.js",
+  "scripts": {
+    "audit:informe": "node audit-informe-pages.mjs",
+    "capture:ux": "node capture-ux-screenshots.mjs",
+    "preprocess:presentacion": "node preprocess-mermaid-presentacion.mjs",
+    "build:presentacion": "node preprocess-mermaid-presentacion.mjs && npx --yes @marp-team/marp-cli@4.1.2 --no-stdin presentacion-rev-build.md -o \"Presentacion-REV-EVA2-v5.pdf\" --allow-local-files"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "playwright": "^1.60.0"
+  }
+}
