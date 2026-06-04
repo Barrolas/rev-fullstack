@@ -16,5 +16,12 @@ export default defineConfig(({ mode }) => {
         '/auth': gatewayUrl,
       },
     },
+    preview: {
+      port: frontendPort,
+      proxy: {
+        '/api': gatewayUrl,
+        '/auth': gatewayUrl,
+      },
+    },
   };
 });
