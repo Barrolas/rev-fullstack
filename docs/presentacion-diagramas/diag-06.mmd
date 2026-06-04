@@ -1,0 +1,17 @@
+flowchart TB
+    subgraph CAPAS["Capas MS de negocio"]
+        C[Controller]
+        S[Service]
+        R[Repository]
+        E[Entity / DTO]
+        C --> S --> R --> E
+    end
+    subgraph HEX["Hexagonal — ms-zonas-riesgo"]
+        P[WeatherDataPort]
+        A[FakeWeatherAdapter]
+        P --> A
+    end
+    subgraph ARC["Arquetipo Maven"]
+        M[rev-microservice-archetype]
+    end
+    M -.-> CAPAS

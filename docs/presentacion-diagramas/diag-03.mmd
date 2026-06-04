@@ -1,0 +1,24 @@
+flowchart TB
+    FE[React Dashboard :5173]
+    GW[API Gateway :8080]
+    KCA[Keycloak Adapter :8088]
+    KC[Keycloak :8090]
+    EU[Eureka :8761]
+    SBA[Spring Boot Admin :8099]
+    BFF[bff-rev :8085]
+    MI[ms-incidentes :8081]
+    MZ[ms-zonas-riesgo :8082]
+    MR[ms-recursos :8083]
+    PG1[(PostgreSQL rev_incidentes)]
+    PG2[(PostGIS rev_zonas)]
+    PG3[(PostgreSQL rev_recursos)]
+
+    FE -->|/api /auth| GW
+    GW -->|JWT| BFF
+    GW -->|/auth/**| KCA
+    KCA --> KC
+    BFF --> MI & MZ & MR
+    MI --> PG1
+    MZ --> PG2
+    MR --> PG3
+    MI & MZ & MR & BFF & GW & KCA -.-> EU

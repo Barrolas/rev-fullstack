@@ -1,0 +1,14 @@
+sequenceDiagram
+    participant U as Usuario
+    participant FE as React
+    participant GW as Gateway
+    participant AUTH as Adapter
+    participant KC as Keycloak
+    participant BFF as bff-rev
+    U->>FE: Login
+    FE->>GW: POST /auth/login
+    GW->>KC: OAuth2
+    KC-->>FE: JWT
+    FE->>GW: /api/** + Bearer
+    GW->>AUTH: Validar RSA256
+    GW->>BFF: Autorizado

@@ -158,21 +158,9 @@ Posible pregunta: «¿Por qué microservicios y no un monolito?» → Picos de d
 
 </div>
 
-```mermaid
-flowchart LR
-  subgraph MONO["Monolito tradicional"]
-    M1[UI + lógica + datos]
-  end
-  subgraph REV["REV — microservicios"]
-    R1[Incidentes]
-    R2[Zonas]
-    R3[Recursos]
-    R4[BFF + Gateway]
-    R1 & R2 & R3 --> R4
-  end
-  MONO -.->|picos de crisis| X[Cuellos de botella]
-  REV --> OK[Escalado por dominio]
-```
+
+<div class="rev-diagram-img"><img src="presentacion-diagramas/diag-01.svg" alt="Diagrama REV 01" /></div>
+
 
 </div>
 
@@ -246,18 +234,9 @@ Pregunta: «¿Dónde está la transición de estados en UI?» → Backend comple
 
 </div>
 
-```mermaid
-flowchart LR
-    INC[ms-incidentes<br/>:8081]
-    ZON[ms-zonas-riesgo<br/>:8082]
-    REC[ms-recursos<br/>:8083]
-    BFF[bff-rev]
-    UI[Dashboard React]
-    INC --> BFF
-    ZON --> BFF
-    REC --> BFF
-    BFF --> UI
-```
+
+<div class="rev-diagram-img"><img src="presentacion-diagramas/diag-02.svg" alt="Diagrama REV 02" /></div>
+
 
 </div>
 
@@ -275,32 +254,9 @@ Pregunta: «¿Por qué separar recursos de incidentes?» → Diferente ritmo de 
 
 ## Ecosistema verificado en el monorepo
 
-```mermaid
-flowchart TB
-    FE[React Dashboard :5173]
-    GW[API Gateway :8080]
-    KCA[Keycloak Adapter :8088]
-    KC[Keycloak :8090]
-    EU[Eureka :8761]
-    SBA[Spring Boot Admin :8099]
-    BFF[bff-rev :8085]
-    MI[ms-incidentes :8081]
-    MZ[ms-zonas-riesgo :8082]
-    MR[ms-recursos :8083]
-    PG1[(PostgreSQL rev_incidentes)]
-    PG2[(PostGIS rev_zonas)]
-    PG3[(PostgreSQL rev_recursos)]
 
-    FE -->|/api /auth| GW
-    GW -->|JWT| BFF
-    GW -->|/auth/**| KCA
-    KCA --> KC
-    BFF --> MI & MZ & MR
-    MI --> PG1
-    MZ --> PG2
-    MR --> PG3
-    MI & MZ & MR & BFF & GW & KCA -.-> EU
-```
+<div class="rev-diagram-img"><img src="presentacion-diagramas/diag-03.svg" alt="Diagrama REV 03" /></div>
+
 
 <div markdown="1" class="slide-workspace">
 
@@ -396,15 +352,9 @@ Pregunta: «¿Cómo se comunican?» → REST síncrono vía WebClient en BFF con
 
 <div markdown="1" class="rev-stack">
 
-```mermaid
-flowchart TB
-    DC[docker compose up] --> DB[(3× PostgreSQL/PostGIS)]
-    DC --> KC[Keycloak realm rev]
-    DC --> EU[Eureka :8761]
-    DC --> APP[6 apps Java 21]
-    EU --> SBA[Spring Boot Admin]
-    APP --> EU
-```
+
+<div class="rev-diagram-img"><img src="presentacion-diagramas/diag-04.svg" alt="Diagrama REV 04" /></div>
+
 
 <div class="rev-callout">Arranque: <code>.\scripts\dev-up.ps1 -DockerApps</code></div>
 
@@ -463,17 +413,9 @@ Pregunta: «¿Endpoint público sin JWT?» → /api/public/** para portal ciudad
 
 ## Trazabilidad clase → problema → beneficio
 
-```mermaid
-stateDiagram-v2
-    [*] --> REPORTADO
-    REPORTADO --> EN_PROGRESO: requireGeo
-    EN_PROGRESO --> CONTROLADO
-    EN_PROGRESO --> ESCALADO
-    CONTROLADO --> [*]
-    ESCALADO --> EN_PROGRESO
-    note right of REPORTADO: Factory + State
-    note right of EN_PROGRESO: IncidentStateFactory
-```
+
+<div class="rev-diagram-img"><img src="presentacion-diagramas/diag-05.svg" alt="Diagrama REV 05" /></div>
+
 
 <div markdown="1" class="slide-workspace rev-split rev-split--40-60">
 
@@ -510,25 +452,9 @@ Pregunta: «¿FakeWeatherAdapter es un hack?» → No; es adaptador consciente p
 
 ## Estructura reutilizable del monorepo
 
-```mermaid
-flowchart TB
-    subgraph CAPAS["Capas MS de negocio"]
-        C[Controller]
-        S[Service]
-        R[Repository]
-        E[Entity / DTO]
-        C --> S --> R --> E
-    end
-    subgraph HEX["Hexagonal — ms-zonas-riesgo"]
-        P[WeatherDataPort]
-        A[FakeWeatherAdapter]
-        P --> A
-    end
-    subgraph ARC["Arquetipo Maven"]
-        M[rev-microservice-archetype]
-    end
-    M -.-> CAPAS
-```
+
+<div class="rev-diagram-img"><img src="presentacion-diagramas/diag-06.svg" alt="Diagrama REV 06" /></div>
+
 
 <div markdown="1" class="slide-workspace rev-split">
 
@@ -564,23 +490,9 @@ Pregunta EVA2: «¿Cuántos arquetipos Maven?» → Uno custom en archetypes/; e
 
 ## Tres subdominios = tres microservicios autónomos
 
-```mermaid
-flowchart TB
-    subgraph BC1["BC Incidentes"]
-        MI[ms-incidentes]
-    end
-    subgraph BC2["BC Zonas"]
-        MZ[ms-zonas-riesgo]
-    end
-    subgraph BC3["BC Recursos"]
-        MR[ms-recursos]
-    end
-    subgraph ACL["Anti-Corruption Layer"]
-        BFF[bff-rev]
-    end
-    MI & MZ & MR -->|REST| BFF
-    BFF -->|DashboardResponse| FE[React SPA]
-```
+
+<div class="rev-diagram-img"><img src="presentacion-diagramas/diag-07.svg" alt="Diagrama REV 07" /></div>
+
 
 <div markdown="1" class="slide-workspace rev-split rev-split--65-35">
 
@@ -684,15 +596,9 @@ Pregunta: «¿Brigadista puede crear incidentes?» → No; canManageIncidents so
 
 </div>
 
-```mermaid
-flowchart LR
-    C[Ciudadano] --> P[Portal]
-    P --> GW[Gateway]
-    GW --> MI[ms-incidentes]
-    MI --> R[REPORTADO]
-    D[Despachador] --> INT[Panel]
-    INT --> R
-```
+
+<div class="rev-diagram-img"><img src="presentacion-diagramas/diag-08.svg" alt="Diagrama REV 08" /></div>
+
 
 </div>
 
@@ -828,15 +734,9 @@ Pregunta: «¿Accesibilidad?» → Contraste alto, aria-labels en navegación, r
 
 <div markdown="1" class="rev-stack">
 
-```mermaid
-flowchart LR
-    U[Usuario] --> KC[Keycloak realm rev]
-    KC --> D[Despachador]
-    KC --> B[Brigadista]
-    KC --> A[Admin]
-    D & A --> W[Escritura API]
-    B --> R[Solo lectura]
-```
+
+<div class="rev-diagram-img"><img src="presentacion-diagramas/diag-09.svg" alt="Diagrama REV 09" /></div>
+
 
 <div class="rev-callout"><code>useAuth.ts</code> · usuarios dev: despachador / brigadista / admin</div>
 
@@ -858,22 +758,9 @@ Pregunta: «¿Por qué Brigadista accede al panel?» → Visibilidad de incident
 
 ## ¿Cómo protege REV la información?
 
-```mermaid
-sequenceDiagram
-    participant U as Usuario
-    participant FE as React
-    participant GW as Gateway
-    participant AUTH as Adapter
-    participant KC as Keycloak
-    participant BFF as bff-rev
-    U->>FE: Login
-    FE->>GW: POST /auth/login
-    GW->>KC: OAuth2
-    KC-->>FE: JWT
-    FE->>GW: /api/** + Bearer
-    GW->>AUTH: Validar RSA256
-    GW->>BFF: Autorizado
-```
+
+<div class="rev-diagram-img"><img src="presentacion-diagramas/diag-10.svg" alt="Diagrama REV 10" /></div>
+
 
 <div markdown="1" class="slide-workspace rev-split">
 
@@ -910,20 +797,9 @@ Pregunta: «¿Es seguro el portal público?» → Solo creación de incidente; m
 
 ## ¿Qué ocurre cuando un servicio falla?
 
-```mermaid
-flowchart TD
-    BFF[DashboardFacadeService]
-    ZR[ms-zonas-riesgo]
-    RC[ms-recursos]
-    CACHE[ZonaRiesgoCache]
-    UI[React Dashboard]
-    BFF -->|CircuitBreaker| ZR
-    BFF -->|CircuitBreaker| RC
-    ZR -.->|fallo| FB1[fallback + cache]
-    RC -.->|fallo| FB2[degraded: true]
-    FB1 --> UI
-    FB2 --> UI
-```
+
+<div class="rev-diagram-img"><img src="presentacion-diagramas/diag-11.svg" alt="Diagrama REV 11" /></div>
+
 
 <div markdown="1" class="slide-workspace rev-split rev-split--65-35">
 
@@ -973,13 +849,9 @@ Pregunta: «¿Por qué no Hystrix?» → Resilience4j 2.2.0 en parent POM; está
 
 <div markdown="1" class="rev-stack">
 
-```mermaid
-erDiagram
-    INCIDENTES ||--o{ TRANSICIONES : audita
-    ZONAS ||--o{ CLIMA : condiciones
-    BRIGADAS ||--o{ ASIGNACIONES : participa
-    INCIDENTES ||--o{ ASIGNACIONES : UUID_ref
-```
+
+<div class="rev-diagram-img"><img src="presentacion-diagramas/diag-12.svg" alt="Diagrama REV 12" /></div>
+
 
 <div class="rev-callout"><code>ddl-auto=validate</code> + Flyway · sin FK cross-service entre BD.</div>
 
@@ -1011,16 +883,9 @@ erDiagram
 
 <div markdown="1" class="rev-stack">
 
-```mermaid
-flowchart TB
-    APP[Apps Java] --> ACT[Actuator health/info]
-    APP --> EU[Eureka]
-    EU --> SBA[Spring Boot Admin]
-    GW[Gateway] --> LOG[Slf4j filtros]
-    MI[ms-incidentes] --> AUD[transiciones_estado]
-    FUT[Roadmap] --> PROM[Prometheus]
-    FUT --> ELK[ELK / OTel]
-```
+
+<div class="rev-diagram-img"><img src="presentacion-diagramas/diag-13.svg" alt="Diagrama REV 13" /></div>
+
 
 <div class="rev-callout"><code>degraded: true</code> conecta resiliencia backend con UX operacional.</div>
 
@@ -1050,19 +915,9 @@ flowchart TB
 
 <div markdown="1" class="rev-stack">
 
-```mermaid
-gitGraph
-    commit id: "init"
-    branch dev
-    checkout dev
-    commit id: "integración"
-    branch feature/portal
-    commit id: "FEAT portal"
-    checkout dev
-    merge feature/portal
-    checkout main
-    merge dev id: "release EVA2"
-```
+
+<div class="rev-diagram-img"><img src="presentacion-diagramas/diag-14.svg" alt="Diagrama REV 14" /></div>
+
 
 <div class="rev-callout">Commits atómicos <code>[ TIPO ]:</code> · CI en GitHub Actions</div>
 
@@ -1137,25 +992,9 @@ Pregunta: «¿Por qué WebClient y no Feign?» → BFF usa WebClient reactivo co
 
 ## Recorrido operativo de punta a punta
 
-```mermaid
-sequenceDiagram
-    actor Op as Despachador
-    participant FE as React
-    participant GW as Gateway
-    participant BFF as bff-rev
-    participant MI as ms-incidentes
-    participant MZ as ms-zonas
-    participant MR as ms-recursos
-    Op->>FE: 1 Login
-    Op->>FE: 2 Dashboard
-    FE->>GW: GET /api/dashboard
-    GW->>BFF: Forward
-    BFF->>MI: Listar
-    BFF->>MZ: Riesgo
-    BFF->>MR: Recursos
-    Op->>FE: 3 Crear / 5 Asignar
-    BFF->>MR: Asignación
-```
+
+<div class="rev-diagram-img"><img src="presentacion-diagramas/diag-15.svg" alt="Diagrama REV 15" /></div>
+
 
 <div markdown="1" class="slide-workspace rev-split rev-split--65-35">
 
@@ -1302,13 +1141,9 @@ Pregunta: «¿Reescribirían algo?» → Seguridad en MS con @PreAuthorize como 
 
 </div>
 
-```mermaid
-flowchart LR
-    REV[REV actual] --> T1[Transiciones UI]
-    REV --> T2[Observabilidad]
-    REV --> T3[Clima real]
-    REV --> T4[Réplicas Eureka]
-```
+
+<div class="rev-diagram-img"><img src="presentacion-diagramas/diag-16.svg" alt="Diagrama REV 16" /></div>
+
 
 </div>
 

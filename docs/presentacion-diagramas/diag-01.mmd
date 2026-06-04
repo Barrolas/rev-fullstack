@@ -1,0 +1,13 @@
+flowchart LR
+  subgraph MONO["Monolito tradicional"]
+    M1[UI + lógica + datos]
+  end
+  subgraph REV["REV — microservicios"]
+    R1[Incidentes]
+    R2[Zonas]
+    R3[Recursos]
+    R4[BFF + Gateway]
+    R1 & R2 & R3 --> R4
+  end
+  MONO -.->|picos de crisis| X[Cuellos de botella]
+  REV --> OK[Escalado por dominio]

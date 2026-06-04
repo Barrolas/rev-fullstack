@@ -1,0 +1,15 @@
+flowchart TB
+    subgraph BC1["BC Incidentes"]
+        MI[ms-incidentes]
+    end
+    subgraph BC2["BC Zonas"]
+        MZ[ms-zonas-riesgo]
+    end
+    subgraph BC3["BC Recursos"]
+        MR[ms-recursos]
+    end
+    subgraph ACL["Anti-Corruption Layer"]
+        BFF[bff-rev]
+    end
+    MI & MZ & MR -->|REST| BFF
+    BFF -->|DashboardResponse| FE[React SPA]

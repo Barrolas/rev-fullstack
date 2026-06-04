@@ -1,0 +1,7 @@
+flowchart TB
+    DC[docker compose up] --> DB[(3× PostgreSQL/PostGIS)]
+    DC --> KC[Keycloak realm rev]
+    DC --> EU[Eureka :8761]
+    DC --> APP[6 apps Java 21]
+    EU --> SBA[Spring Boot Admin]
+    APP --> EU
