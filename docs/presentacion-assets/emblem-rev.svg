@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 88 88" role="img" aria-label="REV">
+  <defs>
+    <linearGradient id="rev-shield" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#142c4e"/>
+      <stop offset="100%" stop-color="#07111f"/>
+    </linearGradient>
+  </defs>
+  <rect width="88" height="88" rx="18" fill="#07111f"/>
+  <path d="M44 10 L68 22 V42 C68 58 58 68 44 76 C30 68 20 58 20 42 V22 Z" fill="url(#rev-shield)" stroke="#f97316" stroke-width="2.5"/>
+  <path d="M44 24 L54 30 V42 C54 50 50 55 44 58 C38 55 34 50 34 42 V30 Z" fill="#f97316" opacity="0.92"/>
+  <circle cx="44" cy="40" r="4.5" fill="#07111f"/>
+  <path d="M44 34 V46 M38 40 H50" stroke="#07111f" stroke-width="2.2" stroke-linecap="round"/>
+</svg>

@@ -43,9 +43,20 @@ Thumbs.db
 # Docker
 *.env.docker
 
-# Cursor � mantener reglas y skills versionadas; ignorar cache local
+# Cursor — mantener reglas y skills versionadas; ignorar cache local
 .cursor/plans/
 .cursor/*.log
+
+# Docs — artefactos generados (npm run build:presentacion / audit:presentacion en docs/)
+docs/presentacion-rev-build.md
+docs/presentacion-rev-audit.html
+docs/presentacion-audit-shots/
+docs/test-*.html
+docs/Presentacion-REV-EVA2.pdf
+docs/presentacion-diagramas/*.svg
+docs/presentacion-diagramas/*.mmd
+docs/presentacion-assets/portada-rev-source.pdf
+docs/images/ops-*.png
 
 # Env local (usar .env.example como plantilla)
 .env

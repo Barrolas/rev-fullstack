@@ -1,8 +1,0 @@
-flowchart TB
-    APP[Apps Java] --> ACT[Actuator health/info]
-    APP --> EU[Eureka]
-    EU --> SBA[Spring Boot Admin]
-    GW[Gateway] --> LOG[Slf4j filtros]
-    MI[ms-incidentes] --> AUD[transiciones_estado]
-    FUT[Roadmap] --> PROM[Prometheus]
-    FUT --> ELK[ELK / OTel]

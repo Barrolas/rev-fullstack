@@ -1,9 +1,0 @@
-stateDiagram-v2
-    [*] --> REPORTADO
-    REPORTADO --> EN_PROGRESO: requireGeo
-    EN_PROGRESO --> CONTROLADO
-    EN_PROGRESO --> ESCALADO
-    CONTROLADO --> [*]
-    ESCALADO --> EN_PROGRESO
-    note right of REPORTADO: Factory + State
-    note right of EN_PROGRESO: IncidentStateFactory

@@ -31,6 +31,16 @@ md = md.replace(/```mermaid\r?\n([\s\S]*?)```/g, (_match, body) => {
       `npx --yes @mermaid-js/mermaid-cli@11.4.0 -i "${mmdPath}" -o "${svgPath}" -b transparent -c "${CONFIG}"`,
       { stdio: 'pipe', cwd: __dirname }
     );
+    let svg = fs.readFileSync(svgPath, 'utf8');
+    svg = svg.replace(
+      /<svg /,
+      '<svg class="rev-mermaid-svg" ',
+    );
+    svg = svg.replace(
+      /stroke-width="1"/g,
+      'stroke-width="1.35"',
+    );
+    fs.writeFileSync(svgPath, svg, 'utf8');
     const rel = `presentacion-diagramas/diag-${id}.svg`;
     return `\n<div class="rev-diagram-img"><img src="${rel}" alt="Diagrama REV ${id}" /></div>\n`;
   } catch (err) {
