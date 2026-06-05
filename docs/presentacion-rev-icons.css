@@ -16,6 +16,17 @@
   white-space: nowrap;
 }
 
+/* Marp PDF no renderiza <svg> inline — marcador CSS */
+.rev-sub::before {
+  background: var(--rev-orange);
+  border-radius: 2px;
+  content: '';
+  flex-shrink: 0;
+  height: 13px;
+  opacity: 0.92;
+  width: 4px;
+}
+
 .rev-sub > span:last-child {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -459,6 +470,15 @@ section.diagram-focus > .rev-diagram-img {
   width: 16px;
 }
 
+.rev-ms-card__icon:empty::before {
+  border: 2px solid var(--rev-orange-hover);
+  border-radius: 3px;
+  content: '';
+  display: block;
+  height: 10px;
+  width: 10px;
+}
+
 .rev-ms-card__title {
   color: var(--rev-text) !important;
   font-size: 0.52em;
@@ -512,6 +532,23 @@ section.diagram-focus > .rev-diagram-img {
   fill: none;
   stroke-width: 1.7;
   width: 13px;
+}
+
+.rev-kpi__glyph:empty::before {
+  background: var(--rev-orange-hover);
+  border-radius: 50%;
+  content: '';
+  display: block;
+  height: 6px;
+  width: 6px;
+}
+
+.rev-kpi__glyph--muted:empty::before {
+  background: var(--rev-text-secondary);
+}
+
+.rev-kpi__glyph--accent:empty::before {
+  background: var(--rev-orange);
 }
 
 .rev-kpi__glyph--muted { background: rgba(20, 44, 78, 0.55); border-color: rgba(255, 255, 255, 0.1); }
@@ -1006,7 +1043,7 @@ section.closing-premium .rev-closing-logo {
 }
 
 section.closing-premium .rev-closing-hero {
-  margin-left: -12%;
+  margin-left: 0;
   min-height: 100%;
   overflow: hidden;
   position: relative;
@@ -1111,4 +1148,12 @@ section.closing-premium .rev-closing-cta svg {
   height: 14px;
   stroke: var(--rev-orange);
   width: 14px;
+}
+
+section.closing-premium .rev-closing-cta::before {
+  color: var(--rev-orange);
+  content: '+';
+  font-size: 1.15em;
+  font-weight: 700;
+  line-height: 1;
 }

@@ -1,0 +1,25 @@
+REV — Red de Emergencia Valle | EVA2 DSY1106
+Integrantes: Nicolás Barra, Giannina Guerrero | Sección 306-V
+
+Repositorio principal (monorepo):
+  https://github.com/Barrolas/rev-fullstack
+
+Rama de integración: dev
+Rama estable: main
+
+Estructura del monorepo:
+  frontend/rev-dashboard              Componente NPM (React 18 + Vite + TypeScript)
+  infraestructuredomain/bff-rev     Backend For Frontend
+  infraestructuredomain/api-gateway API Gateway + JWT
+  businessdomain/ms-incidentes      Microservicio — ciclo de vida de incidentes
+  businessdomain/ms-zonas-riesgo    Microservicio — territorio y riesgo (PostGIS)
+  businessdomain/ms-recursos        Microservicio — brigadas y logística
+  archetypes/rev-microservice-archetype   Arquetipo Maven para nuevos MS
+  docs/                             Documentación EVA2, presentación y guión defensa
+
+Documentación clave:
+  docs/patrones-y-arquitectura-rev.md     Análisis de patrones y arquetipos
+  docs/CONTRIBUTING.md                      Plan de branching
+  docs/estrategia-ramas-commits-eva2.md   Historial de ramas EVA2
+  docs/guion-defensa-oral-eva2.md           Guión defensa oral (15 min)
+  docs/Presentacion-REV-EVA2-v5.pdf       Presentación EVA2
