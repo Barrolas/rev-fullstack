@@ -1,7 +1,8 @@
 /* @theme rev-dark */
-/* REV — Marp theme v3 · dark-only, tablas y código alineados al dashboard */
+/* REV — Marp theme v4 · dark-only, tablas y código alineados al dashboard */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('presentacion-rev-icons.css');
 
 :root {
   color-scheme: dark;
@@ -22,8 +23,9 @@
   --rev-radius-card: 16px;
   --rev-shadow-card: 0 8px 24px rgba(0, 0, 0, 0.22);
   --rev-font: 'Inter', 'Segoe UI', system-ui, sans-serif;
-  --rev-slide-x: 42px;
-  --rev-slide-y: 34px;
+  --rev-slide-x: 40px;
+  --rev-slide-y: 28px;
+  --rev-content-max: 640px;
 }
 
 section,
@@ -50,9 +52,12 @@ section {
   font-family: var(--rev-font);
   font-size: 21px;
   line-height: 1.4;
-  padding: var(--rev-slide-y) var(--rev-slide-x) 46px;
+  padding: var(--rev-slide-y) var(--rev-slide-x) 38px;
   justify-content: flex-start;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 section::before {
@@ -106,6 +111,10 @@ h2 {
   margin: 0 0 0.55em;
   text-transform: uppercase;
   background: transparent !important;
+}
+
+h2.rev-sub {
+  text-transform: uppercase;
 }
 
 h3 {
@@ -226,60 +235,87 @@ code.language-mermaid,
   color: var(--rev-text-secondary) !important;
 }
 
-/* Mermaid / diagram slides · layout 2 columnas */
-section.diagram {
+/* Diagrama arriba + contenido abajo (mermaid/SVG hijo directo de section) */
+section.diagram-top {
+  gap: 5px;
+}
+
+.rev-split--55-45 { grid-template-columns: 1.05fr 0.95fr; }
+
+section.diagram-top h1 {
+  font-size: 1.08em;
+  margin-bottom: 0.1em;
+  padding-bottom: 0.26em;
+}
+
+section.diagram-top h2 {
+  font-size: 0.62em;
+  margin-bottom: 0.25em;
+}
+
+section.diagram-top > .rev-diagram-img,
+section.diagram-top > pre,
+section.diagram-top > .mermaid {
+  flex-shrink: 0;
+  margin: 0 !important;
+  max-height: 198px;
+  overflow: hidden;
+}
+
+section.diagram-top > .rev-diagram-img img {
+  max-height: 172px;
+}
+
+section.diagram-top > .slide-workspace {
+  flex: 1 1 auto;
+  max-height: none;
+  min-height: 0;
+}
+
+section.diagram-top.dense > .rev-diagram-img,
+section.diagram-top.dense > pre {
+  max-height: 182px;
+}
+
+section.diagram-top.dense > .rev-diagram-img img {
+  max-height: 156px;
+}
+
+/* Diagrama lateral: solo hijos directos (sin rev-split interno) */
+section.diagram-side {
   display: grid;
-  grid-template-columns: 1.05fr 0.95fr;
-  column-gap: 14px;
-  row-gap: 8px;
+  grid-template-columns: 1.02fr 0.98fr;
+  column-gap: 12px;
+  row-gap: 6px;
   align-content: start;
 }
 
-section.diagram h1 {
+section.diagram-side h1,
+section.diagram-side h2 {
   grid-column: 1 / -1;
-  grid-row: 1;
 }
 
-section.diagram h2 {
-  grid-column: 1 / -1;
-  grid-row: 2;
-}
-
-section.diagram > pre,
-section.diagram > .mermaid {
+section.diagram-side > .rev-diagram-img,
+section.diagram-side > pre,
+section.diagram-side > .mermaid {
   grid-column: 1;
   grid-row: 3;
   align-self: start;
   margin: 0 !important;
-  max-height: 340px;
+  max-height: 300px;
   overflow: hidden;
 }
 
-section.diagram > .slide-workspace {
+section.diagram-side > .slide-workspace {
   grid-column: 2;
   grid-row: 3;
   align-self: start;
+  max-height: 300px;
 }
 
-section.diagram > .rev-callout,
-section.diagram > p.rev-caption {
+section.diagram-side > .rev-callout,
+section.diagram-side > p.rev-caption {
   grid-column: 1 / -1;
-}
-
-section.diagram .slide-workspace.rev-split {
-  display: contents;
-}
-
-section.diagram .slide-workspace.rev-split > pre,
-section.diagram .slide-workspace.rev-split > .mermaid {
-  grid-column: 1;
-  grid-row: 3;
-}
-
-section.diagram .slide-workspace.rev-split > .rev-stack,
-section.diagram .slide-workspace.rev-split > .rev-panel {
-  grid-column: 2;
-  grid-row: 3;
 }
 
 blockquote {
@@ -294,7 +330,10 @@ blockquote {
 }
 
 section table {
-  width: 100%;
+  display: table !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  table-layout: fixed;
   border-collapse: separate !important;
   border-spacing: 0;
   font-size: 0.54em;
@@ -330,9 +369,11 @@ section td {
   border-bottom: 1px solid rgba(20, 44, 78, 0.55) !important;
   border-right: 1px solid rgba(16, 35, 62, 0.65) !important;
   color: #a7b4c7 !important;
-  padding: 8px 11px;
+  padding: 7px 9px;
   vertical-align: middle;
-  line-height: 1.4;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 section td:last-child { border-right: none !important; }
@@ -359,17 +400,36 @@ section tbody tr:hover td {
 .slide-workspace {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  flex: 1;
+  gap: 6px;
+  flex: 1 1 auto;
   min-height: 0;
+  max-height: var(--rev-content-max);
+  overflow: hidden;
 }
 
 .rev-split {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  align-items: stretch;
+  gap: 10px;
+  align-items: start;
+  min-height: 0;
 }
+
+.rev-split .rev-diagram-img {
+  padding: 8px;
+  flex-shrink: 0;
+  min-height: 120px;
+  overflow: visible;
+}
+
+.rev-split .rev-diagram-img img {
+  max-height: 250px;
+  min-height: 100px;
+  object-fit: contain;
+}
+
+.rev-split--35-65 .rev-diagram-img img { max-height: 250px; }
+.rev-split--65-35 .rev-diagram-img img { max-height: 210px; }
 
 .rev-split--35-65 { grid-template-columns: 0.85fr 1.15fr; }
 .rev-split--40-60 { grid-template-columns: 0.9fr 1.1fr; }
@@ -390,10 +450,10 @@ section tbody tr:hover td {
   padding: 10px 12px;
 }
 
-.rev-card p, .rev-card li { font-size: 0.64em; margin: 0.15em 0; }
+.rev-card p, .rev-card li { font-size: 0.58em; margin: 0.1em 0; line-height: 1.35; }
 
 .rev-card h3 {
-  font-size: 0.58em;
+  font-size: 0.54em;
   color: var(--rev-orange-hover) !important;
   letter-spacing: 0.05em;
   margin-bottom: 0.35em;
@@ -424,6 +484,7 @@ section tbody tr:hover td {
 .rev-deck { display: grid; gap: 8px; }
 .rev-deck--2 { grid-template-columns: 1fr 1fr; }
 .rev-deck--3 { grid-template-columns: repeat(3, 1fr); }
+.rev-deck--3 .rev-card { padding: 8px 10px; }
 
 .rev-kpi {
   background: var(--rev-surface) !important;
@@ -564,7 +625,7 @@ section tbody tr:hover td {
   background: transparent !important;
   display: block;
   height: auto;
-  max-height: 300px;
+  max-height: 240px;
   max-width: 100%;
   object-fit: contain;
   width: auto;
@@ -576,26 +637,35 @@ section tbody tr:hover td {
   justify-content: center;
 }
 
-section.diagram > .rev-diagram-img {
+section.diagram-side > .rev-diagram-img {
   grid-column: 1;
   grid-row: 3;
   align-self: start;
 }
 
-section.diagram .slide-workspace.rev-split > .rev-diagram-img {
-  grid-column: 1;
-  grid-row: 3;
+section.dense {
+  gap: 4px;
 }
 
-section.dense h1 { font-size: 1.16em; margin-bottom: 0.2em; }
-section.dense h2 { margin-bottom: 0.4em; }
-section.dense table { font-size: 0.48em; }
+section.dense h1 { font-size: 1.14em; margin-bottom: 0.15em; padding-bottom: 0.28em; }
+section.dense h2 { margin-bottom: 0.32em; }
+section.dense table { font-size: 0.46em; }
+section.dense section th,
+section.dense th { padding: 6px 8px; }
+section.dense section td,
+section.dense td { padding: 5px 8px; }
+section.dense .slide-workspace { gap: 5px; max-height: 660px; }
+section.dense .rev-callout { font-size: 0.58em; padding: 6px 9px; }
+section.dense .rev-card { padding: 8px 10px; }
+section.dense .rev-kpi { padding: 6px 8px; }
 
-section.visual h1 { font-size: 1.18em; }
-section.visual .slide-workspace { gap: 6px; }
-
-section.diagram h1 { font-size: 1.14em; }
-section.diagram .mermaid svg { max-height: 260px; }
+section.visual h1 { font-size: 1.14em; margin-bottom: 0.15em; }
+section.visual h2 { margin-bottom: 0.3em; }
+section.visual .slide-workspace { gap: 5px; max-height: 660px; }
+section.visual .rev-panel table { font-size: 0.46em; }
+section.visual .rev-card { padding: 7px 9px; }
+section.visual .rev-card li { font-size: 0.54em; }
+section.visual .rev-shot img { max-height: 242px; }
 
 section.compact h1 { font-size: 1.12em; }
 
@@ -664,16 +734,24 @@ section.lead h2 {
 section.closing {
   text-align: center;
   box-shadow: none !important;
+  gap: 5px;
+  padding-bottom: 32px;
 }
 
 section.closing h1 {
   border: none !important;
-  font-size: 1.55em;
+  font-size: 1.42em;
   padding: 0;
+  margin-bottom: 0.1em;
 }
 
-section.closing h2 { text-align: center; }
-section.closing .rev-panel { margin: 0 auto; max-width: 88%; }
+section.closing h2 { text-align: center; margin-bottom: 0.35em; }
+section.closing .rev-panel { margin: 0 auto; max-width: 92%; }
+section.closing .slide-workspace { max-height: none; gap: 5px; }
+section.closing p { font-size: 0.62em; margin: 0.15em 0; }
+section.closing h3 { font-size: 0.72em; margin: 0.2em 0 0; }
+section.closing table { font-size: 0.48em; }
+section.closing .rev-caption { margin-top: 0.2em; }
 
 .columns { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 

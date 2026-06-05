@@ -36,7 +36,18 @@
   },
   "flowchart": {
     "htmlLabels": true,
-    "curve": "basis"
+    "curve": "linear",
+    "padding": 12,
+    "nodeSpacing": 42,
+    "rankSpacing": 48,
+    "diagramPadding": 10
+  },
+  "state": {
+    "nodeSpacing": 40,
+    "rankSpacing": 44
+  },
+  "er": {
+    "useMaxWidth": true
   },
   "sequence": {
     "diagramMarginX": 8,

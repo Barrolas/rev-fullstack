@@ -1,11 +1,12 @@
 ---
 marp: true
 title: REV — Red de Emergencia Valle
-description: Segunda entrega EVA2 — DSY1106 — Informe técnico integral y defensa oral
+description: Modernización de la gestión de emergencias — Municipalidad de Valle del Sol
 author: Nicolás Barra, Giannina Guerrero
 theme: rev-dark
 paginate: true
 size: 16:9
+footer: '<span class="rev-footer__label">SECCIÓN:</span> 306 - V <span class="rev-footer__sep">|</span> <span class="rev-footer__label">INTEGRANTES:</span> NICOLÁS BARRA - GIANNINA GUERRERO'
 mermaid: |
   theme: base
   themeVariables:
@@ -31,6 +32,7 @@ mermaid: |
     fontFamily: 'Inter, Segoe UI, sans-serif'
 style: |
   @import url('presentacion-rev-theme.css');
+  @import url('presentacion-rev-icons.css');
   pre[is='marp-pre'], pre[data-auto-scaling], code.language-mermaid {
     background: #07111f !important;
     color: #a7b4c7 !important;
@@ -39,33 +41,11 @@ style: |
   }
 ---
 
-<!-- _class: lead -->
+<!-- _class: cover-official -->
+<!-- _paginate: false -->
+<!-- _footer: "" -->
 
-<div class="rev-hero">
-
-<img class="rev-hero__logo" src="../frontend/rev-dashboard/public/assets/logos/emblem-color.png" width="88" alt="REV" />
-
-# RED DE EMERGENCIA VALLE
-
-## REV — Municipalidad de Valle del Sol
-
-<p class="tagline">Conectividad que salva vidas</p>
-
-<p class="subtitle">Innovación que resguarda el mañana · DSY1106 EVA2 · Mayo 2026</p>
-
-<div class="rev-meta-row">
-<span class="rev-badge">Nicolás Barra</span>
-<span class="rev-badge">Giannina Guerrero</span>
-<span class="rev-badge">Prof. Israel Alejandro Villagra Riquelme</span>
-</div>
-
-<div class="rev-hero__card rev-callout">
-
-Plataforma de **misión crítica** en microservicios Spring Cloud. Esta presentación resume el **informe técnico integral** con evidencias en código, capturas del dashboard y arquitectura desplegada en Docker.
-
-</div>
-
-</div>
+![bg cover](presentacion-assets/portada-rev.png)
 
 <!--
 Notas del expositor:
@@ -77,55 +57,49 @@ Posible pregunta: «¿Por qué microservicios y no un monolito?» → Picos de d
 
 <!-- _class: dense -->
 
-# Entregables EVA2 — Segunda evaluación
+# Plataforma REV — valor operacional
 
-## Documentación e implementación alineada al informe integral
+<h2 class="rev-sub"><svg class="rev-ico" viewBox="0 0 16 16"><path d="M2 4.5h12M2 8h12M2 11.5h8"/><circle cx="13" cy="11.5" r="1.5"/></svg><span>Capacidades desplegadas para la municipalidad</span></h2>
 
 <div markdown="1" class="slide-workspace">
 
 <div class="rev-deck rev-deck--3">
 
-<div class="rev-kpi">
-<span class="rev-kpi__label">Informe integral</span>
-<span class="rev-kpi__value">14 capítulos · fig. 1–20</span>
-<span class="rev-kpi__meta">informe-tecnico-integral-rev.html</span>
+<div class="rev-kpi rev-kpi--icon">
+<div class="rev-kpi__glyph"><svg viewBox="0 0 16 16"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="5.5" y="9" width="5" height="5" rx="1"/></svg></div>
+<div class="rev-kpi__body"><span class="rev-kpi__label">Despacho unificado</span><span class="rev-kpi__value">Un panel · tres dominios</span><span class="rev-kpi__meta">Incidentes · Zonas · Recursos</span></div>
 </div>
 
-<div class="rev-kpi">
-<span class="rev-kpi__label">Ecosistema</span>
-<span class="rev-kpi__value">BFF + 3 MS + Gateway</span>
-<span class="rev-kpi__meta">Keycloak · Eureka · Docker</span>
+<div class="rev-kpi rev-kpi--icon">
+<div class="rev-kpi__glyph rev-kpi__glyph--muted"><svg viewBox="0 0 16 16"><path d="M8 1.5 14 4v4c0 3.5-2.5 6-6 6.5C4.5 14 2 11.5 2 8V4l6-2.5Z"/></svg></div>
+<div class="rev-kpi__body"><span class="rev-kpi__label">Perímetro seguro</span><span class="rev-kpi__value">Gateway + Keycloak</span><span class="rev-kpi__meta">JWT · roles · canal público acotado</span></div>
 </div>
 
-<div class="rev-kpi">
-<span class="rev-kpi__label">Frontend</span>
-<span class="rev-kpi__value">Dashboard operacional</span>
-<span class="rev-kpi__meta">frontend/rev-dashboard/</span>
+<div class="rev-kpi rev-kpi--icon">
+<div class="rev-kpi__glyph rev-kpi__glyph--accent"><svg viewBox="0 0 16 16"><path d="M8 2v4M8 10v4M2 8h4M10 8h4"/></svg></div>
+<div class="rev-kpi__body"><span class="rev-kpi__label">Resiliencia</span><span class="rev-kpi__value">Circuit Breaker + cache</span><span class="rev-kpi__meta">Operación parcial ante fallos</span></div>
 </div>
 
-<div class="rev-kpi">
-<span class="rev-kpi__label">Arquetipo</span>
-<span class="rev-kpi__value">Maven custom</span>
-<span class="rev-kpi__meta">rev-microservice-archetype/</span>
+<div class="rev-kpi rev-kpi--icon">
+<div class="rev-kpi__glyph"><svg viewBox="0 0 16 16"><circle cx="8" cy="5" r="2.5"/><path d="M3 14c0-3 2.2-5 5-5s5 2 5 5"/></svg></div>
+<div class="rev-kpi__body"><span class="rev-kpi__label">Canal ciudadano</span><span class="rev-kpi__value">Portal sin registro</span><span class="rev-kpi__meta">Reporte georreferenciado 24/7</span></div>
 </div>
 
-<div class="rev-kpi">
-<span class="rev-kpi__label">Evidencias</span>
-<span class="rev-kpi__value">Capturas UX + código</span>
-<span class="rev-kpi__meta">docs/informe-evidencias/</span>
+<div class="rev-kpi rev-kpi--icon">
+<div class="rev-kpi__glyph rev-kpi__glyph--muted"><svg viewBox="0 0 16 16"><path d="M8 1.5C5.5 1.5 3.5 3.5 3.5 6c0 4 4.5 8.5 4.5 8.5S12.5 10 12.5 6c0-2.5-2-4.5-4.5-4.5Z"/><circle cx="8" cy="6" r="1.5"/></svg></div>
+<div class="rev-kpi__body"><span class="rev-kpi__label">Territorio inteligente</span><span class="rev-kpi__value">PostGIS + mapa Leaflet</span><span class="rev-kpi__meta">Riesgo por coordenadas</span></div>
 </div>
 
-<div class="rev-kpi">
-<span class="rev-kpi__label">Git + CI</span>
-<span class="rev-kpi__value">main / dev</span>
-<span class="rev-kpi__meta">commits [ TIPO ]: · GitHub Actions</span>
+<div class="rev-kpi rev-kpi--icon">
+<div class="rev-kpi__glyph rev-kpi__glyph--accent"><svg viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M5 7h6M5 10h4"/></svg></div>
+<div class="rev-kpi__body"><span class="rev-kpi__label">Despliegue reproducible</span><span class="rev-kpi__value">12 servicios Docker</span><span class="rev-kpi__meta">Java 21 · React · Eureka</span></div>
 </div>
 
 </div>
 
 <div class="rev-callout">
 
-**Metodología:** cada afirmación del informe se vincula a archivos del monorepo. Las figuras 14–16b son **screenshots reales** con datos del stack local.
+**Propuesta de valor:** REV conecta sala de despacho, terreno y comunidad en una arquitectura **cloud-native** que escala por dominio y mantiene continuidad operacional durante picos de crisis.
 
 </div>
 
@@ -133,33 +107,45 @@ Posible pregunta: «¿Por qué microservicios y no un monolito?» → Picos de d
 
 ---
 
+<!-- _class: dense -->
+
 # Problema identificado
 
-## ¿Por qué es necesario REV?
+<h2 class="rev-sub"><svg class="rev-ico" viewBox="0 0 16 16"><path d="M8 1.5 14 4v4c0 3.5-2.5 6-6 6.5C4.5 14 2 11.5 2 8V4l6-2.5Z"/><path d="M8 5v3M8 11h.01"/></svg><span>Contexto municipal y brecha arquitectónica</span></h2>
 
-<div markdown="1" class="slide-workspace rev-split rev-split--40-60">
+<div markdown="1" class="slide-workspace">
+
+<div class="rev-problem-grid">
 
 <div markdown="1" class="rev-stack">
 
-<p>Los municipios enfrentan <strong>picos impredecibles de demanda</strong> durante incendios, incidentes urbanos y emergencias estructurales.</p>
+<p>Valle del Sol requiere coordinar <strong>incendios, incidentes urbanos y alertas ciudadanas</strong> con picos impredecibles. Los sistemas monolíticos colapsan cuando la demanda heterogénea crece en minutos.</p>
 
 <div class="rev-panel" markdown="1">
 
-| Limitación | Impacto |
-|------------|---------|
-| Acoplamiento monolítico | Un fallo tumba todo |
-| Escalado uniforme | No prioriza incidentes |
-| Interfaces fragmentadas | Despachador pierde tiempo |
-| Canales ciudadanos lentos | Demora activación brigadas |
+| Limitación | Impacto operacional |
+|------------|---------------------|
+| Acoplamiento monolítico | Un fallo detiene todo el despacho |
+| Escalado uniforme | No prioriza incidentes críticos |
+| Interfaces fragmentadas | Latencia en decisiones del operador |
+| Canales ciudadanos lentos | Retraso en activación de brigadas |
 
 </div>
 
-<blockquote>El problema no es «falta de software», sino <strong>arquitectura no adaptable</strong> a la urgencia municipal.</blockquote>
+<div class="rev-mini-deck">
+
+<div class="rev-mini"><strong>Escenario</strong><span>Incendio forestal + reportes costeros simultáneos</span></div>
+<div class="rev-mini"><strong>Ventana crítica</strong><span>Primeros 15 min definen alcance y víctimas</span></div>
+<div class="rev-mini"><strong>REV responde</strong><span>Escalado independiente por dominio de negocio</span></div>
 
 </div>
+
+</div>
+
+<div class="rev-problem-aside">
 
 ```mermaid
-flowchart LR
+flowchart TB
   subgraph MONO["Monolito tradicional"]
     M1[UI + lógica + datos]
   end
@@ -173,6 +159,12 @@ flowchart LR
   MONO -.->|picos de crisis| X[Cuellos de botella]
   REV --> OK[Escalado por dominio]
 ```
+
+<div class="rev-callout">No es «falta de software»: es <strong>arquitectura rígida</strong> frente a urgencia territorial. REV separa responsabilidades para absorber crisis sin tumbar el despacho.</div>
+
+</div>
+
+</div>
 
 </div>
 
@@ -188,7 +180,7 @@ Pregunta probable: «¿Qué pasa si cae un servicio?» → Anticipar slide 16 (C
 
 # Objetivos del proyecto
 
-## Alineación objetivo ↔ arquitectura
+<h2 class="rev-sub"><svg class="rev-ico" viewBox="0 0 16 16"><path d="M2 12 6 4l4 5 4-7"/><path d="M2 14h12"/></svg><span>Objetivos de negocio alineados a la arquitectura</span></h2>
 
 <div markdown="1" class="slide-workspace">
 
@@ -207,7 +199,7 @@ Pregunta probable: «¿Qué pasa si cae un servicio?» → Anticipar slide 16 (C
 
 <div class="rev-callout">
 
-Cada objetivo específico corresponde a un **bounded context** con base de datos propia. El BFF agrega; los MS deciden.
+Cada objetivo materializa un **bounded context** autónomo: base de datos propia, equipo evolutivo independiente y escalado selectivo. El BFF orquesta la vista; los microservicios ejecutan las reglas de negocio.
 
 </div>
 
@@ -221,11 +213,9 @@ Pregunta: «¿Dónde está la transición de estados en UI?» → Backend comple
 
 ---
 
-<!-- _class: diagram -->
-
 # Visión general de REV
 
-## Propósito, actores y dominios
+<h2 class="rev-sub"><svg class="rev-ico" viewBox="0 0 16 16"><circle cx="5.5" cy="5" r="2"/><circle cx="10.5" cy="5" r="2"/><path d="M1.5 13c0-2.2 1.8-4 4-4s4 1.8 4 4M8.5 13c0-1.6 1-3 2.5-3.5"/></svg><span>Actores, dominios y flujo de valor</span></h2>
 
 <div markdown="1" class="slide-workspace rev-split rev-split--35-65">
 
@@ -242,7 +232,7 @@ Pregunta: «¿Dónde está la transición de estados en UI?» → Backend comple
 
 </div>
 
-<div class="rev-callout">Tres dominios <strong>sin BD compartida</strong>. El BFF entrega <code>DashboardResponse</code> unificado.</div>
+<div class="rev-callout">Tres dominios <strong>sin BD compartida</strong>. El BFF compone <code>DashboardResponse</code> en una sola llamada: incidente + riesgo territorial + recursos asignados + estado <code>degraded</code>.</div>
 
 </div>
 
@@ -269,11 +259,11 @@ Pregunta: «¿Por qué separar recursos de incidentes?» → Diferente ritmo de 
 
 ---
 
-<!-- _class: diagram -->
+<!-- _class: diagram-top diagram-focus -->
 
 # Arquitectura general
 
-## Ecosistema verificado en el monorepo
+<h2 class="rev-sub"><svg class="rev-ico" viewBox="0 0 16 16"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="5.5" y="9" width="5" height="5" rx="1"/><path d="M4.5 7v1.5M11.5 7v1.5M8 7v2"/></svg><span>Capas del ecosistema cloud-native</span></h2>
 
 ```mermaid
 flowchart TB
@@ -302,16 +292,16 @@ flowchart TB
     MI & MZ & MR & BFF & GW & KCA -.-> EU
 ```
 
-<div markdown="1" class="slide-workspace">
+<div markdown="1" class="slide-workspace slide-workspace--compact">
 
-<div class="rev-deck rev-deck--2">
-
-<div class="rev-kpi"><span class="rev-kpi__label">Perímetro</span><span class="rev-kpi__value">Gateway + JWT</span></div>
-<div class="rev-kpi"><span class="rev-kpi__label">Datos</span><span class="rev-kpi__value">3 BD aisladas</span></div>
-<div class="rev-kpi"><span class="rev-kpi__label">Discovery</span><span class="rev-kpi__value">Eureka lb://</span></div>
-<div class="rev-kpi"><span class="rev-kpi__label">Monitor</span><span class="rev-kpi__value">SBA :8099</span></div>
-
+<div class="rev-chips">
+<span class="rev-chip"><strong>Perímetro</strong> Gateway + JWT</span>
+<span class="rev-chip"><strong>Datos</strong> 3 BD aisladas</span>
+<span class="rev-chip"><strong>Discovery</strong> Eureka lb://</span>
+<span class="rev-chip"><strong>Monitor</strong> SBA :8099</span>
 </div>
+
+<div class="rev-callout rev-callout--compact">Flujo: <strong>cliente → Gateway → BFF → dominios → datos</strong> · entrada única para operadores y ciudadanos.</div>
 
 </div>
 
@@ -327,7 +317,7 @@ Pregunta: «¿Por qué Keycloak Adapter y no JWT directo en Gateway?» → Separ
 
 # Microservicios implementados
 
-## Responsabilidad, datos y beneficio de la separación
+<h2 class="rev-sub"><svg class="rev-ico" viewBox="0 0 16 16"><path d="M3 3h4v4H3zM9 3h4v4H9zM3 9h4v4H3zM9 9h4v4H9z"/></svg><span>Tres microservicios · tres bases de datos</span></h2>
 
 <div markdown="1" class="slide-workspace">
 
@@ -341,29 +331,35 @@ Pregunta: «¿Por qué Keycloak Adapter y no JWT directo en Gateway?» → Separ
 
 </div>
 
-<div markdown="1" class="rev-split">
+<div class="rev-ms-deck">
 
-<div class="rev-card">
+<div class="rev-ms-card rev-ms-card--incidentes">
+<div class="rev-ms-card__head">
+<div class="rev-ms-card__icon"><svg viewBox="0 0 16 16"><path d="M8 2 3 13h10z"/><path d="M8 6v3M8 11h.01"/></svg></div>
+<div><p class="rev-ms-card__title">ms-incidentes</p><span class="rev-ms-card__meta">:8081 · rev_incidentes</span></div>
+</div>
+<p>Factory + State en ciclo de vida. Cambios de estado no impactan zonas ni recursos.</p>
+</div>
 
-### ms-incidentes
-Reglas de transición encapsuladas (Factory + State). Cambios en estados no afectan zonas ni recursos.
+<div class="rev-ms-card rev-ms-card--zonas">
+<div class="rev-ms-card__head">
+<div class="rev-ms-card__icon"><svg viewBox="0 0 16 16"><path d="M8 1.5C5.5 1.5 3.5 3.5 3.5 6c0 4 4.5 8.5 4.5 8.5S12.5 10 12.5 6c0-2.5-2-4.5-4.5-4.5Z"/><circle cx="8" cy="6" r="1.5"/></svg></div>
+<div><p class="rev-ms-card__title">ms-zonas-riesgo</p><span class="rev-ms-card__meta">:8082 · PostGIS</span></div>
+</div>
+<p>Evaluación territorial y clima vía <code>WeatherDataPort</code>. Evolución geo sin tocar incidentes.</p>
+</div>
+
+<div class="rev-ms-card rev-ms-card--recursos">
+<div class="rev-ms-card__head">
+<div class="rev-ms-card__icon"><svg viewBox="0 0 16 16"><rect x="1.5" y="5" width="9" height="6" rx="1"/><path d="M10.5 7H13l1.5 3v1h-4"/><circle cx="4" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/></svg></div>
+<div><p class="rev-ms-card__title">ms-recursos</p><span class="rev-ms-card__meta">:8083 · rev_recursos</span></div>
+</div>
+<p>Brigadas y vehículos con <code>incidente_id</code> UUID — sin FK cross-service entre BD.</p>
+</div>
 
 </div>
 
-<div class="rev-card">
-
-### ms-zonas-riesgo
-PostGIS + adaptador climático (`WeatherDataPort`). Evolución territorial sin tocar incidentes.
-
-</div>
-
-</div>
-
-<div class="rev-callout">
-
-**ms-recursos:** asignaciones con `incidente_id` UUID — desacoplamiento cross-service sin FK entre bases de datos.
-
-</div>
+<div class="rev-callout rev-callout--compact">Separación deliberada: reglas de <strong>incidentes</strong> evolucionan sin redesplegar zonas ni logística. Contrato REST vía Eureka.</div>
 
 </div>
 
@@ -375,22 +371,39 @@ Pregunta: «¿Cómo se comunican?» → REST síncrono vía WebClient en BFF con
 
 ---
 
-<!-- _class: diagram -->
+<!-- _class: dense -->
 
 # Infraestructura de plataforma
 
-## Componentes transversales del ecosistema
+<h2 class="rev-sub"><svg class="rev-ico" viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M5 7h6M5 10h4"/><path d="M5 3V2M11 3V2"/></svg><span>Infraestructura transversal y despliegue</span></h2>
 
 <div markdown="1" class="slide-workspace rev-split rev-split--40-60">
 
-<div class="rev-panel" markdown="1">
+<div class="rev-ms-deck rev-ms-deck--compact">
 
-| Componente | Función |
-|------------|---------|
-| **Docker Compose** | 12 servicios reproducibles |
-| **Eureka :8761** | Service discovery |
-| **Keycloak :8090** | IAM realm `rev` |
-| **SBA :8099** | Salud centralizada |
+<div class="rev-ms-card rev-ms-card--incidentes">
+<div class="rev-ms-card__head">
+<div class="rev-ms-card__icon"><svg viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M5 7h6M5 10h4"/></svg></div>
+<div><p class="rev-ms-card__title">Docker Compose</p><span class="rev-ms-card__meta">12 servicios</span></div>
+</div>
+<p>Stack reproducible: BD, IAM, discovery y apps Java en un solo comando.</p>
+</div>
+
+<div class="rev-ms-card rev-ms-card--zonas">
+<div class="rev-ms-card__head">
+<div class="rev-ms-card__icon"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="2"/><path d="M8 2v2M8 12v2M2 8h2M12 8h2"/></svg></div>
+<div><p class="rev-ms-card__title">Eureka :8761</p><span class="rev-ms-card__meta">Discovery</span></div>
+</div>
+<p>Registro dinámico de microservicios y balanceo <code>lb://</code> desde el BFF.</p>
+</div>
+
+<div class="rev-ms-card rev-ms-card--recursos">
+<div class="rev-ms-card__head">
+<div class="rev-ms-card__icon"><svg viewBox="0 0 16 16"><path d="M8 1.5 14 4v4c0 3.5-2.5 6-6 6.5C4.5 14 2 11.5 2 8V4l6-2.5Z"/></svg></div>
+<div><p class="rev-ms-card__title">Keycloak + SBA</p><span class="rev-ms-card__meta">:8090 · :8099</span></div>
+</div>
+<p>IAM realm <code>rev</code> y monitoreo centralizado de salud vía Actuator.</p>
+</div>
 
 </div>
 
@@ -424,7 +437,7 @@ Pregunta: «¿Por qué JRE Alpine 21?» → Imágenes livianas, alineado a soste
 
 # Patrones arquitectónicos
 
-## De la teoría a la implementación REV
+<h2 class="rev-sub"><svg class="rev-ico" viewBox="0 0 16 16"><path d="M2 4h12v8H2z"/><path d="M5 7h6M5 10h3"/></svg><span>Patrones arquitectónicos aplicados en producción</span></h2>
 
 <div markdown="1" class="slide-workspace">
 
@@ -457,11 +470,11 @@ Pregunta: «¿Endpoint público sin JWT?» → /api/public/** para portal ciudad
 
 ---
 
-<!-- _class: diagram dense -->
+<!-- _class: diagram-top diagram-focus dense -->
 
 # Patrones de diseño implementados
 
-## Trazabilidad clase → problema → beneficio
+<h2 class="rev-sub"><svg class="rev-ico" viewBox="0 0 16 16"><path d="M4 3h8v3H4z"/><path d="M3 9h10v4H3z"/><path d="M6 6v3"/></svg><span>Patrones de diseño con impacto en el negocio</span></h2>
 
 ```mermaid
 stateDiagram-v2
@@ -475,9 +488,7 @@ stateDiagram-v2
     note right of EN_PROGRESO: IncidentStateFactory
 ```
 
-<div markdown="1" class="slide-workspace rev-split rev-split--40-60">
-
-<div markdown="1" class="rev-stack">
+<div markdown="1" class="slide-workspace">
 
 <div class="rev-panel" markdown="1">
 
@@ -494,8 +505,6 @@ stateDiagram-v2
 
 </div>
 
-</div>
-
 <!--
 Notas del expositor:
 Mostrar en IDE IncidentStateFactory si hay proyector. Enfatizar doble patrón Factory+State en ms-incidentes.
@@ -504,11 +513,11 @@ Pregunta: «¿FakeWeatherAdapter es un hack?» → No; es adaptador consciente p
 
 ---
 
-<!-- _class: diagram -->
+<!-- _class: diagram-top diagram-focus -->
 
 # Arquetipos utilizados
 
-## Estructura reutilizable del monorepo
+<h2 class="rev-sub"><svg class="rev-ico" viewBox="0 0 16 16"><path d="M3 2h7l3 3v9H3z"/><path d="M10 2v3h3"/></svg><span>Arquetipo para escalar el ecosistema municipal</span></h2>
 
 ```mermaid
 flowchart TB
@@ -530,9 +539,7 @@ flowchart TB
     M -.-> CAPAS
 ```
 
-<div markdown="1" class="slide-workspace rev-split">
-
-<div markdown="1" class="rev-stack">
+<div markdown="1" class="slide-workspace">
 
 <div class="rev-panel" markdown="1">
 
@@ -548,8 +555,6 @@ flowchart TB
 
 </div>
 
-</div>
-
 <!--
 Notas del expositor:
 Los 3 MS actuales fueron implementados manualmente pero replican el arquetipo. Comando mvn archetype:generate documentado en patrones-y-arquitectura-rev.md §3.2.
@@ -558,11 +563,11 @@ Pregunta EVA2: «¿Cuántos arquetipos Maven?» → Uno custom en archetypes/; e
 
 ---
 
-<!-- _class: diagram -->
+<!-- _class: diagram-top diagram-focus dense -->
 
 # DDD y Bounded Contexts
 
-## Tres subdominios = tres microservicios autónomos
+<h2 class="rev-sub"><svg class="rev-ico" viewBox="0 0 16 16"><circle cx="4" cy="4" r="2"/><circle cx="12" cy="4" r="2"/><circle cx="8" cy="12" r="2"/><path d="M6 5.5 7 10M10 5.5 9 10"/></svg><span>Bounded contexts y capa anti-corrupción</span></h2>
 
 ```mermaid
 flowchart TB
@@ -582,9 +587,7 @@ flowchart TB
     BFF -->|DashboardResponse| FE[React SPA]
 ```
 
-<div markdown="1" class="slide-workspace rev-split rev-split--65-35">
-
-<div markdown="1" class="rev-stack">
+<div markdown="1" class="slide-workspace">
 
 <div class="rev-panel" markdown="1">
 
@@ -600,8 +603,6 @@ flowchart TB
 
 </div>
 
-</div>
-
 <!--
 Notas del expositor:
 Asignacion.incidente_id es UUID sin FK cross-DB — integración eventual, típica en microservicios.
@@ -614,7 +615,7 @@ Pregunta: «¿Es DDD completo?» → Bounded contexts sí; agregados simplificad
 
 # Frontend y experiencia de usuario
 
-## Módulos operativos verificados en UI
+<h2 class="rev-sub"><svg class="rev-ico" viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="9" rx="1"/><path d="M2 6h12"/></svg><span>Consola operacional para sala de despacho</span></h2>
 
 <div markdown="1" class="slide-workspace rev-split rev-split--40-60">
 
@@ -648,7 +649,7 @@ Pregunta: «¿Es DDD completo?» → Bounded contexts sí; agregados simplificad
 
 ![width:100%](informe-evidencias/fig14-dispatch.png)
 
-<div class="rev-shot__cap">Fig. 14 — Panel Despacho (`/`)</div>
+<div class="rev-shot__cap">Panel Despacho — KPIs, alertas y tabla de incidentes activos</div>
 
 </div>
 
@@ -662,27 +663,15 @@ Pregunta: «¿Brigadista puede crear incidentes?» → No; canManageIncidents so
 
 ---
 
-<!-- _class: visual -->
+<!-- _class: dense slide-diag-media slide-media-portal -->
 
 # Reporte público y canal ciudadano
 
-## Integración frontend ↔ BFF ↔ ms-incidentes
+<h2 class="rev-sub"><svg class="rev-ico" viewBox="0 0 16 16"><path d="M2 8h3M11 8h3"/><path d="M5 6l3 2-3 2M11 6l-3 2 3 2"/></svg><span><span class="rev-flow">Portal <span class="rev-flow__arrow">→</span> Gateway <span class="rev-flow__arrow">→</span> ms-incidentes</span></span></h2>
 
-<div markdown="1" class="slide-workspace">
-
-<div markdown="1" class="rev-split rev-split--40-60">
+<div markdown="1" class="slide-workspace rev-split rev-split--diag-priority">
 
 <div markdown="1" class="rev-stack">
-
-<div class="rev-panel" markdown="1">
-
-| Canal | Ruta | Backend |
-|-------|------|---------|
-| Login — Reportar | `/login` | POST público |
-| Portal | `/portal` | Sin registro |
-| Despacho | `/api/**` | JWT |
-
-</div>
 
 ```mermaid
 flowchart LR
@@ -694,31 +683,20 @@ flowchart LR
     INT --> R
 ```
 
-</div>
-
-<div markdown="1" class="rev-split">
-
-<div class="rev-shot">
-
-![width:100%](informe-evidencias/fig16-login-reporte.png)
-
-<div class="rev-shot__cap">Fig. 16 — Reporte georreferenciado</div>
-
-</div>
-
-<div class="rev-shot">
-
-![width:100%](informe-evidencias/fig16b-portal.png)
-
-<div class="rev-shot__cap">Fig. 16b — Portal ciudadano</div>
-
+<div class="rev-chips">
+<span class="rev-chip"><strong>Login</strong> /login · POST público</span>
+<span class="rev-chip"><strong>Portal</strong> /portal · sin registro</span>
+<span class="rev-chip"><strong>Despacho</strong> /api/** · JWT</span>
 </div>
 
 </div>
 
+<div class="rev-media-panel rev-media-panel--fill">
+<img src="images/rev-slide-portal.png" alt="Canal ciudadano REV" />
+<span class="rev-media-panel__cap">Canal vecinal — reporte sin fricción</span>
 </div>
 
-<div class="rev-callout">El reporte público crea incidentes en <code>REPORTADO</code>; el despachador correlaciona y asigna recursos.</div>
+<div class="rev-callout rev-callout--compact rev-callout--full">El ciudadano activa la cadena en segundos: georreferencia → <code>REPORTADO</code> → visibilidad inmediata en despacho.</div>
 
 </div>
 
@@ -728,7 +706,7 @@ flowchart LR
 
 # Capturas operativas del sistema
 
-## Evidencias UX integradas al informe (figuras 14–15b)
+<h2 class="rev-sub"><svg class="rev-ico" viewBox="0 0 16 16"><rect x="2" y="3" width="5" height="4" rx=".5"/><rect x="9" y="3" width="5" height="4" rx=".5"/><rect x="5.5" y="9" width="5" height="4" rx=".5"/></svg><span>Módulos críticos en operación real</span></h2>
 
 <div markdown="1" class="slide-workspace rev-split">
 
@@ -750,13 +728,13 @@ flowchart LR
 
 </div>
 
-<p class="rev-caption">Stack Docker local · datos reales · <code>docs/informe-evidencias/</code></p>
+<p class="rev-caption">Capturas del stack Docker local con datos reales de despacho</p>
 
 ---
 
 # Diseño UX/UI y Design System
 
-## Sistema visual monocromático institucional
+<h2 class="rev-sub"><svg class="rev-ico" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5"/><path d="M8 3v10M3 8h10"/></svg><span>Design system para entornos de misión crítica</span></h2>
 
 <div markdown="1" class="slide-workspace rev-split">
 
@@ -805,13 +783,13 @@ Pregunta: «¿Accesibilidad?» → Contraste alto, aria-labels en navegación, r
 
 ---
 
-<!-- _class: diagram -->
+<!-- _class: dense -->
 
 # Roles y permisos
 
-## Matriz verificada — realm Keycloak `rev`
+<h2 class="rev-sub"><svg class="rev-ico" viewBox="0 0 16 16"><path d="M8 1.5 14 4v4c0 3.5-2.5 6-6 6.5C4.5 14 2 11.5 2 8V4l6-2.5Z"/></svg><span>Control de acceso por rol operativo</span></h2>
 
-<div markdown="1" class="slide-workspace rev-split rev-split--65-35">
+<div markdown="1" class="slide-workspace rev-split rev-split--55-45">
 
 <div class="rev-panel" markdown="1">
 
@@ -826,7 +804,7 @@ Pregunta: «¿Accesibilidad?» → Contraste alto, aria-labels en navegación, r
 
 </div>
 
-<div markdown="1" class="rev-stack">
+<div markdown="1" class="rev-diagram-col">
 
 ```mermaid
 flowchart LR
@@ -838,7 +816,7 @@ flowchart LR
     B --> R[Solo lectura]
 ```
 
-<div class="rev-callout"><code>useAuth.ts</code> · usuarios dev: despachador / brigadista / admin</div>
+<div class="rev-callout rev-callout--compact"><code>useAuth.ts</code> · usuarios dev: despachador / brigadista / admin</div>
 
 </div>
 
@@ -852,11 +830,11 @@ Pregunta: «¿Por qué Brigadista accede al panel?» → Visibilidad de incident
 
 ---
 
-<!-- _class: diagram -->
+<!-- _class: diagram-top diagram-focus dense -->
 
 # Seguridad
 
-## ¿Cómo protege REV la información?
+<h2 class="rev-sub"><svg class="rev-ico" viewBox="0 0 16 16"><rect x="4" y="7" width="8" height="6" rx="1"/><path d="M5.5 7V5a3.5 3.5 0 0 1 5 0v2"/></svg><span>Perímetro de seguridad y autenticación</span></h2>
 
 ```mermaid
 sequenceDiagram
@@ -875,24 +853,16 @@ sequenceDiagram
     GW->>BFF: Autorizado
 ```
 
-<div markdown="1" class="slide-workspace rev-split">
+<div markdown="1" class="slide-workspace slide-workspace--compact">
 
-<div markdown="1" class="rev-stack">
-
-<div class="rev-panel" markdown="1">
-
-| Capa | Mecanismo |
-|------|-----------|
-| Identidad | Keycloak realm `rev` |
-| Token | JWT RSA256 |
-| Perímetro | `AuthenticationFilter` |
-| Público | `/api/public/**` acotado |
-
+<div class="rev-chips">
+<span class="rev-chip"><strong>IAM</strong> Keycloak rev</span>
+<span class="rev-chip"><strong>Token</strong> JWT RSA256</span>
+<span class="rev-chip"><strong>Perímetro</strong> AuthenticationFilter</span>
+<span class="rev-chip"><strong>Público</strong> /api/public/**</span>
 </div>
 
-<div class="rev-callout">Control en Gateway + adapter; MS sin <code>@PreAuthorize</code> (documentado).</div>
-
-</div>
+<div class="rev-callout rev-callout--compact">Control centralizado en Gateway + adapter — perímetro antes del BFF y microservicios.</div>
 
 </div>
 
@@ -904,11 +874,11 @@ Pregunta: «¿Es seguro el portal público?» → Solo creación de incidente; m
 
 ---
 
-<!-- _class: diagram -->
+<!-- _class: diagram-top diagram-focus -->
 
 # Continuidad operacional y resiliencia
 
-## ¿Qué ocurre cuando un servicio falla?
+<h2 class="rev-sub"><svg class="rev-ico" viewBox="0 0 16 16"><path d="M13 3 3 13M3 3l10 10"/><path d="M8 2v2M8 12v2M2 8h2M12 8h2"/></svg><span>Continuidad operacional ante fallos parciales</span></h2>
 
 ```mermaid
 flowchart TD
@@ -925,23 +895,16 @@ flowchart TD
     FB2 --> UI
 ```
 
-<div markdown="1" class="slide-workspace rev-split rev-split--65-35">
+<div markdown="1" class="slide-workspace slide-workspace--compact">
 
-<div markdown="1" class="rev-stack">
-
-<div class="rev-panel" markdown="1">
-
-| Parámetro | Valor |
-|-----------|-------|
-| `slidingWindowSize` | 10 |
-| `failureRateThreshold` | 50% |
-| `waitDurationInOpenState` | 5s |
-
+<div class="rev-chips">
+<span class="rev-chip"><strong>Ventana</strong> 10 req</span>
+<span class="rev-chip"><strong>Umbral</strong> 50% fallos</span>
+<span class="rev-chip"><strong>Cooldown</strong> 5s open</span>
+<span class="rev-chip"><strong>UX</strong> Información parcial</span>
 </div>
 
-<div class="rev-callout">UX: «Información parcial» — el despachador sigue operando con incidentes visibles.</div>
-
-</div>
+<div class="rev-callout rev-callout--compact">El despachador mantiene visibilidad de incidentes aunque zonas o recursos fallen temporalmente.</div>
 
 </div>
 
@@ -953,23 +916,13 @@ Pregunta: «¿Por qué no Hystrix?» → Resilience4j 2.2.0 en parent POM; está
 
 ---
 
-<!-- _class: diagram dense -->
+<!-- _class: dense slide-diag-media slide-media-persist -->
 
 # Persistencia y base de datos
 
-## Database per Service + Flyway (informe cap. 11)
+<h2 class="rev-sub"><svg class="rev-ico" viewBox="0 0 16 16"><ellipse cx="8" cy="4.5" rx="5" ry="2"/><path d="M3 4.5v4c0 1.1 2.2 2 5 2s5-.9 5-2v-4M3 8.5v4c0 1.1 2.2 2 5 2s5-.9 5-2v-4"/></svg><span>Persistencia aislada y migraciones versionadas</span></h2>
 
-<div markdown="1" class="slide-workspace rev-split rev-split--40-60">
-
-<div class="rev-panel" markdown="1">
-
-| MS | Base de datos | Motor |
-|----|---------------|-------|
-| ms-incidentes | `rev_incidentes` | PostgreSQL 16 |
-| ms-zonas-riesgo | `rev_zonas` | PostGIS 16 |
-| ms-recursos | `rev_recursos` | PostgreSQL 16 |
-
-</div>
+<div markdown="1" class="slide-workspace rev-split rev-split--diag-priority">
 
 <div markdown="1" class="rev-stack">
 
@@ -981,33 +934,36 @@ erDiagram
     INCIDENTES ||--o{ ASIGNACIONES : UUID_ref
 ```
 
-<div class="rev-callout"><code>ddl-auto=validate</code> + Flyway · sin FK cross-service entre BD.</div>
+<div class="rev-panel" markdown="1">
 
+| MS | Base de datos | Motor |
+|----|---------------|-------|
+| ms-incidentes | `rev_incidentes` | PostgreSQL 16 |
+| ms-zonas-riesgo | `rev_zonas` | PostGIS 16 |
+| ms-recursos | `rev_recursos` | PostgreSQL 16 |
+
+</div>
+
+<div class="rev-callout rev-callout--compact"><code>ddl-auto=validate</code> + Flyway · integridad por servicio, sin FK entre BD.</div>
+
+</div>
+
+<div class="rev-media-panel rev-media-panel--fill">
+<img src="images/rev-slide-persist.png" alt="Persistencia aislada REV" />
+<span class="rev-media-panel__cap">Datos aislados — integridad por microservicio</span>
 </div>
 
 </div>
 
 ---
 
-<!-- _class: diagram -->
+<!-- _class: dense slide-diag-media -->
 
 # Observabilidad y trazabilidad
 
-## Estado actual vs roadmap (informe cap. 10)
+<h2 class="rev-sub"><svg class="rev-ico" viewBox="0 0 16 16"><path d="M2 12 5 7l3 3 3-5 3 7"/><path d="M2 14h12"/></svg><span>Observabilidad operativa y evolución</span></h2>
 
-<div markdown="1" class="slide-workspace rev-split rev-split--40-60">
-
-<div class="rev-panel" markdown="1">
-
-| Capacidad | Estado |
-|-----------|--------|
-| Actuator | ✓ Implementado |
-| Spring Boot Admin | ✓ :8099 |
-| Auditoría negocio | Parcial |
-| Logging centralizado | Parcial |
-| Prometheus / ELK | Proyección |
-
-</div>
+<div markdown="1" class="slide-workspace">
 
 <div markdown="1" class="rev-stack">
 
@@ -1022,7 +978,13 @@ flowchart TB
     FUT --> ELK[ELK / OTel]
 ```
 
-<div class="rev-callout"><code>degraded: true</code> conecta resiliencia backend con UX operacional.</div>
+<div class="rev-chips">
+<span class="rev-chip"><strong>Actuator</strong> implementado</span>
+<span class="rev-chip"><strong>SBA</strong> :8099</span>
+<span class="rev-chip"><strong>Roadmap</strong> Prometheus · ELK</span>
+</div>
+
+<div class="rev-callout rev-callout--compact"><code>degraded: true</code> conecta resiliencia backend con UX operacional.</div>
 
 </div>
 
@@ -1030,23 +992,13 @@ flowchart TB
 
 ---
 
-<!-- _class: diagram -->
+<!-- _class: dense slide-diag-media slide-media-git -->
 
 # Estrategia Git y trabajo colaborativo
 
-## GitFlow simplificado (informe cap. 7)
+<h2 class="rev-sub"><svg class="rev-ico" viewBox="0 0 16 16"><circle cx="4" cy="4" r="1.5"/><circle cx="4" cy="12" r="1.5"/><circle cx="12" cy="8" r="1.5"/><path d="M4 5.5v5M5.5 4h4a2 2 0 0 1 2 2v0"/></svg><span>Colaboración, versiones y calidad continua</span></h2>
 
-<div markdown="1" class="slide-workspace rev-split rev-split--40-60">
-
-<div class="rev-panel" markdown="1">
-
-| Rama | Propósito |
-|------|-----------|
-| `main` | Estable — demo EVA2 |
-| `dev` | Integración diaria |
-| `feature/*` | PR hacia `dev` |
-
-</div>
+<div markdown="1" class="slide-workspace rev-split rev-split--diag-priority">
 
 <div markdown="1" class="rev-stack">
 
@@ -1061,11 +1013,22 @@ gitGraph
     checkout dev
     merge feature/portal
     checkout main
-    merge dev id: "release EVA2"
+    merge dev id: "release REV"
 ```
 
-<div class="rev-callout">Commits atómicos <code>[ TIPO ]:</code> · CI en GitHub Actions</div>
+<div class="rev-chips">
+<span class="rev-chip"><strong>main</strong> release municipal</span>
+<span class="rev-chip"><strong>dev</strong> integración diaria</span>
+<span class="rev-chip"><strong>feature/*</strong> PR → dev</span>
+</div>
 
+<div class="rev-callout rev-callout--compact">Commits atómicos <code>[ TIPO ]:</code> · CI en GitHub Actions</div>
+
+</div>
+
+<div class="rev-media-panel rev-media-panel--fill">
+<img src="images/rev-slide-git.png" alt="Colaboración Git REV" />
+<span class="rev-media-panel__cap">Trabajo colaborativo — versiones y CI</span>
 </div>
 
 </div>
@@ -1074,51 +1037,98 @@ gitGraph
 
 <!-- _class: dense -->
 
-# Evidencias técnicas del informe
+# Trazabilidad técnica
 
-## Galería figuras 1–20 — trazabilidad al repositorio
+<h2 class="rev-sub"><svg class="rev-ico" viewBox="0 0 16 16"><path d="M3 3h10v10H3z"/><path d="M6 7h4M6 10h6"/><path d="M6 3v2"/></svg><span>De la arquitectura al código desplegado</span></h2>
 
 <div markdown="1" class="slide-workspace">
 
 <div class="rev-deck rev-deck--3">
 
-<div class="rev-kpi"><span class="rev-kpi__label">Fig. 1–7</span><span class="rev-kpi__value">Patrones diseño</span><span class="rev-kpi__meta">Cap. 5</span></div>
-<div class="rev-kpi"><span class="rev-kpi__label">Fig. 8–9</span><span class="rev-kpi__value">Git branching</span><span class="rev-kpi__meta">Cap. 7</span></div>
-<div class="rev-kpi"><span class="rev-kpi__label">Fig. 10–12</span><span class="rev-kpi__value">Seguridad</span><span class="rev-kpi__meta">Cap. 9</span></div>
-<div class="rev-kpi"><span class="rev-kpi__label">Fig. 13</span><span class="rev-kpi__value">Flyway SQL</span><span class="rev-kpi__meta">Cap. 11</span></div>
-<div class="rev-kpi"><span class="rev-kpi__label">Fig. 14–16b</span><span class="rev-kpi__value">Capturas UX</span><span class="rev-kpi__meta">Cap. 12–13</span></div>
-<div class="rev-kpi"><span class="rev-kpi__label">Fig. 17–20</span><span class="rev-kpi__value">Infra Docker</span><span class="rev-kpi__meta">Cap. 13</span></div>
+<div class="rev-kpi rev-kpi--icon">
+<div class="rev-kpi__glyph"><svg viewBox="0 0 16 16"><path d="M2 4h12v8H2z"/><path d="M5 7h6M5 10h3"/></svg></div>
+<div class="rev-kpi__body"><span class="rev-kpi__label">Patrones</span><span class="rev-kpi__value">Factory · Adapter · Facade</span><span class="rev-kpi__meta">Clases verificables en repo</span></div>
+</div>
+<div class="rev-kpi rev-kpi--icon">
+<div class="rev-kpi__glyph rev-kpi__glyph--muted"><svg viewBox="0 0 16 16"><path d="M8 1.5 14 4v4c0 3.5-2.5 6-6 6.5C4.5 14 2 11.5 2 8V4l6-2.5Z"/></svg></div>
+<div class="rev-kpi__body"><span class="rev-kpi__label">Seguridad</span><span class="rev-kpi__value">JWT + Gateway Filter</span><span class="rev-kpi__meta">Keycloak realm rev</span></div>
+</div>
+<div class="rev-kpi rev-kpi--icon">
+<div class="rev-kpi__glyph rev-kpi__glyph--accent"><svg viewBox="0 0 16 16"><ellipse cx="8" cy="4.5" rx="5" ry="2"/><path d="M3 4.5v4c0 1.1 2.2 2 5 2s5-.9 5-2v-4"/></svg></div>
+<div class="rev-kpi__body"><span class="rev-kpi__label">Datos</span><span class="rev-kpi__value">Flyway + PostGIS</span><span class="rev-kpi__meta">3 esquemas aislados</span></div>
+</div>
+<div class="rev-kpi rev-kpi--icon">
+<div class="rev-kpi__glyph"><svg viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="9" rx="1"/><path d="M5 13h6"/></svg></div>
+<div class="rev-kpi__body"><span class="rev-kpi__label">UX operacional</span><span class="rev-kpi__value">Dashboard + Portal</span><span class="rev-kpi__meta">Experiencia municipal</span></div>
+</div>
+<div class="rev-kpi rev-kpi--icon">
+<div class="rev-kpi__glyph rev-kpi__glyph--muted"><svg viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M5 7h6M5 10h4"/></svg></div>
+<div class="rev-kpi__body"><span class="rev-kpi__label">Infra</span><span class="rev-kpi__value">Docker Compose</span><span class="rev-kpi__meta">12 servicios reproducibles</span></div>
+</div>
+<div class="rev-kpi rev-kpi--icon">
+<div class="rev-kpi__glyph rev-kpi__glyph--accent"><svg viewBox="0 0 16 16"><path d="M4 8.5 6.5 11 12 5"/></svg></div>
+<div class="rev-kpi__body"><span class="rev-kpi__label">Calidad</span><span class="rev-kpi__value">Tests + CI</span><span class="rev-kpi__meta">Factory · BFF · Zonas</span></div>
+</div>
 
 </div>
 
-<div class="rev-callout">Referencia: <strong>informe-tecnico-integral-rev.html</strong> — diagramas Mermaid, código y paginación PDF.</div>
+<div class="rev-callout">Cada decisión arquitectónica tiene **evidencia ejecutable**: código fuente, despliegue local y comportamiento observable en el dashboard municipal.</div>
 
 </div>
 
 ---
 
-<!-- _class: dense -->
+<!-- _class: dense tech-refined -->
 
 # Tecnologías utilizadas
 
-## Stack verificado y justificación
+<h2 class="rev-sub"><svg class="rev-ico" viewBox="0 0 16 16"><path d="M2 5h12v7H2z"/><path d="M5 5V3h6v2"/></svg><span>Stack tecnológico y criterio de selección</span></h2>
 
-<div markdown="1" class="slide-workspace">
+<div markdown="1" class="slide-workspace rev-split rev-split--55-45-media">
 
-<div class="rev-panel" markdown="1">
+<div markdown="1" class="rev-stack">
 
-| Capa | Tecnología | Detalle |
-|------|------------|---------|
-| **Frontend** | React + Vite + TS | React 18, Vite 5 |
-| **UI** | Bootstrap 5 + Icons | Grid accesible |
-| **Mapas** | Leaflet | ZonasPage sin licencias |
-| **Backend** | Java 21 + Spring Boot 4 | Spring Cloud 2025.1 |
-| **Resiliencia** | Resilience4j 2.2.0 | Circuit Breaker en BFF |
-| **BD** | PostgreSQL 16 + PostGIS | 3 bases aisladas |
-| **Infra** | Docker Compose | 12 servicios |
-| **Seguridad** | Keycloak 24 | realm `rev` |
-| **Monitor** | Spring Boot Admin | :8099 vía Eureka |
+<div class="rev-tech-deck">
 
+<div class="rev-tech-card">
+<div class="rev-tech-card__head"><div class="rev-tech-card__icon"><svg viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="9" rx="1"/><path d="M5 13h6"/></svg></div><span class="rev-tech-card__layer">Frontend</span></div>
+<div class="rev-tech-card__body"><span class="rev-tech-card__name">React 18 + Vite 5 + TS</span><span class="rev-tech-card__meta">Bootstrap 5 · Leaflet</span></div>
+</div>
+
+<div class="rev-tech-card">
+<div class="rev-tech-card__head"><div class="rev-tech-card__icon"><svg viewBox="0 0 16 16"><path d="M3 3h4v4H3zM9 3h4v4H9zM3 9h4v4H3zM9 9h4v4H9z"/></svg></div><span class="rev-tech-card__layer">Backend</span></div>
+<div class="rev-tech-card__body"><span class="rev-tech-card__name">Java 21 · Spring Boot 4</span><span class="rev-tech-card__meta">Spring Cloud 2025.1</span></div>
+</div>
+
+<div class="rev-tech-card">
+<div class="rev-tech-card__head"><div class="rev-tech-card__icon"><svg viewBox="0 0 16 16"><ellipse cx="8" cy="4.5" rx="5" ry="2"/><path d="M3 4.5v4c0 1.1 2.2 2 5 2s5-.9 5-2v-4"/></svg></div><span class="rev-tech-card__layer">Datos</span></div>
+<div class="rev-tech-card__body"><span class="rev-tech-card__name">PostgreSQL 16 + PostGIS</span><span class="rev-tech-card__meta">3 bases aisladas · Flyway</span></div>
+</div>
+
+<div class="rev-tech-card">
+<div class="rev-tech-card__head"><div class="rev-tech-card__icon"><svg viewBox="0 0 16 16"><path d="M8 2v4M8 10v4M2 8h4M10 8h4"/></svg></div><span class="rev-tech-card__layer">Resiliencia</span></div>
+<div class="rev-tech-card__body"><span class="rev-tech-card__name">Resilience4j 2.2.0</span><span class="rev-tech-card__meta">Circuit Breaker en BFF</span></div>
+</div>
+
+<div class="rev-tech-card">
+<div class="rev-tech-card__head"><div class="rev-tech-card__icon"><svg viewBox="0 0 16 16"><path d="M8 1.5 14 4v4c0 3.5-2.5 6-6 6.5C4.5 14 2 11.5 2 8V4l6-2.5Z"/></svg></div><span class="rev-tech-card__layer">Seguridad</span></div>
+<div class="rev-tech-card__body"><span class="rev-tech-card__name">Keycloak 24</span><span class="rev-tech-card__meta">realm rev · JWT Gateway</span></div>
+</div>
+
+<div class="rev-tech-card">
+<div class="rev-tech-card__head"><div class="rev-tech-card__icon"><svg viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M5 7h6M5 10h4"/></svg></div><span class="rev-tech-card__layer">Infra</span></div>
+<div class="rev-tech-card__body"><span class="rev-tech-card__name">Docker Compose</span><span class="rev-tech-card__meta">SBA :8099 · Eureka</span></div>
+</div>
+
+</div>
+
+<div class="rev-callout rev-callout--compact">Criterio: **madurez enterprise**, ecosistema abierto y despliegue containerizado reproducible.</div>
+
+</div>
+
+<div class="rev-media-panel rev-media-panel--center">
+<img src="images/rev-about-map.png" alt="Territorio y mapa REV" />
+<span class="rev-media-panel__cap">Territorio inteligente — visión geo institucional</span>
 </div>
 
 </div>
@@ -1131,11 +1141,11 @@ Pregunta: «¿Por qué WebClient y no Feign?» → BFF usa WebClient reactivo co
 
 ---
 
-<!-- _class: diagram -->
+<!-- _class: diagram-top diagram-focus dense -->
 
 # Flujo funcional del sistema
 
-## Recorrido operativo de punta a punta
+<h2 class="rev-sub"><svg class="rev-ico" viewBox="0 0 16 16"><path d="M2 8h2l2-4 2 8 2-5 2 3h2"/></svg><span>Flujo operativo de punta a punta</span></h2>
 
 ```mermaid
 sequenceDiagram
@@ -1157,25 +1167,17 @@ sequenceDiagram
     BFF->>MR: Asignación
 ```
 
-<div markdown="1" class="slide-workspace rev-split rev-split--65-35">
+<div markdown="1" class="slide-workspace slide-workspace--compact">
 
-<div markdown="1" class="rev-stack">
-
-<div class="rev-panel" markdown="1">
-
-| Paso | Pantalla |
-|------|----------|
-| 1 | `LoginPage` |
-| 2 | `DashboardPage` |
-| 3 | Modal incidentes |
-| 4 | `ZonasPage` mapa |
-| 5 | Asignar recurso |
-
+<div class="rev-chips">
+<span class="rev-chip"><strong>1</strong> LoginPage</span>
+<span class="rev-chip"><strong>2</strong> DashboardPage</span>
+<span class="rev-chip"><strong>3</strong> Modal incidentes</span>
+<span class="rev-chip"><strong>4</strong> ZonasPage</span>
+<span class="rev-chip"><strong>5</strong> Asignar recurso</span>
 </div>
 
-<div class="rev-callout">Ciudadano: <code>PortalPage</code> → POST público sin login.</div>
-
-</div>
+<div class="rev-callout rev-callout--compact">Ciudadano: <code>PortalPage</code> <span class="rev-flow__arrow">→</span> POST público sin login.</div>
 
 </div>
 
@@ -1187,41 +1189,52 @@ Pregunta: «¿Transición REPORTADO → EN_PROGRESO desde UI?» → No en UI; ex
 
 ---
 
+<!-- _class: dense visual resultados-refined -->
+
 # Resultados obtenidos
 
-## Técnicos · Operacionales · Municipales
+<h2 class="rev-sub"><svg class="rev-ico" viewBox="0 0 16 16"><path d="M8 2l1.8 3.6 4 .6-2.9 2.8.7 4-3.6-1.9-3.6 1.9.7-4L2.2 6.2l4-.6z"/></svg><span>Impacto técnico, operacional y municipal</span></h2>
 
-<div markdown="1" class="slide-workspace rev-split">
+<div markdown="1" class="slide-workspace rev-split rev-split--55-45-media">
 
-<div class="rev-card">
+<div markdown="1" class="rev-stack">
 
-### Resultados técnicos
-- Monorepo con 3 MS + BFF + Gateway + IAM
-- 6+ patrones de diseño trazables a clases
+<div class="rev-result-deck">
+
+<div class="rev-result-card">
+<div class="rev-result-card__head">Técnicos</div>
+<div class="rev-result-card__body" markdown="1">
+
+- Monorepo 3 MS + BFF + Gateway + IAM
+- 6+ patrones trazables a clases Java
 - Circuit Breaker + cache aside operativos
-- Arquetipo Maven custom documentado
-- Tests en Factory, zonas y fallbacks BFF
-- CI en GitHub Actions (`main`, `dev`)
+- Arquetipo Maven y tests BFF
 
 </div>
+</div>
 
-<div class="rev-card">
+<div class="rev-result-card">
+<div class="rev-result-card__head">Operacionales</div>
+<div class="rev-result-card__body" markdown="1">
 
-### Resultados operacionales
 - Dashboard unificado multi-fuente
 - Portal ciudadano sin fricción
-- Mapa de zonas de riesgo
+- Mapa de zonas de riesgo en vivo
 - Asignación brigada/vehículo desde UI
-- KPIs: activos, alto riesgo, con avisos
-- Modo información parcial ante fallos
+
+</div>
+</div>
+
+<div class="rev-callout rev-callout--compact"><strong>Beneficio municipal:</strong> coordinación más rápida, menor carga cognitiva y canal vecinal directo.</div>
 
 </div>
 
 </div>
 
-<div class="rev-callout">
-
-**Beneficio municipal:** coordinación más rápida, menor carga cognitiva del despachador y canal vecinal directo con mapa OSM.
+<div class="rev-media-panel rev-media-panel--fill">
+<img src="images/rev-imag-06.png" alt="Sala de control REV" />
+<span class="rev-media-panel__cap">Coordinación institucional — centro de operaciones</span>
+</div>
 
 </div>
 
@@ -1233,32 +1246,31 @@ Pregunta: «¿Qué falta?» → Transiciones estado UI, CRUD zonas, refresh toke
 
 ---
 
-<!-- _class: dense -->
+<!-- _class: dense conclusion-refined -->
 
 # Conclusiones
 
-## Respuestas técnicas de cierre
+<h2 class="rev-sub"><svg class="rev-ico" viewBox="0 0 16 16"><path d="M4 8.5 6.5 11 12 5"/></svg><span>Síntesis ejecutiva para la municipalidad</span></h2>
 
-<div markdown="1" class="slide-workspace">
+<div markdown="1" class="slide-workspace rev-split rev-split--58-42">
+
+<div markdown="1" class="rev-stack">
 
 <div class="rev-deck rev-deck--3">
 
-<div class="rev-kpi">
-<span class="rev-kpi__label">Solución moderna</span>
-<span class="rev-kpi__value">Microservicios reales</span>
-<span class="rev-kpi__meta">Discovery · BFF · IAM · React</span>
+<div class="rev-kpi rev-kpi--icon">
+<div class="rev-kpi__glyph"><svg viewBox="0 0 16 16"><path d="M3 3h4v4H3zM9 3h4v4H9zM3 9h4v4H3zM9 9h4v4H9z"/></svg></div>
+<div class="rev-kpi__body"><span class="rev-kpi__label">Solución moderna</span><span class="rev-kpi__value">Microservicios reales</span><span class="rev-kpi__meta">Discovery · BFF · IAM</span></div>
 </div>
 
-<div class="rev-kpi">
-<span class="rev-kpi__label">Arquitectura adecuada</span>
-<span class="rev-kpi__value">Picos · territorio · seguridad</span>
-<span class="rev-kpi__meta">PostGIS · JWT · Circuit Breaker</span>
+<div class="rev-kpi rev-kpi--icon">
+<div class="rev-kpi__glyph rev-kpi__glyph--muted"><svg viewBox="0 0 16 16"><path d="M8 1.5C5.5 1.5 3.5 3.5 3.5 6c0 4 4.5 8.5 4.5 8.5S12.5 10 12.5 6c0-2.5-2-4.5-4.5-4.5Z"/><circle cx="8" cy="6" r="1.5"/></svg></div>
+<div class="rev-kpi__body"><span class="rev-kpi__label">Arquitectura adecuada</span><span class="rev-kpi__value">Picos · territorio</span><span class="rev-kpi__meta">PostGIS · JWT · CB</span></div>
 </div>
 
-<div class="rev-kpi">
-<span class="rev-kpi__label">Valor municipal</span>
-<span class="rev-kpi__value">Conectividad que salva vidas</span>
-<span class="rev-kpi__meta">Despacho + terreno + comunidad</span>
+<div class="rev-kpi rev-kpi--icon">
+<div class="rev-kpi__glyph rev-kpi__glyph--accent"><svg viewBox="0 0 16 16"><path d="M8 2l1.8 3.6 4 .6-2.9 2.8.7 4-3.6-1.9-3.6 1.9.7-4L2.2 6.2l4-.6z"/></svg></div>
+<div class="rev-kpi__body"><span class="rev-kpi__label">Valor municipal</span><span class="rev-kpi__value">Conectividad que salva vidas</span><span class="rev-kpi__meta">Despacho + comunidad</span></div>
 </div>
 
 </div>
@@ -1275,6 +1287,13 @@ Pregunta: «¿Qué falta?» → Transiciones estado UI, CRUD zonas, refresh toke
 
 </div>
 
+<div class="rev-media-panel rev-media-panel--contain">
+<img src="images/rev-about-dispatch.png" alt="Centro de despacho REV" />
+<span class="rev-media-panel__cap">Despacho institucional — misión crítica municipal</span>
+</div>
+
+</div>
+
 <!--
 Notas del expositor:
 Cierre argumentativo sólido — citar principios SOLID visibles: DIP (WeatherDataPort), OCP (State handlers), SRP (capas MS).
@@ -1283,24 +1302,15 @@ Pregunta: «¿Reescribirían algo?» → Seguridad en MS con @PreAuthorize como 
 
 ---
 
-<!-- _class: diagram dense -->
+<!-- _class: dense slide-diag-media slide-media-roadmap -->
 
 # Evolución futura
 
-## Proyecciones documentadas (informe cap. 14.4)
+<h2 class="rev-sub"><svg class="rev-ico" viewBox="0 0 16 16"><path d="M2 12h12"/><path d="M4 9l3-5 3 3 3-6"/></svg><span>Hoja de ruta y madurez del producto</span></h2>
 
-<div markdown="1" class="slide-workspace rev-split rev-split--40-60">
+<div markdown="1" class="slide-workspace rev-split rev-split--diag-priority">
 
-<div class="rev-panel" markdown="1">
-
-| Prioridad | Evolución |
-|-----------|-----------|
-| **Alta** | UI transiciones de estado |
-| **Alta** | Mapa PostGIS avanzado |
-| **Media** | CRUD zonas/recursos Admin |
-| **Baja** | IoT climático real |
-
-</div>
+<div markdown="1" class="rev-stack">
 
 ```mermaid
 flowchart LR
@@ -1310,9 +1320,22 @@ flowchart LR
     REV --> T4[Réplicas Eureka]
 ```
 
+<div class="rev-chips">
+<span class="rev-chip"><strong>Alta</strong> transiciones UI · PostGIS</span>
+<span class="rev-chip"><strong>Media</strong> CRUD zonas/recursos</span>
+<span class="rev-chip"><strong>Baja</strong> IoT climático real</span>
 </div>
 
-<div class="rev-callout">Cada MS puede replicarse detrás de Eureka sin reescribir el frontend.</div>
+<div class="rev-callout rev-callout--compact">Escalado horizontal por MS vía Eureka — sin reescribir el frontend municipal.</div>
+
+</div>
+
+<div class="rev-media-panel rev-media-panel--fill">
+<img src="images/rev-slide-roadmap.png" alt="Roadmap REV" />
+<span class="rev-media-panel__cap">Visión futura — madurez y escalado</span>
+</div>
+
+</div>
 
 <!--
 Notas del expositor:
@@ -1322,31 +1345,39 @@ Pregunta: «¿Microservicios no son overkill?» → Para EVA2 y demo municipal e
 
 ---
 
-<!-- _class: lead closing -->
+<!-- _class: closing-premium -->
+
+<div class="rev-closing-grid">
+
+<div class="rev-closing-copy">
+
+<img src="presentacion-assets/emblem-light.png" alt="Logo REV" class="rev-closing-logo" />
 
 # Conectividad que salva vidas
 
-## Resumen ejecutivo final
+<p class="rev-closing-tagline">Red de Emergencia Valle</p>
 
-<div markdown="1" class="slide-workspace">
+<p class="rev-closing-lead"><strong>REV</strong> integra despacho, territorio y comunidad en una plataforma cloud-native lista para operar: microservicios Spring Cloud, dashboard React, IAM Keycloak y resiliencia Resilience4j.</p>
 
-<p><strong>REV</strong> entrega una plataforma de emergencias municipal basada en microservicios Spring Cloud, React, Keycloak y Resilience4j.</p>
+<div class="rev-closing-kpis">
+<div class="rev-kpi"><span class="rev-kpi__label">Despacho</span><span class="rev-kpi__value">Unificado</span></div>
+<div class="rev-kpi"><span class="rev-kpi__label">Ciudadanía</span><span class="rev-kpi__value">Portal 24/7</span></div>
+<div class="rev-kpi"><span class="rev-kpi__label">Seguridad</span><span class="rev-kpi__value">JWT + Gateway</span></div>
+<div class="rev-kpi"><span class="rev-kpi__label">Resiliencia</span><span class="rev-kpi__value">Modo degradado</span></div>
+</div>
 
-<div class="rev-panel" markdown="1">
+<div class="rev-closing-cta">
+<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="8" r="6"/><path d="M6 8h4M8 6v4"/></svg>
+¿Preguntas?
+</div>
 
-| Entregable EVA2 | Artefacto |
-|-----------------|-----------|
-| Informe técnico integral | `informe-tecnico-integral-rev.html` |
-| Frontend NPM | `frontend/rev-dashboard/` |
-| BFF + 3 microservicios | `bff-rev` + 3 MS |
-| Evidencias fig. 1–20 | `docs/informe-evidencias/` |
-| Git + CI | `main` / `dev` · GitHub Actions |
+<p class="rev-caption">Municipalidad de Valle del Sol · Modernización de gestión de emergencias</p>
 
 </div>
 
-### ¿Preguntas?
-
-<p class="rev-caption">Red de Emergencia Valle · Duoc UC · DSY1106 · EVA2 · Mayo 2026</p>
+<div class="rev-closing-hero">
+<img src="images/rev-closing-hero.png" alt="REV — despacho, territorio y comunidad" />
+</div>
 
 </div>
 
