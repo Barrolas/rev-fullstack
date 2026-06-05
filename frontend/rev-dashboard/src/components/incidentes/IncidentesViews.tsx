@@ -4,13 +4,21 @@ import { Link } from 'react-router-dom';
 import type { DashboardItem } from '../../api';
 import RiskBadge from '../RiskBadge';
 import { formatEstadoLabel, ESTADO_ORDER } from '../../utils/dashboardAggregates';
-import { getEstadoVisual, isHighPriorityIncident } from '../../utils/incidentesFilters';
+import { getEstadoVisual, isHighPriorityIncident, isLinkedReport } from '../../utils/incidentesFilters';
 
 interface IncidentesTableProps {
   items: DashboardItem[];
+  selectedIncidenteId?: string;
+  canOperate?: boolean;
+  onSelectIncidente?: (item: DashboardItem) => void;
 }
 
-export default function IncidentesTable({ items }: IncidentesTableProps) {
+export default function IncidentesTable({
+  items,
+  selectedIncidenteId,
+  canOperate = false,
+  onSelectIncidente,
+}: IncidentesTableProps) {
   return (
     <div className="rev-data-table-wrap rev-incidentes-table-wrap">
       <table className="rev-data-table rev-data-table--compact rev-incidentes-table">
@@ -69,10 +77,21 @@ export default function IncidentesTable({ items }: IncidentesTableProps) {
                   </Link>
                 </td>
                 <td>
-                  <Link to={`/incidentes/${incidente.id}`} className="rev-incidentes-table__link">
-                    Ver
-                    <i className="bi bi-arrow-right-short" aria-hidden="true" />
-                  </Link>
+                  <div className="rev-incidentes-table__actions">
+                    {canOperate && onSelectIncidente && incidente.estado !== 'CERRADO' && !isLinkedReport(item) && (
+                      <button
+                        type="button"
+                        className={`rev-incidentes-table__operate${selectedIncidenteId === incidente.id ? ' rev-incidentes-table__operate--active' : ''}`}
+                        onClick={() => onSelectIncidente(item)}
+                      >
+                        Gestionar
+                      </button>
+                    )}
+                    <Link to={`/incidentes/${incidente.id}`} className="rev-incidentes-table__link">
+                      Ver
+                      <i className="bi bi-arrow-right-short" aria-hidden="true" />
+                    </Link>
+                  </div>
                 </td>
               </tr>
             );
@@ -220,6 +239,9 @@ interface IncidentesGroupedListProps {
   collapsedGroups: Set<string>;
   onToggleGroup: (estado: string) => void;
   renderCards: (items: DashboardItem[]) => ReactNode;
+  selectedIncidenteId?: string;
+  canOperate?: boolean;
+  onSelectIncidente?: (item: DashboardItem) => void;
 }
 
 export function IncidentesGroupedList({
@@ -228,10 +250,20 @@ export function IncidentesGroupedList({
   collapsedGroups,
   onToggleGroup,
   renderCards,
+  selectedIncidenteId,
+  canOperate,
+  onSelectIncidente,
 }: IncidentesGroupedListProps) {
   if (viewMode === 'table') {
     const allItems = groups.flatMap((g) => g.items);
-    return <IncidentesTable items={allItems} />;
+    return (
+      <IncidentesTable
+        items={allItems}
+        selectedIncidenteId={selectedIncidenteId}
+        canOperate={canOperate}
+        onSelectIncidente={onSelectIncidente}
+      />
+    );
   }
 
   return (

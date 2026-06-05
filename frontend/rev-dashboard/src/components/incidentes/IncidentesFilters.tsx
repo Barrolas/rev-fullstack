@@ -1,11 +1,13 @@
 import { Badge, Button, Form } from 'react-bootstrap';
 import { ESTADO_ORDER, formatEstadoLabel } from '../../utils/dashboardAggregates';
-import type {
-  IncidentEstadoFilter,
-  IncidentFiltersState,
-  IncidentRiskFilter,
-  IncidentSort,
-  IncidentViewMode,
+import {
+  patchScopeFilter,
+  SCOPE_OPTIONS,
+  type IncidentEstadoFilter,
+  type IncidentFiltersState,
+  type IncidentRiskFilter,
+  type IncidentSort,
+  type IncidentViewMode,
 } from '../../utils/incidentesFilters';
 
 const RISK_OPTIONS: { value: IncidentRiskFilter; label: string }[] = [
@@ -76,9 +78,18 @@ export default function IncidentesFilters({
           size="sm"
           className="rev-incidentes-filters__select"
           value={filters.estadoFilter}
-          onChange={(e) =>
-            onFiltersChange({ estadoFilter: e.target.value as IncidentEstadoFilter })
-          }
+          onChange={(e) => {
+            const estado = e.target.value as IncidentEstadoFilter;
+            if (estado === 'CERRADO') {
+              onFiltersChange({ estadoFilter: 'ALL', scopeFilter: 'cerrados' });
+              return;
+            }
+            if (estado !== 'ALL' && filters.scopeFilter === 'cerrados') {
+              onFiltersChange({ estadoFilter: estado, scopeFilter: 'activos' });
+              return;
+            }
+            onFiltersChange({ estadoFilter: estado });
+          }}
           aria-label="Filtrar por estado"
         >
           <option value="ALL">Estado: todos</option>
@@ -126,16 +137,24 @@ export default function IncidentesFilters({
       </div>
 
       <div className="rev-incidentes-filters__secondary">
+        <div className="rev-incidentes-filters__scope-row">
+          <span className="rev-incidentes-filters__scope-label">Mostrar</span>
+          <div className="rev-incidentes-filters__chips rev-incidentes-filters__chips--scope" role="group" aria-label="Alcance del listado">
+            {SCOPE_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                className={`rev-incidentes-filters__chip rev-incidentes-filters__chip--scope${filters.scopeFilter === opt.value ? ' rev-incidentes-filters__chip--active' : ''}${opt.value === 'cerrados' ? ' rev-incidentes-filters__chip--muted' : ''}`}
+                onClick={() => onFiltersChange(patchScopeFilter(filters, opt.value))}
+                aria-pressed={filters.scopeFilter === opt.value}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="rev-incidentes-filters__toggles">
-          <label className="rev-incidentes-filters__toggle">
-            <Form.Check
-              type="switch"
-              id="incidentes-activos-only"
-              checked={filters.activosOnly}
-              onChange={(e) => onFiltersChange({ activosOnly: e.target.checked })}
-            />
-            <span>Solo activos</span>
-          </label>
           <label className="rev-incidentes-filters__toggle">
             <Form.Check
               type="switch"

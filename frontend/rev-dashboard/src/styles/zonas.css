@@ -356,7 +356,7 @@
 }
 
 .rev-risk-distribution__segment--medium {
-  background: var(--rev-surface-elevated);
+  background: #eab308;
 }
 
 .rev-risk-distribution__segment--low {
@@ -389,7 +389,7 @@
 }
 
 .rev-risk-distribution__dot--medium {
-  background: var(--rev-text-tertiary);
+  background: #eab308;
 }
 
 .rev-risk-distribution__dot--low {
@@ -456,7 +456,7 @@
 }
 
 .rev-data-table__row--medium td:first-child {
-  box-shadow: inset 3px 0 0 var(--rev-text-tertiary);
+  box-shadow: inset 3px 0 0 #eab308;
 }
 
 .rev-data-table__row--low td:first-child {
@@ -819,12 +819,27 @@
   color: var(--rev-orange);
 }
 
+.rev-zones-map__legend-item--high::before {
+  background: rgba(249, 115, 22, 0.35);
+  border-color: var(--rev-orange);
+}
+
 .rev-zones-map__legend-item--medium {
-  color: var(--rev-text-tertiary);
+  color: #eab308;
+}
+
+.rev-zones-map__legend-item--medium::before {
+  background: rgba(234, 179, 8, 0.35);
+  border-color: #eab308;
 }
 
 .rev-zones-map__legend-item--low {
-  color: #5a6a7e;
+  color: #73839a;
+}
+
+.rev-zones-map__legend-item--low::before {
+  background: rgba(115, 131, 154, 0.3);
+  border-color: #73839a;
 }
 
 .rev-zones-map__legend-item--incident {

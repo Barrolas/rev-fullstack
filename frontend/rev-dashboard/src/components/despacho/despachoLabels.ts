@@ -39,3 +39,53 @@ export function prioridadOrden(item: { prioridad: number; zonaNivelRiesgo?: stri
     item.zonaNivelRiesgo === 'HIGH' ? 3 : item.zonaNivelRiesgo === 'MEDIUM' ? 2 : item.zonaNivelRiesgo === 'LOW' ? 1 : 0;
   return riesgo * 1000 + (item.prioridad ?? 0);
 }
+
+export type EstadoDespacho = 'ASIGNADA' | 'EN_CAMINO' | 'EN_INCIDENTE' | string;
+
+export function estadoDespachoLabel(estado?: string): string {
+  switch (estado) {
+    case 'ASIGNADA':
+      return 'Despachada';
+    case 'EN_CAMINO':
+      return 'En camino';
+    case 'EN_INCIDENTE':
+      return 'En incidente';
+    default:
+      return estado ?? 'En terreno';
+  }
+}
+
+export function estadoDespachoCardClass(estado?: string): string {
+  switch (estado) {
+    case 'ASIGNADA':
+      return 'rev-despacho-activos-card--asignada';
+    case 'EN_CAMINO':
+      return 'rev-despacho-activos-card--en-camino';
+    case 'EN_INCIDENTE':
+      return 'rev-despacho-activos-card--en-incidente';
+    default:
+      return '';
+  }
+}
+
+export function siguienteEstadoDespacho(estado?: string): EstadoDespacho | null {
+  switch (estado) {
+    case 'ASIGNADA':
+      return 'EN_CAMINO';
+    case 'EN_CAMINO':
+      return 'EN_INCIDENTE';
+    default:
+      return null;
+  }
+}
+
+export function accionEstadoDespachoLabel(estado?: string): string | null {
+  switch (estado) {
+    case 'ASIGNADA':
+      return 'Marcar en camino';
+    case 'EN_CAMINO':
+      return 'Brigada en incidente';
+    default:
+      return null;
+  }
+}

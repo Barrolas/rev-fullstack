@@ -5,6 +5,7 @@ import cl.duocuc.rev.bff.dto.IncidenteCreateRequest;
 import cl.duocuc.rev.bff.dto.IncidenteDto;
 import cl.duocuc.rev.bff.dto.PublicIncidenteCreateRequest;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
@@ -114,6 +115,15 @@ public class IncidenteClientService {
                 .uri("/incidentes/{incidenteId}/adjuntos/{adjuntoId}/archivo", incidenteId, adjuntoId)
                 .retrieve()
                 .bodyToMono(byte[].class);
+    }
+
+    public Mono<IncidenteDto> transicionar(UUID id, String estadoDestino) {
+        return webClient()
+                .put()
+                .uri("/incidentes/{id}/transicion", id)
+                .bodyValue(Map.of("estadoDestino", estadoDestino))
+                .retrieve()
+                .bodyToMono(IncidenteDto.class);
     }
 
     private WebClient webClient() {

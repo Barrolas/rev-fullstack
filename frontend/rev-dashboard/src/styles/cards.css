@@ -75,7 +75,25 @@
 .rev-incident-card--en-progreso { border-left-color: rgba(255, 255, 255, 0.45); }
 .rev-incident-card--reportado { border-left-color: rgba(255, 255, 255, 0.32); }
 .rev-incident-card--controlado { border-left-color: rgba(255, 255, 255, 0.22); }
-.rev-incident-card--cerrado { border-left-color: rgba(255, 255, 255, 0.12); opacity: 0.94; }
+.rev-incident-card--cerrado {
+  border-left-color: rgba(255, 255, 255, 0.1);
+  opacity: 0.78;
+  filter: saturate(0.55);
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.rev-incident-card--cerrado .rev-incident-card__type,
+.rev-incident-card--cerrado .rev-incident-card__desc {
+  color: var(--rev-text-tertiary);
+}
+
+.rev-incident-card--cerrado .rev-incident-card__link {
+  color: var(--rev-text-tertiary);
+}
+
+.rev-incident-card--cerrado:hover {
+  opacity: 0.88;
+}
 
 .rev-incident-card.card:hover {
   transform: none;
@@ -173,6 +191,18 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.rev-incident-card__closed-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--rev-text-tertiary);
 }
 
 .rev-incident-card__meta {

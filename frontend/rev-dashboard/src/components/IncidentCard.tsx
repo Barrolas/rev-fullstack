@@ -7,9 +7,12 @@ import { getEstadoVisual, hasPendingCorrelation, isHighPriorityIncident, isLinke
 
 interface IncidentCardProps {
   item: DashboardItem;
+  selected?: boolean;
+  canOperate?: boolean;
+  onSelect?: () => void;
 }
 
-export default function IncidentCard({ item }: IncidentCardProps) {
+export default function IncidentCard({ item, selected = false, canOperate = false, onSelect }: IncidentCardProps) {
   const { incidente, zonaRiesgo, recursos, degraded } = item;
   const highPriority = isHighPriorityIncident(item);
   const pendingCorr = hasPendingCorrelation(item);
@@ -28,6 +31,7 @@ export default function IncidentCard({ item }: IncidentCardProps) {
         highPriority ? 'rev-incident-card--priority' : '',
         linked ? 'rev-incident-card--linked' : '',
         pendingCorr ? 'rev-incident-card--correlacion' : '',
+        selected ? 'rev-incident-card--selected' : '',
       ].filter(Boolean).join(' ')}
     >
       <Card.Body className="rev-incident-card__body">
@@ -78,6 +82,13 @@ export default function IncidentCard({ item }: IncidentCardProps) {
 
         <p className="rev-incident-card__desc">{incidente.descripcion}</p>
 
+        {incidente.estado === 'CERRADO' && (
+          <p className="rev-incident-card__closed-hint">
+            <i className="bi bi-archive" aria-hidden="true" />
+            Caso cerrado — solo consulta
+          </p>
+        )}
+
         <div className="rev-incident-card__meta">
           <div className="rev-incident-card__meta-item">
             <i className="bi bi-shield" aria-hidden="true" />
@@ -119,6 +130,16 @@ export default function IncidentCard({ item }: IncidentCardProps) {
         )}
 
         <div className="rev-incident-card__footer">
+          {canOperate && onSelect && incidente.estado !== 'CERRADO' && !linked && (
+            <button
+              type="button"
+              className={`rev-incident-card__operate${selected ? ' rev-incident-card__operate--active' : ''}`}
+              onClick={onSelect}
+            >
+              <i className="bi bi-sliders" aria-hidden="true" />
+              {selected ? 'Seleccionado' : 'Gestionar'}
+            </button>
+          )}
           <Link to={`/incidentes/${incidente.id}`} className="rev-incident-card__link">
             Ver detalle
             <i className="bi bi-arrow-right" aria-hidden="true" />

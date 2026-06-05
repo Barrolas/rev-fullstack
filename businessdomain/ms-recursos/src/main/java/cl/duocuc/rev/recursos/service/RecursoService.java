@@ -1,5 +1,6 @@
 package cl.duocuc.rev.recursos.service;
 
+import cl.duocuc.rev.recursos.dto.ActualizarEstadoDespachoRequest;
 import cl.duocuc.rev.recursos.dto.AsignacionActivaDto;
 import cl.duocuc.rev.recursos.dto.AsignacionResponse;
 import cl.duocuc.rev.recursos.dto.AsignarRequest;
@@ -257,6 +258,12 @@ public class RecursoService {
                 .toList();
     }
 
+    public List<AsignacionActivaDto> listarAsignacionesPorIncidente(UUID incidenteId) {
+        return asignacionRepository.findAllByIncidenteIdAndActivaTrue(incidenteId).stream()
+                .map(this::toAsignacionActivaDto)
+                .toList();
+    }
+
     public List<RecursoAsignadoDto> listarPorIncidente(UUID incidenteId) {
         List<RecursoAsignadoDto> resultado = new ArrayList<>();
         for (Asignacion asignacion : asignacionRepository.findAllByIncidenteIdAndActivaTrue(incidenteId)) {
@@ -455,6 +462,48 @@ public class RecursoService {
             herramientaRepository.save(herramienta);
         }
         asignacionHerramientaRepository.deleteByAsignacionId(asignacionId);
+    }
+
+    @Transactional
+    public AsignacionActivaDto actualizarEstadoDespacho(Long asignacionId, ActualizarEstadoDespachoRequest request) {
+        if (request == null || request.getEstadoDespacho() == null || request.getEstadoDespacho().isBlank()) {
+            throw new BusinessRuleException(
+                    "DATOS_INVALIDOS", "estadoDespacho es obligatorio", HttpStatus.BAD_REQUEST);
+        }
+        Asignacion asignacion = asignacionRepository.findByIdAndActivaTrue(asignacionId)
+                .orElseThrow(() -> new BusinessRuleException(
+                        "ASIGNACION_NO_ENCONTRADA", "Asignación no encontrada o inactiva", HttpStatus.NOT_FOUND));
+        String destino = request.getEstadoDespacho().trim().toUpperCase();
+        validarTransicionEstadoDespacho(asignacion.getEstadoDespacho(), destino);
+        asignacion.setEstadoDespacho(destino);
+        asignacion.setFActualizacion(LocalDateTime.now());
+        return toAsignacionActivaDto(asignacionRepository.save(asignacion));
+    }
+
+    @Transactional
+    public void liberarPorIncidente(UUID incidenteId) {
+        List<Asignacion> activas = asignacionRepository.findAllByIncidenteIdAndActivaTrue(incidenteId);
+        for (Asignacion asignacion : activas) {
+            desasignar(asignacion.getId());
+        }
+    }
+
+    private void validarTransicionEstadoDespacho(String actual, String destino) {
+        if (actual == null) {
+            throw new BusinessRuleException(
+                    "TRANSICION_INVALIDA", "La asignación no tiene estado de despacho", HttpStatus.CONFLICT);
+        }
+        String origen = actual.trim().toUpperCase();
+        if ("ASIGNADA".equals(origen) && "EN_CAMINO".equals(destino)) {
+            return;
+        }
+        if ("EN_CAMINO".equals(origen) && "EN_INCIDENTE".equals(destino)) {
+            return;
+        }
+        throw new BusinessRuleException(
+                "TRANSICION_INVALIDA",
+                "No se puede pasar de " + origen + " a " + destino,
+                HttpStatus.CONFLICT);
     }
 
     private void aplicarDotacionVehiculos(Long brigadaId, List<Long> vehiculoIds, Long principalVehiculoId) {

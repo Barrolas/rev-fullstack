@@ -27,6 +27,7 @@ import './styles/rev-despacho-wizard.css';
 import './styles/weather.css';
 import './styles/portal.css';
 import './styles/inicio.css';
+import './styles/principal-incidentes.css';
 import './styles/footer.css';
 import './styles/ambient.css';
 import './styles/overlays.css';

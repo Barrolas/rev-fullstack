@@ -517,6 +517,30 @@
   font-weight: 700;
 }
 
+.rev-despacho-activos-incidentes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rev-space-3);
+}
+
+.rev-despacho-activos-incidente {
+  padding: var(--rev-space-3);
+  border: 1px solid var(--rev-border);
+  border-radius: var(--rev-radius-card);
+  background: var(--rev-bg-secondary);
+}
+
+.rev-despacho-activos-incidente__head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--rev-space-2);
+  margin-bottom: var(--rev-space-3);
+  padding-bottom: var(--rev-space-2);
+  border-bottom: 1px solid var(--rev-border);
+}
+
 .rev-despacho-activos-grid {
   display: grid;
   gap: var(--rev-space-2);
@@ -530,7 +554,35 @@
   padding: var(--rev-space-3);
   border-radius: var(--rev-radius-card);
   border: 1px solid var(--rev-border);
-  background: var(--rev-bg-secondary);
+  background: var(--rev-bg);
+  border-left-width: 4px;
+}
+
+.rev-despacho-activos-card--asignada {
+  border-left-color: var(--rev-orange, #f59e0b);
+  background: color-mix(in srgb, var(--rev-orange-muted, #fef3c7) 35%, var(--rev-bg));
+}
+
+.rev-despacho-activos-card--en-camino {
+  border-left-color: #3b82f6;
+  background: color-mix(in srgb, #dbeafe 40%, var(--rev-bg));
+}
+
+.rev-despacho-activos-card--en-incidente {
+  border-left-color: var(--rev-success, #22c55e);
+  background: color-mix(in srgb, #dcfce7 40%, var(--rev-bg));
+}
+
+.rev-despacho-activos-card__estado {
+  font-size: var(--rev-text-sm);
+  font-weight: 600;
+  color: var(--rev-text-secondary);
+}
+
+.rev-despacho-activos-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .rev-despacho-activos-card__head {

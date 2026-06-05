@@ -6,10 +6,10 @@ import { riskVariant } from '../components/RiskBadge';
 export function zonaMapStyle(nivel: string, selected = false): PathOptions {
   const variant = riskVariant(nivel);
   const styles: Record<string, { fill: string; stroke: string }> = {
-    high: { fill: 'rgba(249, 115, 22, 0.28)', stroke: '#f97316' },
-    medium: { fill: 'rgba(167, 180, 199, 0.18)', stroke: '#73839a' },
-    low: { fill: 'rgba(115, 131, 154, 0.12)', stroke: '#5a6a7e' },
-    unknown: { fill: 'rgba(115, 131, 154, 0.12)', stroke: '#73839a' },
+    high: { fill: 'rgba(249, 115, 22, 0.30)', stroke: '#f97316' },
+    medium: { fill: 'rgba(234, 179, 8, 0.28)', stroke: '#eab308' },
+    low: { fill: 'rgba(115, 131, 154, 0.20)', stroke: '#73839a' },
+    unknown: { fill: 'rgba(115, 131, 154, 0.15)', stroke: '#73839a' },
   };
   const palette = styles[variant] ?? styles.unknown;
   return {

@@ -1,5 +1,6 @@
 package cl.duocuc.rev.bff.client;
 
+import cl.duocuc.rev.bff.dto.ActualizarEstadoDespachoRequest;
 import cl.duocuc.rev.bff.dto.AsignacionActivaDto;
 import cl.duocuc.rev.bff.dto.AsignacionDto;
 import cl.duocuc.rev.bff.dto.AsignarRecursoRequest;
@@ -39,6 +40,15 @@ public class RecursosClientService {
         return webClient()
                 .get()
                 .uri("/recursos/incidente/{incidenteId}", incidenteId)
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<>() {
+                });
+    }
+
+    public Mono<List<AsignacionActivaDto>> listarAsignacionesPorIncidente(UUID incidenteId) {
+        return webClient()
+                .get()
+                .uri("/recursos/incidente/{incidenteId}/asignaciones-activas", incidenteId)
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<>() {
                 });
@@ -189,6 +199,23 @@ public class RecursosClientService {
         return webClient()
                 .delete()
                 .uri("/recursos/asignar/{id}", asignacionId)
+                .retrieve()
+                .bodyToMono(Void.class);
+    }
+
+    public Mono<AsignacionActivaDto> actualizarEstadoDespacho(Long asignacionId, ActualizarEstadoDespachoRequest request) {
+        return webClient()
+                .put()
+                .uri("/recursos/asignar/{id}/estado-despacho", asignacionId)
+                .bodyValue(request)
+                .retrieve()
+                .bodyToMono(AsignacionActivaDto.class);
+    }
+
+    public Mono<Void> liberarPorIncidente(UUID incidenteId) {
+        return webClient()
+                .delete()
+                .uri("/recursos/incidente/{incidenteId}/asignaciones", incidenteId)
                 .retrieve()
                 .bodyToMono(Void.class);
     }

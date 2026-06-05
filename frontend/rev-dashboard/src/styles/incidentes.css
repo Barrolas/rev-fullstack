@@ -338,6 +338,58 @@
 
 
 
+.rev-incidentes-filters__scope-row {
+
+  display: flex;
+
+  flex-wrap: wrap;
+
+  align-items: center;
+
+  gap: 8px;
+
+}
+
+
+
+.rev-incidentes-filters__scope-label {
+
+  font-size: var(--rev-text-meta);
+
+  color: var(--rev-text-tertiary);
+
+  white-space: nowrap;
+
+}
+
+
+
+.rev-incidentes-filters__chips--scope {
+
+  flex-wrap: wrap;
+
+}
+
+
+
+.rev-incidentes-filters__chip--scope.rev-incidentes-filters__chip--active {
+
+  border-color: rgba(255, 255, 255, 0.22);
+
+}
+
+
+
+.rev-incidentes-filters__chip--muted.rev-incidentes-filters__chip--active {
+
+  color: var(--rev-text-tertiary);
+
+  background: rgba(255, 255, 255, 0.04);
+
+}
+
+
+
 .rev-incidentes-filters__toggles {
 
   display: flex;
@@ -780,7 +832,19 @@
 
 .rev-incidentes-group--controlado { border-left: 3px solid rgba(255, 255, 255, 0.22); }
 
-.rev-incidentes-group--cerrado { border-left: 3px solid rgba(255, 255, 255, 0.12); opacity: 0.92; }
+.rev-incidentes-group--cerrado {
+  border-left: 3px solid rgba(255, 255, 255, 0.1);
+  opacity: 0.88;
+  margin-top: var(--rev-space-3);
+  padding-top: var(--rev-space-2);
+  border-top: 1px dashed rgba(255, 255, 255, 0.08);
+}
+
+.rev-incidentes-group--cerrado:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
 
 
 
@@ -1009,6 +1073,23 @@
 
 
 .rev-incidentes-table__estado--escalado { color: var(--rev-orange); }
+
+.rev-incidentes-table__row--cerrado {
+  opacity: 0.72;
+  filter: saturate(0.55);
+}
+
+.rev-incidentes-table__row--cerrado td {
+  color: var(--rev-text-tertiary);
+}
+
+.rev-incidentes-table__row--cerrado .rev-incidentes-table__type {
+  color: var(--rev-text-tertiary);
+}
+
+.rev-incidentes-table__estado--cerrado {
+  color: var(--rev-text-tertiary);
+}
 
 
 
@@ -1310,6 +1391,179 @@
 
 .rev-incidentes-rail__shortcut--correlacion strong {
   color: var(--rev-orange, #fb923c);
+}
+
+/* —— Gestión operativa en listado / detalle —— */
+
+.rev-incidente-ops-selection {
+  padding: var(--rev-space-3);
+  border: 1px solid var(--rev-orange-border, rgba(251, 146, 60, 0.45));
+  background: color-mix(in srgb, var(--rev-orange-muted, #431407) 25%, var(--rev-bg-secondary));
+}
+
+.rev-incidente-ops-selection__head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--rev-space-2);
+  margin-bottom: var(--rev-space-2);
+  padding-bottom: var(--rev-space-2);
+  border-bottom: 1px solid var(--rev-border);
+}
+
+.rev-incidente-ops-wrap {
+  border: 1px solid var(--rev-border);
+}
+
+.rev-incidente-ops__head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--rev-space-2);
+  margin-bottom: var(--rev-space-3);
+}
+
+.rev-incidente-ops__title {
+  font-size: var(--rev-text-base, 1rem);
+  margin: 0 0 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.rev-incidente-ops__meta {
+  font-size: var(--rev-text-meta);
+  color: var(--rev-text-tertiary);
+}
+
+.rev-incidente-ops__section {
+  margin-bottom: var(--rev-space-3);
+}
+
+.rev-incidente-ops__section-title {
+  font-size: var(--rev-text-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--rev-text-tertiary);
+  margin-bottom: var(--rev-space-2);
+}
+
+.rev-incidente-ops__brigadas {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--rev-space-2);
+}
+
+.rev-incidente-ops__brigada {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--rev-space-2);
+  padding: var(--rev-space-2);
+  border-radius: var(--rev-radius-sm);
+  border: 1px solid var(--rev-border);
+  border-left-width: 4px;
+  background: var(--rev-bg);
+}
+
+.rev-incidente-ops__brigada.rev-despacho-activos-card--asignada {
+  border-left-color: var(--rev-orange, #f59e0b);
+}
+
+.rev-incidente-ops__brigada.rev-despacho-activos-card--en-camino {
+  border-left-color: #3b82f6;
+}
+
+.rev-incidente-ops__brigada.rev-despacho-activos-card--en-incidente {
+  border-left-color: var(--rev-success, #22c55e);
+}
+
+.rev-incidente-ops__brigada-info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.rev-incidente-ops__brigada-estado {
+  width: 100%;
+  font-size: var(--rev-text-sm);
+  color: var(--rev-text-secondary);
+  font-weight: 600;
+}
+
+.rev-incidente-ops__brigada-actions,
+.rev-incidente-ops__cierre-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.rev-incidente-ops__motivo-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--rev-text-sm);
+  cursor: pointer;
+}
+
+.rev-incident-card--selected {
+  outline: 2px solid var(--rev-orange, #fb923c);
+  outline-offset: 2px;
+}
+
+.rev-incident-card__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.rev-incident-card__operate {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid var(--rev-border);
+  background: transparent;
+  color: var(--rev-text-secondary);
+  font-size: var(--rev-text-sm);
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--rev-radius-sm);
+  cursor: pointer;
+}
+
+.rev-incident-card__operate:hover,
+.rev-incident-card__operate--active {
+  border-color: var(--rev-orange, #fb923c);
+  color: var(--rev-orange, #fb923c);
+}
+
+.rev-incidentes-table__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rev-incidentes-table__operate {
+  border: 0;
+  background: transparent;
+  color: var(--rev-orange, #fb923c);
+  font-size: var(--rev-text-sm);
+  padding: 0;
+  cursor: pointer;
+}
+
+.rev-incidentes-table__operate--active {
+  font-weight: 700;
+  text-decoration: underline;
 }
 
 

@@ -992,8 +992,30 @@ export async function fetchDespachoActivos(): Promise<AsignacionActiva[]> {
   return apiFetch('/api/despacho/activos');
 }
 
+export async function fetchAsignacionesIncidente(incidenteId: string): Promise<AsignacionActiva[]> {
+  return apiFetch(`/api/despacho/incidentes/${incidenteId}/asignaciones`);
+}
+
 export async function liberarAsignacion(asignacionId: number): Promise<void> {
   await apiFetch(`/api/recursos/asignar/${asignacionId}`, { method: 'DELETE' });
+}
+
+export async function actualizarEstadoDespachoAsignacion(
+  asignacionId: number,
+  estadoDespacho: string,
+): Promise<AsignacionActiva> {
+  return apiFetch(`/api/despacho/asignaciones/${asignacionId}/estado`, {
+    method: 'PUT',
+    body: JSON.stringify({ estadoDespacho }),
+  });
+}
+
+export async function cerrarIncidenteDespacho(incidenteId: string): Promise<void> {
+  await apiFetch(`/api/despacho/incidentes/${incidenteId}/cerrar`, { method: 'POST' });
+}
+
+export async function liberarAsignacionesIncidente(incidenteId: string): Promise<void> {
+  await apiFetch(`/api/despacho/incidentes/${incidenteId}/asignaciones`, { method: 'DELETE' });
 }
 
 export async function asignarRecurso(data: AsignarRecurso): Promise<void> {

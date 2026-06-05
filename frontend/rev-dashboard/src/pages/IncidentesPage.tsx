@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button } from 'react-bootstrap';
 import { useSearchParams } from 'react-router-dom';
-import { fetchCorrelacionesPendientesCount, fetchDashboard } from '../api';
+import { fetchCorrelacionesPendientesCount, fetchDashboard, type DashboardItem } from '../api';
 import { useUi } from '../contexts/UiContext';
 import IncidentCard from '../components/IncidentCard';
+import IncidenteOperacionPanel from '../components/incidentes/IncidenteOperacionPanel';
 import IncidentesCorrelacionesPanel from '../components/incidentes/IncidentesCorrelacionesPanel';
 import IncidentesFilters from '../components/incidentes/IncidentesFilters';
 import IncidentesModuleTabs, { type IncidentesModuleView } from '../components/incidentes/IncidentesModuleTabs';
@@ -47,6 +48,7 @@ export default function IncidentesPage() {
   const [filters, setFilters] = useState<IncidentFiltersState>(DEFAULT_INCIDENT_FILTERS);
   const [viewMode, setViewMode] = useState<IncidentViewMode>('cards');
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set(['CERRADO']));
+  const [selectedItem, setSelectedItem] = useState<DashboardItem | null>(null);
 
   const setModuleView = (view: IncidentesModuleView) => {
     if (view === 'listado') {
@@ -65,11 +67,23 @@ export default function IncidentesPage() {
     if (incidentCreatedTick > 0) refreshAll();
   }, [incidentCreatedTick, refreshAll]);
 
+  useEffect(() => {
+    setCollapsedGroups((current) => {
+      const next = new Set(current);
+      if (filters.scopeFilter === 'activos') {
+        next.add('CERRADO');
+      } else {
+        next.delete('CERRADO');
+      }
+      return next;
+    });
+  }, [filters.scopeFilter]);
+
   const list = items ?? [];
   const kpis = computeDashboardKpis(list);
 
   const filtered = useMemo(
-    () => sortIncidents(filterIncidents(list, filters), filters.sort),
+    () => sortIncidents(filterIncidents(list, filters), filters.sort, filters.scopeFilter),
     [list, filters],
   );
 
@@ -93,7 +107,17 @@ export default function IncidentesPage() {
   const renderCards = (cardItems: typeof filtered) => (
     <div className="rev-incidentes-grid">
       {cardItems.map((item) => (
-        <IncidentCard key={item.incidente.id} item={item} />
+        <IncidentCard
+          key={item.incidente.id}
+          item={item}
+          selected={selectedItem?.incidente.id === item.incidente.id}
+          canOperate={canManageIncidents}
+          onSelect={() =>
+            setSelectedItem((current) =>
+              current?.incidente.id === item.incidente.id ? null : item,
+            )
+          }
+        />
       ))}
     </div>
   );
@@ -171,20 +195,27 @@ export default function IncidentesPage() {
   const rail = (
     <IncidentesSummaryRail
       items={list}
-      onFilterEstado={(estado) =>
-        patchFilters({ estadoFilter: estado as IncidentEstadoFilter, activosOnly: false })
-      }
+      onFilterEstado={(estado) => {
+        if (estado === 'CERRADO') {
+          patchFilters({ scopeFilter: 'cerrados', estadoFilter: 'ALL' });
+        } else {
+          patchFilters({
+            scopeFilter: 'activos',
+            estadoFilter: estado as IncidentEstadoFilter,
+          });
+        }
+      }}
       onFilterHighRisk={() =>
-        patchFilters({ riskFilter: 'HIGH', activosOnly: true, estadoFilter: 'ALL', sinRecursos: false })
+        patchFilters({ riskFilter: 'HIGH', scopeFilter: 'activos', estadoFilter: 'ALL', sinRecursos: false })
       }
       onFilterSinRecursos={() =>
-        patchFilters({ sinRecursos: true, activosOnly: true, estadoFilter: 'ALL' })
+        patchFilters({ sinRecursos: true, scopeFilter: 'activos', estadoFilter: 'ALL' })
       }
       onFilterDegradados={() => {
         setModuleView('listado');
         patchFilters({
           degradadosOnly: true,
-          activosOnly: false,
+          scopeFilter: 'todos',
           estadoFilter: 'ALL',
           riskFilter: 'ALL',
           sinRecursos: false,
@@ -224,6 +255,34 @@ export default function IncidentesPage() {
             ) : (
               <>
                 {filtersBar}
+
+                {selectedItem && canManageIncidents && selectedItem.incidente.estado !== 'CERRADO' && (
+                  <div className="rev-incidente-ops-selection rev-card">
+                    <div className="rev-incidente-ops-selection__head">
+                      <div>
+                        <strong>Caso seleccionado</strong>
+                        <span className="text-muted small ms-2">
+                          {selectedItem.incidente.folio ?? selectedItem.incidente.tipo}
+                        </span>
+                      </div>
+                      <Button variant="link" size="sm" className="p-0" onClick={() => setSelectedItem(null)}>
+                        Quitar selección
+                      </Button>
+                    </div>
+                    <IncidenteOperacionPanel
+                      incidenteId={selectedItem.incidente.id}
+                      incidenteEstado={selectedItem.incidente.estado}
+                      incidenteFolio={selectedItem.incidente.folio}
+                      canManage={canManageIncidents}
+                      compact
+                      onUpdated={() => {
+                        refreshAll();
+                        setSelectedItem(null);
+                      }}
+                    />
+                  </div>
+                )}
+
                 <StateView
                   state={baseViewState}
                   errorMessage={error}
@@ -253,6 +312,13 @@ export default function IncidentesPage() {
                       collapsedGroups={collapsedGroups}
                       onToggleGroup={toggleGroup}
                       renderCards={renderCards}
+                      selectedIncidenteId={selectedItem?.incidente.id}
+                      canOperate={canManageIncidents}
+                      onSelectIncidente={(item) =>
+                        setSelectedItem((current) =>
+                          current?.incidente.id === item.incidente.id ? null : item,
+                        )
+                      }
                     />
                   )}
                 </StateView>

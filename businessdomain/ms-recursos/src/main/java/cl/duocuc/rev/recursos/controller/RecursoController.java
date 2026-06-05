@@ -1,5 +1,6 @@
 package cl.duocuc.rev.recursos.controller;
 
+import cl.duocuc.rev.recursos.dto.ActualizarEstadoDespachoRequest;
 import cl.duocuc.rev.recursos.dto.AsignacionActivaDto;
 import cl.duocuc.rev.recursos.dto.AsignacionResponse;
 import cl.duocuc.rev.recursos.dto.AsignarRequest;
@@ -112,6 +113,11 @@ public class RecursoController {
         return recursoService.listarPorIncidente(incidenteId);
     }
 
+    @GetMapping("/incidente/{incidenteId}/asignaciones-activas")
+    public List<AsignacionActivaDto> listarAsignacionesActivasPorIncidente(@PathVariable UUID incidenteId) {
+        return recursoService.listarAsignacionesPorIncidente(incidenteId);
+    }
+
     @PostMapping("/asignar")
     @ResponseStatus(HttpStatus.CREATED)
     public AsignacionResponse asignar(@RequestBody AsignarRequest request) {
@@ -122,6 +128,18 @@ public class RecursoController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void desasignar(@PathVariable Long id) {
         recursoService.desasignar(id);
+    }
+
+    @PutMapping("/asignar/{id}/estado-despacho")
+    public AsignacionActivaDto actualizarEstadoDespacho(
+            @PathVariable Long id, @RequestBody ActualizarEstadoDespachoRequest request) {
+        return recursoService.actualizarEstadoDespacho(id, request);
+    }
+
+    @DeleteMapping("/incidente/{incidenteId}/asignaciones")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void liberarPorIncidente(@PathVariable UUID incidenteId) {
+        recursoService.liberarPorIncidente(incidenteId);
     }
 
     @PostMapping("/brigadas")

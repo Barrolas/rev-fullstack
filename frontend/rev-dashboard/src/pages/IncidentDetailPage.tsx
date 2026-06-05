@@ -4,6 +4,7 @@ import { Link, useParams } from 'react-router-dom';
 import { DashboardItem, fetchDashboardItem } from '../api';
 import { useToast } from '../contexts/ToastContext';
 import AssignResourceModal from '../components/incidentes/AssignResourceModal';
+import IncidenteOperacionPanel from '../components/incidentes/IncidenteOperacionPanel';
 import IncidentAdjuntoGallery from '../components/incidentes/IncidentAdjuntoGallery';
 import IncidentCorrelationSection from '../components/incidentes/IncidentCorrelationSection';
 import { isLinkedReport } from '../utils/incidentesFilters';
@@ -73,21 +74,6 @@ export default function IncidentDetailPage() {
               </ListGroup.Item>
             ))}
           </ListGroup>
-        )}
-        {canManageIncidents && !linkedReport && inc && (
-          <div className="d-grid gap-2 mt-3">
-            <Link
-              to={`/despacho/operacion?incidente=${inc.id}`}
-              className="btn btn-primary btn-sm"
-            >
-              <i className="bi bi-speedometer2 me-1" />
-              Ir a despacho operativo
-            </Link>
-            <Button variant="outline-primary" size="sm" onClick={() => setAssignModalOpen(true)}>
-              <i className="bi bi-truck me-1" />
-              Asignar (modal rápido)
-            </Button>
-          </div>
         )}
       </div>
       {item.degraded && (
@@ -204,6 +190,19 @@ export default function IncidentDetailPage() {
 
                 {id && inc.adjuntos && inc.adjuntos.length > 0 && (
                   <IncidentAdjuntoGallery incidenteId={id} adjuntos={inc.adjuntos} />
+                )}
+
+                {canManageIncidents && !linkedReport && inc && (
+                  <div className="rev-card p-3 mb-3 rev-incidente-ops-wrap">
+                    <IncidenteOperacionPanel
+                      incidenteId={inc.id}
+                      incidenteEstado={inc.estado}
+                      incidenteFolio={inc.folio}
+                      canManage={canManageIncidents}
+                      onUpdated={refetch}
+                      onAssignClick={() => setAssignModalOpen(true)}
+                    />
+                  </div>
                 )}
 
                 {item && id && (

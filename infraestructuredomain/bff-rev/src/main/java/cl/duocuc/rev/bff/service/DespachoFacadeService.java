@@ -1,6 +1,8 @@
 package cl.duocuc.rev.bff.service;
 
+import cl.duocuc.rev.bff.client.IncidenteClientService;
 import cl.duocuc.rev.bff.client.RecursosClientService;
+import cl.duocuc.rev.bff.dto.ActualizarEstadoDespachoRequest;
 import cl.duocuc.rev.bff.dto.AsignacionActivaDto;
 import cl.duocuc.rev.bff.dto.BrigadaDetalleDto;
 import cl.duocuc.rev.bff.dto.BrigadaElegibilidadDto;
@@ -19,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -33,6 +36,7 @@ public class DespachoFacadeService {
 
     private final DashboardFacadeService dashboardFacadeService;
     private final RecursosClientService recursosClientService;
+    private final IncidenteClientService incidenteClientService;
 
     public DespachoColaResponse obtenerCola() {
         List<DashboardResponse> dashboards;
@@ -96,6 +100,28 @@ public class DespachoFacadeService {
     public List<AsignacionActivaDto> listarActivos() {
         List<AsignacionActivaDto> activas = recursosClientService.listarAsignacionesActivas().block();
         return activas != null ? activas : List.of();
+    }
+
+    public AsignacionActivaDto actualizarEstadoAsignacion(Long asignacionId, ActualizarEstadoDespachoRequest request) {
+        return recursosClientService.actualizarEstadoDespacho(asignacionId, request).block();
+    }
+
+    public List<AsignacionActivaDto> listarAsignacionesIncidente(UUID incidenteId) {
+        List<AsignacionActivaDto> asignaciones = recursosClientService.listarAsignacionesPorIncidente(incidenteId).block();
+        return asignaciones != null ? asignaciones : List.of();
+    }
+
+    public void liberarAsignacionesIncidente(UUID incidenteId) {
+        recursosClientService.liberarPorIncidente(incidenteId).block();
+    }
+
+    public IncidenteDto cerrarIncidente(UUID incidenteId) {
+        IncidenteDto incidente = incidenteClientService.obtenerPorId(incidenteId).block();
+        if (incidente == null) {
+            throw new IllegalArgumentException("Incidente no encontrado");
+        }
+        recursosClientService.liberarPorIncidente(incidenteId).block();
+        return transicionarHastaCerrado(incidenteId, incidente.getEstado());
     }
 
     public DespachoAsignarLoteResponse asignarLote(DespachoAsignarLoteRequest request) {
@@ -214,6 +240,25 @@ public class DespachoFacadeService {
             log.debug("Detalle brigada {} no disponible: {}", brigadaId, ex.getMessage());
             return null;
         }
+    }
+
+    private IncidenteDto transicionarHastaCerrado(UUID incidenteId, String estadoActual) {
+        String estado = estadoActual != null ? estadoActual : "";
+        if ("CERRADO".equals(estado)) {
+            return incidenteClientService.obtenerPorId(incidenteId).block();
+        }
+        if ("REPORTADO".equals(estado)) {
+            incidenteClientService.transicionar(incidenteId, "EN_PROGRESO").block();
+            estado = "EN_PROGRESO";
+        }
+        if ("EN_PROGRESO".equals(estado) || "ESCALADO".equals(estado)) {
+            incidenteClientService.transicionar(incidenteId, "CONTROLADO").block();
+            estado = "CONTROLADO";
+        }
+        if ("CONTROLADO".equals(estado)) {
+            return incidenteClientService.transicionar(incidenteId, "CERRADO").block();
+        }
+        throw new IllegalStateException("No se puede cerrar incidente en estado " + estado);
     }
 
     private int prioridad(String estado, String nivelRiesgo) {

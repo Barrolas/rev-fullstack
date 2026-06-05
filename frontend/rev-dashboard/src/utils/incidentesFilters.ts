@@ -3,6 +3,7 @@ import { ESTADO_ORDER } from './dashboardAggregates';
 
 export type IncidentRiskFilter = 'ALL' | 'HIGH' | 'MEDIUM' | 'LOW';
 export type IncidentEstadoFilter = 'ALL' | (typeof ESTADO_ORDER)[number];
+export type IncidentScopeFilter = 'activos' | 'todos' | 'cerrados';
 export type IncidentSort = 'priority' | 'tipo' | 'recursos';
 export type IncidentViewMode = 'cards' | 'table';
 
@@ -10,7 +11,7 @@ export interface IncidentFiltersState {
   search: string;
   riskFilter: IncidentRiskFilter;
   estadoFilter: IncidentEstadoFilter;
-  activosOnly: boolean;
+  scopeFilter: IncidentScopeFilter;
   sinRecursos: boolean;
   degradadosOnly: boolean;
   correlacionPendienteOnly: boolean;
@@ -21,12 +22,38 @@ export const DEFAULT_INCIDENT_FILTERS: IncidentFiltersState = {
   search: '',
   riskFilter: 'ALL',
   estadoFilter: 'ALL',
-  activosOnly: true,
+  scopeFilter: 'activos',
   sinRecursos: false,
   degradadosOnly: false,
   correlacionPendienteOnly: false,
   sort: 'priority',
 };
+
+const SCOPE_OPTIONS: { value: IncidentScopeFilter; label: string }[] = [
+  { value: 'activos', label: 'Activos' },
+  { value: 'todos', label: 'Todos' },
+  { value: 'cerrados', label: 'Cerrados' },
+];
+
+export { SCOPE_OPTIONS };
+
+export function isIncidenteActivo(estado: string): boolean {
+  return estado !== 'CERRADO';
+}
+
+export function patchScopeFilter(
+  current: IncidentFiltersState,
+  scopeFilter: IncidentScopeFilter,
+): Partial<IncidentFiltersState> {
+  const patch: Partial<IncidentFiltersState> = { scopeFilter };
+  if (scopeFilter === 'activos' && current.estadoFilter === 'CERRADO') {
+    patch.estadoFilter = 'ALL';
+  }
+  if (scopeFilter === 'cerrados') {
+    patch.estadoFilter = 'ALL';
+  }
+  return patch;
+}
 
 const RISK_SORT: Record<string, number> = { HIGH: 0, MEDIUM: 1, LOW: 2 };
 const ESTADO_SORT: Record<string, number> = Object.fromEntries(
@@ -62,7 +89,9 @@ export function filterIncidents(
   filters: IncidentFiltersState,
 ): DashboardItem[] {
   return items.filter((item) => {
-    if (filters.activosOnly && item.incidente.estado === 'CERRADO') return false;
+    const estado = item.incidente.estado;
+    if (filters.scopeFilter === 'activos' && !isIncidenteActivo(estado)) return false;
+    if (filters.scopeFilter === 'cerrados' && estado !== 'CERRADO') return false;
     if (filters.sinRecursos && item.recursos.length > 0) return false;
     if (filters.degradadosOnly && !item.degraded) return false;
     if (filters.correlacionPendienteOnly && !hasPendingCorrelation(item)) return false;
@@ -77,11 +106,23 @@ export function filterIncidents(
   });
 }
 
+function compareClosedLast(a: DashboardItem, b: DashboardItem): number | null {
+  const closedA = a.incidente.estado === 'CERRADO';
+  const closedB = b.incidente.estado === 'CERRADO';
+  if (closedA === closedB) return null;
+  return closedA ? 1 : -1;
+}
+
 export function sortIncidents(
   items: DashboardItem[],
   sort: IncidentSort,
+  scopeFilter: IncidentScopeFilter = 'activos',
 ): DashboardItem[] {
   return [...items].sort((a, b) => {
+    if (scopeFilter === 'todos') {
+      const closedOrder = compareClosedLast(a, b);
+      if (closedOrder !== null) return closedOrder;
+    }
     if (sort === 'tipo') {
       return a.incidente.tipo.localeCompare(b.incidente.tipo, 'es');
     }
@@ -120,7 +161,7 @@ export function hasActiveIncidentFilters(filters: IncidentFiltersState): boolean
     filters.search.trim().length > 0 ||
     filters.riskFilter !== 'ALL' ||
     filters.estadoFilter !== 'ALL' ||
-    !filters.activosOnly ||
+    filters.scopeFilter !== 'activos' ||
     filters.sinRecursos ||
     filters.degradadosOnly ||
     filters.correlacionPendienteOnly ||

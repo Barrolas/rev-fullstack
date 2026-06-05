@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { fetchDashboard } from '../api';
+import PrincipalIncidentesPanel from '../components/dashboard/PrincipalIncidentesPanel';
 import InicioAbout from '../components/inicio/InicioAbout';
 import InicioGuide from '../components/inicio/InicioGuide';
 import InicioPanorama from '../components/inicio/InicioPanorama';
@@ -46,6 +47,13 @@ export default function InicioPage() {
             {/* Nivel 2 — Operaciones: principal + rail contextual */}
             <div className="rev-inicio__workspace">
               <div className="rev-inicio__main">
+                {items && (
+                  <PrincipalIncidentesPanel
+                    items={items}
+                    variant="inicio"
+                    className="rev-card"
+                  />
+                )}
                 {items && <InicioPanorama items={items} />}
                 <InicioQuickAccess />
               </div>

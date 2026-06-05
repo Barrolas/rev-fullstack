@@ -23,7 +23,13 @@ import {
 
   fetchDashboardItem,
 
+  actualizarEstadoDespachoAsignacion,
+
+  cerrarIncidenteDespacho,
+
   liberarAsignacion,
+
+  type AsignacionActiva,
 
   type DashboardItem,
 
@@ -31,9 +37,17 @@ import {
 
 import {
 
+  accionEstadoDespachoLabel,
+
+  estadoDespachoCardClass,
+
+  estadoDespachoLabel,
+
   estadoIncidenteLabel,
 
   prioridadOrden,
+
+  siguienteEstadoDespacho,
 
   tipoIncidenteIcon,
 
@@ -118,6 +132,10 @@ export default function DespachoOperacionPage() {
   const [riesgoFiltro, setRiesgoFiltro] = useState<RiesgoFiltro>('');
 
   const [showDespachoWizard, setShowDespachoWizard] = useState(false);
+
+  const [activosActionId, setActivosActionId] = useState<number | null>(null);
+
+  const [cerrandoIncidenteId, setCerrandoIncidenteId] = useState<string | null>(null);
 
 
 
@@ -304,6 +322,72 @@ export default function DespachoOperacionPage() {
 
 
 
+  const activosPorIncidente = useMemo(() => {
+
+    const map = new Map<string, AsignacionActiva[]>();
+
+    for (const a of activos) {
+
+      const list = map.get(a.incidenteId) ?? [];
+
+      list.push(a);
+
+      map.set(a.incidenteId, list);
+
+    }
+
+    return Array.from(map.entries());
+
+  }, [activos]);
+
+
+
+  const handleAvanzarEstado = async (asignacion: AsignacionActiva) => {
+
+    const siguiente = siguienteEstadoDespacho(asignacion.estadoDespacho);
+
+    if (!siguiente) return;
+
+    setActivosActionId(asignacion.id);
+
+    try {
+
+      await actualizarEstadoDespachoAsignacion(asignacion.id, siguiente);
+
+      loadActivos();
+
+    } finally {
+
+      setActivosActionId(null);
+
+    }
+
+  };
+
+
+
+  const handleCerrarIncidente = async (incidenteId: string) => {
+
+    setCerrandoIncidenteId(incidenteId);
+
+    try {
+
+      await cerrarIncidenteDespacho(incidenteId);
+
+      loadActivos();
+
+      refetchCola();
+
+    } finally {
+
+      setCerrandoIncidenteId(null);
+
+    }
+
+  };
+
+
+
   const handleAsignar = async () => {
 
     if (!selectedIncidente || !selectedBrigada) return;
@@ -339,6 +423,8 @@ export default function DespachoOperacionPage() {
       refetchCola();
 
       loadActivos();
+
+      setTab('activos');
 
     } catch (e) {
 
@@ -1218,85 +1304,209 @@ export default function DespachoOperacionPage() {
 
               ) : (
 
-                <div className="rev-despacho-activos-grid">
+                <div className="rev-despacho-activos-incidentes">
 
-                  {activos.map((a) => (
+                  {activosPorIncidente.map(([incidenteId, asignaciones]) => {
 
-                    <article key={a.id} className="rev-despacho-activos-card">
+                    return (
 
-                      <div className="rev-despacho-activos-card__head">
+                      <section key={incidenteId} className="rev-despacho-activos-incidente rev-card">
 
-                        <div>
+                        <header className="rev-despacho-activos-incidente__head">
 
-                          <strong>{a.brigadaNombre ?? `Brigada #${a.brigadaId}`}</strong>
+                          <div>
 
-                          {a.vehiculoPatente && (
+                            <h3 className="h6 mb-1">
 
-                            <Badge bg="secondary" className="ms-2">
+                              Incidente {incidenteId.slice(0, 8)}…
 
-                              {a.vehiculoPatente}
+                            </h3>
 
-                            </Badge>
+                            <p className="small text-muted mb-0">
 
-                          )}
+                              {asignaciones.length} brigada{asignaciones.length !== 1 ? 's' : ''} asignada
 
-                          <p className="small text-muted mb-0 mt-1">
+                              {asignaciones.length !== 1 ? 's' : ''}
 
-                            {a.estadoDespacho ?? 'En terreno'}
+                            </p>
 
-                          </p>
+                          </div>
+
+                          <Button
+
+                            size="sm"
+
+                            variant="outline-danger"
+
+                            disabled={cerrandoIncidenteId === incidenteId}
+
+                            title="Cierra el incidente y libera todas las brigadas (resuelto, falsa alarma o error)"
+
+                            onClick={() => handleCerrarIncidente(incidenteId)}
+
+                          >
+
+                            {cerrandoIncidenteId === incidenteId ? (
+
+                              <>
+
+                                <span className="spinner-border spinner-border-sm me-1" role="status" />
+
+                                Cerrando…
+
+                              </>
+
+                            ) : (
+
+                              <>
+
+                                <i className="bi bi-check-circle me-1" aria-hidden />
+
+                                Cerrar incidente
+
+                              </>
+
+                            )}
+
+                          </Button>
+
+                        </header>
+
+
+
+                        <div className="rev-despacho-activos-grid">
+
+                          {asignaciones.map((a) => {
+
+                            const accion = accionEstadoDespachoLabel(a.estadoDespacho);
+
+                            return (
+
+                              <article
+
+                                key={a.id}
+
+                                className={`rev-despacho-activos-card ${estadoDespachoCardClass(a.estadoDespacho)}`}
+
+                              >
+
+                                <div className="rev-despacho-activos-card__head">
+
+                                  <div>
+
+                                    <strong>{a.brigadaNombre ?? `Brigada #${a.brigadaId}`}</strong>
+
+                                    {a.vehiculoPatente && (
+
+                                      <Badge bg="secondary" className="ms-2">
+
+                                        {a.vehiculoPatente}
+
+                                      </Badge>
+
+                                    )}
+
+                                    <p className="rev-despacho-activos-card__estado mb-0 mt-1">
+
+                                      {estadoDespachoLabel(a.estadoDespacho)}
+
+                                    </p>
+
+                                  </div>
+
+                                </div>
+
+
+
+                                <div className="rev-despacho-activos-card__actions">
+
+                                  {accion && (
+
+                                    <Button
+
+                                      size="sm"
+
+                                      variant="primary"
+
+                                      disabled={activosActionId === a.id}
+
+                                      onClick={() => handleAvanzarEstado(a)}
+
+                                    >
+
+                                      {activosActionId === a.id ? (
+
+                                        <>
+
+                                          <span className="spinner-border spinner-border-sm me-1" role="status" />
+
+                                          Actualizando…
+
+                                        </>
+
+                                      ) : (
+
+                                        accion
+
+                                      )}
+
+                                    </Button>
+
+                                  )}
+
+                                  <Button
+
+                                    size="sm"
+
+                                    variant="outline-warning"
+
+                                    onClick={() =>
+
+                                      liberarAsignacion(a.id).then(() => {
+
+                                        loadActivos();
+
+                                        refetchCola();
+
+                                      })
+
+                                    }
+
+                                  >
+
+                                    Liberar
+
+                                  </Button>
+
+                                </div>
+
+
+
+                                <Link
+
+                                  to={`/incidentes/${a.incidenteId}`}
+
+                                  className="btn btn-sm btn-link p-0 align-self-start"
+
+                                >
+
+                                  Ver ficha del incidente
+
+                                </Link>
+
+                              </article>
+
+                            );
+
+                          })}
 
                         </div>
 
-                        <Button
+                      </section>
 
-                          size="sm"
+                    );
 
-                          variant="outline-warning"
-
-                          onClick={() =>
-
-                            liberarAsignacion(a.id).then(() => {
-
-                              loadActivos();
-
-                              refetchCola();
-
-                            })
-
-                          }
-
-                        >
-
-                          Liberar
-
-                        </Button>
-
-                      </div>
-
-                      <span className="rev-despacho-activos-card__folio">
-
-                        Incidente {a.incidenteId}
-
-                      </span>
-
-                      <Link
-
-                        to={`/despacho/operacion?incidente=${a.incidenteId}`}
-
-                        className="btn btn-sm btn-link p-0"
-
-                        onClick={() => setTab('cola')}
-
-                      >
-
-                        Ver en cola
-
-                      </Link>
-
-                    </article>
-
-                  ))}
+                  })}
 
                 </div>
 
@@ -1323,6 +1533,7 @@ export default function DespachoOperacionPage() {
           refetchCola();
           loadActivos();
           setSelectedBrigada(null);
+          setTab('activos');
         }}
       />
 

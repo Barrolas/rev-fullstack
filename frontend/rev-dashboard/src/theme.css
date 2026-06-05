@@ -17,6 +17,10 @@
   --rev-orange-muted: rgba(249, 115, 22, 0.12);
   --rev-orange-border: rgba(249, 115, 22, 0.28);
 
+  --rev-risk-high: #f97316;
+  --rev-risk-medium: #eab308;
+  --rev-risk-low: #73839a;
+
   /* Aliases legacy (compatibilidad) */
   --rev-navy: var(--rev-bg-secondary);
   --rev-navy-dark: var(--rev-bg);
@@ -250,9 +254,9 @@ body {
 }
 
 .badge-risk-medium {
-  background-color: var(--rev-surface-elevated) !important;
-  color: var(--rev-text-secondary) !important;
-  border: 1px solid var(--rev-border);
+  background-color: rgba(234, 179, 8, 0.22) !important;
+  color: #fde68a !important;
+  border: 1px solid rgba(234, 179, 8, 0.45);
 }
 
 .badge-risk-low {
