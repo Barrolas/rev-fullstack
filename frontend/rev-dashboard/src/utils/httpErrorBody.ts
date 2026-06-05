@@ -17,8 +17,8 @@ export function parseHttpErrorBody(text: string, status: number): string | null 
     if (status === 503) {
       const path = json.path ? ` (${json.path})` : '';
       return (
-        `Autenticación no disponible${path}: el gateway aún no enruta a KEYCLOAK-ADAPTER. ` +
-        'Espere 15–30 s tras iniciar Docker o ejecute: docker compose -p rev restart keycloak-adapter api-gateway'
+        `Servicios REV aún iniciando${path}. Espere 15–30 s tras Docker y recargue la página. ` +
+        'Si persiste: docker compose -p rev restart keycloak-adapter api-gateway bff-rev'
       );
     }
     if (status === 502 || status === 504) {

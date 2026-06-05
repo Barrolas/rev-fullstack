@@ -120,11 +120,56 @@ export interface MapaTerritorial {
   incidentesSinUbicacion: number;
 }
 
+export interface ComunaItem {
+  codigoCasen: number;
+  nombre: string;
+  codigoProvinciaCasen: number;
+}
+
+export interface InstitucionItem {
+  id: number;
+  codigo: string;
+  nombre: string;
+  estado: string;
+}
+
+export interface CompaniaItem {
+  id: number;
+  idInstitucion: number;
+  idComuna: number;
+  nombreComuna?: string;
+  codigo: string;
+  nombre: string;
+  estado: string;
+}
+
+export interface BrigadaVehiculoItem {
+  id: number;
+  vehiculoId: number;
+  patente?: string;
+  tipo?: string;
+  capacidadPasajeros?: number;
+  principal: boolean;
+  activa: boolean;
+}
+
+export interface BrigadaElegibilidad {
+  brigadaId: number;
+  listaParaDespacho: boolean;
+  motivos: string[];
+  integrantes: number;
+  capacidadBrigada: number;
+  capacidadPasajerosVehiculoPrincipal?: number;
+}
+
 export interface BrigadaItem {
   id: number;
   nombre: string;
   capacidad: number;
   estado: string;
+  codigo?: string;
+  idCompania?: number;
+  idJefeBrigadista?: number;
   vehiculoId?: number | null;
 }
 
@@ -133,6 +178,11 @@ export interface VehiculoItem {
   patente: string;
   tipo: string;
   estado: string;
+  marca?: string;
+  modelo?: string;
+  anio?: number;
+  capacidadPasajeros?: number;
+  capacidadCarga?: number;
 }
 
 export interface HerramientaItem {
@@ -140,6 +190,18 @@ export interface HerramientaItem {
   nombre: string;
   cantidadTotal: number;
   cantidadDisponible: number;
+  marca?: string;
+  modelo?: string;
+  sku?: string;
+  estado?: string;
+}
+
+export interface BrigadistaRolItem {
+  id: number;
+  codigo: string;
+  nombre: string;
+  jerarquia: number;
+  estado: string;
 }
 
 export interface BrigadistaItem {
@@ -149,6 +211,10 @@ export interface BrigadistaItem {
   rut?: string;
   especialidad?: string;
   estado: string;
+  idBrigada?: number;
+  idRolBrigadista?: number;
+  rolCodigo?: string;
+  rolNombre?: string;
 }
 
 export interface RecursosDisponibles {
@@ -168,15 +234,63 @@ export interface BrigadaDetalle {
   estado: string;
   vehiculoId?: number | null;
   vehiculo?: VehiculoItem | null;
+  vehiculos?: BrigadaVehiculoItem[];
+  idJefeBrigadista?: number | null;
+  jefe?: BrigadistaItem | null;
   brigadistas: BrigadistaItem[];
   herramientas: Array<{ herramientaId: number; nombre: string; cantidad: number }>;
   listaParaDespacho: boolean;
 }
 
 export interface BrigadaComposicionPayload {
+  jefeBrigadistaId?: number | null;
   vehiculoId?: number | null;
+  vehiculoIds?: number[];
+  principalVehiculoId?: number | null;
   brigadistaIds: number[];
   herramientas: Array<{ herramientaId: number; cantidad: number }>;
+}
+
+export interface DespachoColaItem {
+  incidenteId: string;
+  folio?: string;
+  tipo: string;
+  estado: string;
+  descripcion: string;
+  lat?: number;
+  lng?: number;
+  zonaNombre?: string;
+  zonaNivelRiesgo?: string;
+  conBrigadaAsignada: boolean;
+  prioridad: number;
+}
+
+export interface DespachoBrigadaCard {
+  id: number;
+  nombre: string;
+  codigo?: string;
+  estado: string;
+  listaParaDespacho: boolean;
+  elegibilidad?: BrigadaElegibilidad;
+  detalle?: BrigadaDetalle;
+}
+
+export interface DespachoColaResponse {
+  cola: DespachoColaItem[];
+  brigadasDisponibles: DespachoBrigadaCard[];
+  recursosDegraded: boolean;
+}
+
+export interface AsignacionActiva {
+  id: number;
+  incidenteId: string;
+  brigadaId: number;
+  brigadaNombre?: string;
+  vehiculoId?: number;
+  vehiculoPatente?: string;
+  estadoDespacho?: string;
+  despachadoPor?: string;
+  createdAt?: string;
 }
 
 export interface IncidenteCreate {
@@ -191,17 +305,54 @@ export interface AsignarRecurso {
   incidenteId: string;
   brigadaId: number;
   vehiculoId?: number;
+  vehiculoIds?: number[];
+  principalVehiculoId?: number;
+  brigadistaIds?: number[];
+  herramientas?: Array<{ herramientaId: number; cantidad: number }>;
+  usarComposicionBrigada?: boolean;
+  despachadoPor?: string;
+}
+
+export interface DespachoAsignarItem {
+  brigadaId: number;
+  vehiculoId?: number;
+  principalVehiculoId?: number;
+  vehiculoIds?: number[];
+  brigadistaIds?: number[];
+  herramientas?: Array<{ herramientaId: number; cantidad: number }>;
   usarComposicionBrigada?: boolean;
 }
 
+export interface DespachoAsignarLoteRequest {
+  incidenteId: string;
+  despachadoPor: string;
+  items: DespachoAsignarItem[];
+}
+
+export interface DespachoAsignarLoteResultado {
+  brigadaId: number;
+  ok: boolean;
+  asignacionId?: number;
+  mensaje?: string;
+}
+
+export interface DespachoAsignarLoteResponse {
+  exitosos: number;
+  fallidos: number;
+  resultados: DespachoAsignarLoteResultado[];
+}
+
 import { formatApiError } from './utils/apiErrors';
-import { formatLoginError, formatLoginNetworkError } from './utils/loginErrors';
 import {
-  API_RETRY_DELAYS_MS,
-  isRetryableHttpStatus,
   LOGIN_RETRY_DELAYS_MS,
+  API_RETRY_DELAYS_MS,
+  STARTUP_AUTH_LOGIN_MAX_MS,
+  STARTUP_BACKEND_MAX_MS,
+  STARTUP_POLL_INTERVAL_MS,
+  isRetryableHttpStatus,
   sleep,
 } from './utils/apiRetry';
+import { formatLoginError, formatLoginNetworkError } from './utils/loginErrors';
 
 const TOKEN_KEY = 'rev_token';
 
@@ -222,11 +373,31 @@ export function clearToken() {
   localStorage.removeItem(TOKEN_KEY);
 }
 
-/** Comprueba si POST /auth/login ya enruta (200/401/400 = listo; 503 = Eureka pendiente). */
-export async function waitForAuthLogin(maxWaitMs = 28_000): Promise<boolean> {
-  const deadline = Date.now() + maxWaitMs;
+export type BackendStartupStep = 'bff' | 'auth-route' | 'auth-filter' | 'ready';
+
+export interface BackendStartupProgress {
+  step: BackendStartupStep;
+  elapsedMs: number;
+  message: string;
+}
+
+const STARTUP_STEP_MESSAGES: Record<BackendStartupStep, string> = {
+  bff: 'Conectando con el BFF…',
+  'auth-route': 'Iniciando autenticación (Keycloak)…',
+  'auth-filter': 'Verificando acceso a las APIs…',
+  ready: 'Servicios listos',
+};
+
+/** Comprueba si POST /auth/login ya enruta (200/401/400 = listo; 503 = arranque). */
+export async function waitForAuthLogin(
+  maxWaitMs = STARTUP_AUTH_LOGIN_MAX_MS,
+  onProgress?: (elapsedMs: number) => void,
+): Promise<boolean> {
+  const started = Date.now();
+  const deadline = started + maxWaitMs;
   const probe = new URLSearchParams({ username: '__rev_probe__', password: 'probe' });
   while (Date.now() < deadline) {
+    onProgress?.(Date.now() - started);
     try {
       const res = await fetch('/auth/login', {
         method: 'POST',
@@ -242,7 +413,7 @@ export async function waitForAuthLogin(maxWaitMs = 28_000): Promise<boolean> {
     } catch {
       /* gateway aún no responde */
     }
-    await sleep(1200);
+    await sleep(STARTUP_POLL_INTERVAL_MS);
   }
   return false;
 }
@@ -281,6 +452,12 @@ export async function login(username: string, password: string): Promise<void> {
         throw new Error('Respuesta de login sin token. Verifique Keycloak y el adaptador.');
       }
       setToken(data.access_token);
+      const backendOk = await waitForRevBackend(STARTUP_BACKEND_MAX_MS);
+      if (!backendOk) {
+        throw new Error(
+          'Sesión iniciada, pero los servicios REV aún no responden. Espere 20–30 s y pulse Ingresar de nuevo.',
+        );
+      }
       return;
     }
 
@@ -291,22 +468,31 @@ export async function login(username: string, password: string): Promise<void> {
   }
 }
 
+export type AuthFailureMode = 'redirect' | 'throw';
+
+export interface ApiFetchInit extends RequestInit {
+  authFailureMode?: AuthFailureMode;
+}
+
+const SESSION_EXPIRED_MSG =
+  'Sesión expirada. Vuelva a ingresar (usuario dev: admin / rev123). Verifique que el gateway esté en el puerto 18080.';
+
 function handleAuthFailure(text: string, status: number): never {
   clearToken();
   window.location.assign('/login');
   throw new Error(formatApiError(text, status));
 }
 
-async function apiFetch<T>(url: string, options: RequestInit = {}, attempt = 0): Promise<T> {
-  const maxAttempts = API_RETRY_DELAYS_MS.length;
+async function apiFetch<T>(url: string, options: ApiFetchInit = {}, attempt = 0): Promise<T> {
+  const { authFailureMode = 'redirect', ...fetchOptions } = options;
 
   try {
     const res = await fetch(url, {
-      ...options,
+      ...fetchOptions,
       headers: {
         'Content-Type': 'application/json',
         ...authHeaders(),
-        ...options.headers,
+        ...fetchOptions.headers,
       },
     });
 
@@ -314,12 +500,18 @@ async function apiFetch<T>(url: string, options: RequestInit = {}, attempt = 0):
       const text = await res.text();
 
       if (res.status === 401 || res.status === 403) {
+        if (authFailureMode === 'throw') {
+          throw new Error(SESSION_EXPIRED_MSG);
+        }
         handleAuthFailure(text, res.status);
       }
 
-      if (isRetryableHttpStatus(res.status) && attempt < maxAttempts - 1) {
-        await sleep(API_RETRY_DELAYS_MS[attempt + 1]);
-        return apiFetch<T>(url, options, attempt + 1);
+      if (isRetryableHttpStatus(res.status)) {
+        const delays = res.status === 503 ? LOGIN_RETRY_DELAYS_MS : API_RETRY_DELAYS_MS;
+        if (attempt < delays.length - 1) {
+          await sleep(delays[attempt + 1]);
+          return apiFetch<T>(url, options, attempt + 1);
+        }
       }
 
       throw new Error(formatApiError(text, res.status));
@@ -328,11 +520,15 @@ async function apiFetch<T>(url: string, options: RequestInit = {}, attempt = 0):
     if (res.status === 204) return undefined as T;
     return res.json();
   } catch (err) {
+    if (err instanceof Error && err.message.includes('Sesión expirada')) {
+      throw err;
+    }
     if (err instanceof Error && (err.message.includes('sesión') || err.message.includes('sesion'))) {
       throw err;
     }
-    if (attempt < maxAttempts - 1) {
-      await sleep(API_RETRY_DELAYS_MS[attempt + 1]);
+    const networkDelays = API_RETRY_DELAYS_MS;
+    if (attempt < networkDelays.length - 1) {
+      await sleep(networkDelays[attempt + 1]);
       return apiFetch<T>(url, options, attempt + 1);
     }
     if (err instanceof Error) throw err;
@@ -340,26 +536,95 @@ async function apiFetch<T>(url: string, options: RequestInit = {}, attempt = 0):
   }
 }
 
-/** Comprueba gateway + BFF + auth antes de mostrar módulos tras el splash. */
-export async function waitForRevBackend(maxWaitMs = 24_000): Promise<boolean> {
-  const deadline = Date.now() + maxWaitMs;
+/** BFF sin autenticación (arranque). */
+async function probeBffReady(): Promise<boolean> {
+  try {
+    const res = await fetch('/api/ready', { headers: { 'Content-Type': 'application/json' } });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+/** KEYCLOAK-ADAPTER vía ruta /auth (sin JWT). */
+async function probeKeycloakAuthRoute(): Promise<boolean> {
+  try {
+    const res = await fetch('/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ username: '__rev_probe__', password: 'probe' }),
+    });
+    return res.ok || res.status === 401 || res.status === 400;
+  } catch {
+    return false;
+  }
+}
+
+/** Filtro AuthenticationFilter del gateway (JWT + /roles). */
+async function probeGatewayAuthFilter(): Promise<boolean> {
+  const token = getToken();
+  if (!token) return true;
+  try {
+    const res = await fetch('/api/ready/auth', {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return res.ok || res.status === 401 || res.status === 403;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Espera a que BFF, KEYCLOAK-ADAPTER y el filtro JWT del gateway estén operativos.
+ * Usar tras login y en BackendReadyGate antes de montar módulos con fetch.
+ */
+export async function waitForRevBackend(
+  maxWaitMs = STARTUP_BACKEND_MAX_MS,
+  onProgress?: (progress: BackendStartupProgress) => void,
+): Promise<boolean> {
+  const started = Date.now();
+  const deadline = started + maxWaitMs;
+
+  const report = (step: BackendStartupStep) => {
+    onProgress?.({
+      step,
+      elapsedMs: Date.now() - started,
+      message: STARTUP_STEP_MESSAGES[step],
+    });
+  };
+
   while (Date.now() < deadline) {
-    try {
-      const res = await fetch('/api/ready', {
-        headers: {
-          'Content-Type': 'application/json',
-          ...authHeaders(),
-        },
-      });
-      if (res.ok) return true;
-      if (res.status === 401 || res.status === 403) return false;
-    } catch {
-      /* red / gateway aún no responde */
+    report('bff');
+    const bff = await probeBffReady();
+    if (!bff) {
+      await sleep(STARTUP_POLL_INTERVAL_MS);
+      continue;
     }
-    await sleep(800);
+
+    report('auth-route');
+    const authRoute = await probeKeycloakAuthRoute();
+    if (!authRoute) {
+      await sleep(STARTUP_POLL_INTERVAL_MS);
+      continue;
+    }
+
+    report('auth-filter');
+    const authFilter = await probeGatewayAuthFilter();
+    if (!authFilter) {
+      await sleep(STARTUP_POLL_INTERVAL_MS);
+      continue;
+    }
+
+    report('ready');
+    return true;
   }
   return false;
 }
+
+const altaAuthOpts: ApiFetchInit = { authFailureMode: 'throw' };
 
 export async function fetchDashboard(): Promise<DashboardItem[]> {
   return apiFetch('/api/dashboard/incidentes');
@@ -527,8 +792,17 @@ export async function updateBrigadaComposicion(
   });
 }
 
-export async function createBrigada(data: { nombre: string; capacidad: number }): Promise<BrigadaItem> {
-  return apiFetch('/api/recursos/brigadas', { method: 'POST', body: JSON.stringify(data) });
+export async function createBrigada(data: {
+  nombre: string;
+  capacidad: number;
+  codigo?: string;
+  idCompania?: number;
+}): Promise<BrigadaItem> {
+  return apiFetch('/api/recursos/brigadas', {
+    ...altaAuthOpts,
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
 }
 
 export async function createBrigadista(data: {
@@ -536,19 +810,86 @@ export async function createBrigadista(data: {
   apellido: string;
   rut?: string;
   especialidad?: string;
+  idRolBrigadista?: number;
 }): Promise<BrigadistaItem> {
-  return apiFetch('/api/recursos/brigadistas', { method: 'POST', body: JSON.stringify(data) });
+  return apiFetch('/api/recursos/brigadistas', {
+    ...altaAuthOpts,
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
 }
 
-export async function createVehiculo(data: { patente: string; tipo: string }): Promise<VehiculoItem> {
-  return apiFetch('/api/recursos/vehiculos', { method: 'POST', body: JSON.stringify(data) });
+export async function createVehiculo(data: {
+  patente: string;
+  tipo: string;
+  marca?: string;
+  modelo?: string;
+  anio?: number;
+  capacidadPasajeros?: number;
+  capacidadCarga?: number;
+}): Promise<VehiculoItem> {
+  return apiFetch('/api/recursos/vehiculos', {
+    ...altaAuthOpts,
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
 }
 
 export async function createHerramienta(data: {
   nombre: string;
   cantidadTotal: number;
+  marca?: string;
+  modelo?: string;
+  sku?: string;
+  estado?: string;
 }): Promise<HerramientaItem> {
-  return apiFetch('/api/recursos/herramientas', { method: 'POST', body: JSON.stringify(data) });
+  return apiFetch('/api/recursos/herramientas', {
+    ...altaAuthOpts,
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function fetchBrigadistaRoles(): Promise<BrigadistaRolItem[]> {
+  return apiFetch('/api/recursos/brigadista-roles');
+}
+
+export async function fetchComunasRecursos(): Promise<ComunaItem[]> {
+  return apiFetch('/api/recursos/comunas');
+}
+
+export async function fetchInstituciones(): Promise<InstitucionItem[]> {
+  return apiFetch('/api/recursos/instituciones');
+}
+
+export async function fetchCompanias(): Promise<CompaniaItem[]> {
+  return apiFetch('/api/recursos/companias');
+}
+
+export async function fetchBrigadaElegibilidad(id: number): Promise<BrigadaElegibilidad> {
+  return apiFetch(`/api/recursos/brigadas/${id}/elegibilidad-despacho`);
+}
+
+export async function updateBrigadaVehiculos(
+  id: number,
+  payload: { vehiculoIds: number[]; principalVehiculoId: number },
+): Promise<BrigadaVehiculoItem[]> {
+  return apiFetch(`/api/recursos/brigadas/${id}/vehiculos`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function fetchDespachoCola(): Promise<DespachoColaResponse> {
+  return apiFetch('/api/despacho/cola');
+}
+
+export async function fetchDespachoActivos(): Promise<AsignacionActiva[]> {
+  return apiFetch('/api/despacho/activos');
+}
+
+export async function liberarAsignacion(asignacionId: number): Promise<void> {
+  await apiFetch(`/api/recursos/asignar/${asignacionId}`, { method: 'DELETE' });
 }
 
 export async function asignarRecurso(data: AsignarRecurso): Promise<void> {
@@ -557,6 +898,21 @@ export async function asignarRecurso(data: AsignarRecurso): Promise<void> {
     body: JSON.stringify({
       ...data,
       usarComposicionBrigada: data.usarComposicionBrigada ?? true,
+    }),
+  });
+}
+
+export async function asignarDespachoLote(
+  data: DespachoAsignarLoteRequest,
+): Promise<DespachoAsignarLoteResponse> {
+  return apiFetch('/api/despacho/asignar-lote', {
+    method: 'POST',
+    body: JSON.stringify({
+      ...data,
+      items: data.items.map((item) => ({
+        ...item,
+        usarComposicionBrigada: item.usarComposicionBrigada ?? true,
+      })),
     }),
   });
 }

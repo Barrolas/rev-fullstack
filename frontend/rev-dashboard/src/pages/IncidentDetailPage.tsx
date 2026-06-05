@@ -74,16 +74,20 @@ export default function IncidentDetailPage() {
             ))}
           </ListGroup>
         )}
-        {canManageIncidents && !linkedReport && (
-          <Button
-            variant="primary"
-            size="sm"
-            className="w-100 mt-3"
-            onClick={() => setAssignModalOpen(true)}
-          >
-            <i className="bi bi-truck me-1" />
-            Despachar brigada
-          </Button>
+        {canManageIncidents && !linkedReport && inc && (
+          <div className="d-grid gap-2 mt-3">
+            <Link
+              to={`/despacho/operacion?incidente=${inc.id}`}
+              className="btn btn-primary btn-sm"
+            >
+              <i className="bi bi-speedometer2 me-1" />
+              Ir a despacho operativo
+            </Link>
+            <Button variant="outline-primary" size="sm" onClick={() => setAssignModalOpen(true)}>
+              <i className="bi bi-truck me-1" />
+              Asignar (modal rápido)
+            </Button>
+          </div>
         )}
       </div>
       {item.degraded && (
@@ -99,7 +103,7 @@ export default function IncidentDetailPage() {
       <Topbar
         title={item ? item.incidente.tipo : 'Detalle de incidente'}
         breadcrumbs={[
-          { label: 'Despacho', to: '/' },
+          { label: 'Despacho', to: '/despacho/operacion' },
           { label: 'Incidentes', to: '/incidentes' },
           { label: inc?.folio ?? (inc ? `#${inc.id.slice(0, 8)}…` : 'Detalle') },
         ]}

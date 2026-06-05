@@ -25,7 +25,8 @@ Este documento relaciona referencias profesionales de emergencias/incendios con 
 | **FSGDM** (Fire Service GIS Data Model) | Plantillas de mapa orientadas a tareas de bomberos; productos repetibles | Capa territorial unificada (OSM), simbología por nivel de riesgo y estado de incidente |
 | **RFP CAD / duplicados** (Colonial Heights, Active911, NowForce) | Radio de búsqueda + ventana temporal; operador fusiona, ignora o crea vinculado | `rev.correlacion.*` en `ms-incidentes`; cola de sugerencias `PENDIENTE` |
 | **NIMS / ICS** | Un incidente operativo con reportes asociados | `incidente_canonico_id`, despacho de brigada sobre ID canónico (`OperacionesFacadeService`) |
-| **NFPA 1221 / 1710** | Tiempos objetivo de despacho y dotación | Referencia académica; fuera del alcance del mapa |
+| **NFPA 1221 / 1710** | Tiempos objetivo de despacho y dotación | Referencia académica; dotación operativa en `ms-recursos` (ver [flujo-despacho-rev.md](./flujo-despacho-rev.md)) |
+| **Comuna por ID (CASEN)** | Identificador estable entre microservicios | `zonas.id_comuna` → `comunas.codigo_casen` (PK); mismo seed en `ms-recursos` y `ms-zonas-riesgo` |
 | **NWCG PMS 936 (GeoOps)** | Simbología y productos GIS en incidentes extensos (wildland) | Referencia secundaria para clustering; REV es contexto municipal urbano |
 | **Clustering en mapas operativos** | Agrupar marcadores al alejar zoom; detalle al acercar | `react-leaflet-cluster` en mapa territorial; agrupación lógica por incidente canónico |
 

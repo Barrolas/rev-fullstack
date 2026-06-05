@@ -10,4 +10,8 @@ public class HerramientaDto {
     private String nombre;
     private Integer cantidadTotal;
     private Integer cantidadDisponible;
+    private String marca;
+    private String modelo;
+    private String sku;
+    private String estado;
 }

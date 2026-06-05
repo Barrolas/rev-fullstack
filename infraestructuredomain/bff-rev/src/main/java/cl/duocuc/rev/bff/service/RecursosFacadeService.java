@@ -6,11 +6,19 @@ import cl.duocuc.rev.bff.dto.AsignarRecursoRequest;
 import cl.duocuc.rev.bff.dto.BrigadaComposicionRequest;
 import cl.duocuc.rev.bff.dto.BrigadaCreateRequest;
 import cl.duocuc.rev.bff.dto.BrigadaDetalleDto;
+import cl.duocuc.rev.bff.dto.BrigadaElegibilidadDto;
+import cl.duocuc.rev.bff.dto.BrigadaVehiculoDto;
+import cl.duocuc.rev.bff.dto.BrigadaVehiculosRequest;
 import cl.duocuc.rev.bff.dto.BrigadistaCreateRequest;
+import cl.duocuc.rev.bff.dto.BrigadistaRolDto;
+import cl.duocuc.rev.bff.dto.ComunaDto;
+import cl.duocuc.rev.bff.dto.CompaniaDto;
 import cl.duocuc.rev.bff.dto.HerramientaCreateRequest;
+import cl.duocuc.rev.bff.dto.InstitucionDto;
 import cl.duocuc.rev.bff.dto.RecursosCatalogoDto;
 import cl.duocuc.rev.bff.dto.RecursosDisponiblesDto;
 import cl.duocuc.rev.bff.dto.VehiculoCreateRequest;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +29,35 @@ public class RecursosFacadeService {
 
     private final RecursosClientService recursosClientService;
     private final CorrelacionFacadeService correlacionFacadeService;
+
+    public List<InstitucionDto> listarInstituciones() {
+        List<InstitucionDto> list = recursosClientService.listarInstituciones().block();
+        return list != null ? list : List.of();
+    }
+
+    public List<CompaniaDto> listarCompanias() {
+        List<CompaniaDto> list = recursosClientService.listarCompanias().block();
+        return list != null ? list : List.of();
+    }
+
+    public List<ComunaDto> listarComunas() {
+        List<ComunaDto> list = recursosClientService.listarComunas().block();
+        return list != null ? list : List.of();
+    }
+
+    public List<BrigadistaRolDto> listarBrigadistaRoles() {
+        List<BrigadistaRolDto> list = recursosClientService.listarBrigadistaRoles().block();
+        return list != null ? list : List.of();
+    }
+
+    public BrigadaElegibilidadDto elegibilidadDespacho(Long brigadaId) {
+        return recursosClientService.elegibilidadDespacho(brigadaId).block();
+    }
+
+    public List<BrigadaVehiculoDto> actualizarVehiculosBrigada(Long id, BrigadaVehiculosRequest request) {
+        List<BrigadaVehiculoDto> list = recursosClientService.actualizarVehiculosBrigada(id, request).block();
+        return list != null ? list : List.of();
+    }
 
     public RecursosCatalogoDto listarCatalogo() {
         RecursosCatalogoDto catalogo = recursosClientService.listarCatalogo().block();

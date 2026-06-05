@@ -13,4 +13,8 @@ public class BrigadistaDto {
     private String rut;
     private String especialidad;
     private EstadoRecurso estado;
+    private Long idBrigada;
+    private Long idRolBrigadista;
+    private String rolCodigo;
+    private String rolNombre;
 }

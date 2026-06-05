@@ -34,6 +34,20 @@ public class Vehiculo {
     @Column(nullable = false, length = 50)
     private String tipo;
 
+    @Column(length = 80)
+    private String marca;
+
+    @Column(length = 80)
+    private String modelo;
+
+    private Short anio;
+
+    @Column(name = "capacidad_pasajeros", nullable = false)
+    private Integer capacidadPasajeros;
+
+    @Column(name = "capacidad_carga", nullable = false)
+    private Integer capacidadCarga;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private EstadoRecurso estado;

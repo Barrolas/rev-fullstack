@@ -6,4 +6,6 @@ import lombok.Data;
 public class BrigadaCreateRequest {
     private String nombre;
     private Integer capacidad;
+    private String codigo;
+    private Long idCompania;
 }

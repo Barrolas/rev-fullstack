@@ -46,6 +46,12 @@ public class OperacionesController {
         return java.util.Map.of("status", "UP", "service", "bff-rev");
     }
 
+    /** Liveness tras el filtro de autenticación del gateway (KEYCLOAK-ADAPTER /roles). */
+    @GetMapping("/ready/auth")
+    public java.util.Map<String, String> readyAuth() {
+        return java.util.Map.of("status", "UP", "service", "bff-rev", "auth", "verified");
+    }
+
     @GetMapping("/zonas")
     public List<ZonaDto> listarZonas(
             @RequestParam(defaultValue = "false") boolean incluirInactivas) {

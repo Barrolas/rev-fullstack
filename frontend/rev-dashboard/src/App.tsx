@@ -4,6 +4,7 @@ import { getToken } from './api';
 import BootSplash from './components/branding/BootSplash';
 import ProtectedLayout from './components/ProtectedLayout';
 import DashboardPage from './pages/DashboardPage';
+import DespachoOperacionPage from './pages/DespachoOperacionPage';
 import IncidentDetailPage from './pages/IncidentDetailPage';
 import IncidentesPage from './pages/IncidentesPage';
 import InicioPage from './pages/InicioPage';
@@ -46,7 +47,9 @@ export default function App() {
           <Route path="/login" element={<LoginRedirect />} />
           <Route element={<ProtectedLayout />}>
             <Route path="inicio" element={<InicioPage />} />
-            <Route index element={<DashboardPage />} />
+            <Route index element={<Navigate to="/despacho/operacion" replace />} />
+            <Route path="despacho/operacion" element={<DespachoOperacionPage />} />
+            <Route path="dashboard" element={<DashboardPage />} />
             <Route path="incidentes" element={<IncidentesPage />} />
             <Route path="incidentes/nuevo" element={<NewIncidentPage />} />
             <Route path="incidentes/:id" element={<IncidentDetailPage />} />

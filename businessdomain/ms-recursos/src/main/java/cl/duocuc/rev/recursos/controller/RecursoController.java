@@ -1,13 +1,21 @@
 package cl.duocuc.rev.recursos.controller;
 
+import cl.duocuc.rev.recursos.dto.AsignacionActivaDto;
 import cl.duocuc.rev.recursos.dto.AsignacionResponse;
 import cl.duocuc.rev.recursos.dto.AsignarRequest;
 import cl.duocuc.rev.recursos.dto.BrigadaComposicionRequest;
 import cl.duocuc.rev.recursos.dto.BrigadaDetalleDto;
 import cl.duocuc.rev.recursos.dto.BrigadaDto;
+import cl.duocuc.rev.recursos.dto.BrigadaElegibilidadDto;
 import cl.duocuc.rev.recursos.dto.BrigadaRequest;
+import cl.duocuc.rev.recursos.dto.BrigadaVehiculoDto;
+import cl.duocuc.rev.recursos.dto.BrigadaVehiculosRequest;
+import cl.duocuc.rev.recursos.dto.ComunaDto;
+import cl.duocuc.rev.recursos.dto.CompaniaDto;
+import cl.duocuc.rev.recursos.dto.InstitucionDto;
 import cl.duocuc.rev.recursos.dto.BrigadistaDto;
 import cl.duocuc.rev.recursos.dto.BrigadistaRequest;
+import cl.duocuc.rev.recursos.dto.BrigadistaRolDto;
 import cl.duocuc.rev.recursos.dto.HerramientaDto;
 import cl.duocuc.rev.recursos.dto.HerramientaRequest;
 import cl.duocuc.rev.recursos.dto.RecursoAsignadoDto;
@@ -37,6 +45,26 @@ public class RecursoController {
 
     private final RecursoService recursoService;
 
+    @GetMapping("/instituciones")
+    public List<InstitucionDto> listarInstituciones() {
+        return recursoService.listarInstituciones();
+    }
+
+    @GetMapping("/companias")
+    public List<CompaniaDto> listarCompanias() {
+        return recursoService.listarCompanias();
+    }
+
+    @GetMapping("/comunas")
+    public List<ComunaDto> listarComunas() {
+        return recursoService.listarComunas();
+    }
+
+    @GetMapping("/brigadista-roles")
+    public List<BrigadistaRolDto> listarBrigadistaRoles() {
+        return recursoService.listarBrigadistaRoles();
+    }
+
     @GetMapping("/catalogo")
     public RecursosCatalogoResponse listarCatalogo() {
         return recursoService.listarCatalogo();
@@ -56,6 +84,27 @@ public class RecursoController {
     public BrigadaDetalleDto actualizarComposicion(
             @PathVariable Long id, @RequestBody BrigadaComposicionRequest request) {
         return recursoService.actualizarComposicion(id, request);
+    }
+
+    @GetMapping("/brigadas/{id}/vehiculos")
+    public List<BrigadaVehiculoDto> listarVehiculosBrigada(@PathVariable Long id) {
+        return recursoService.listarVehiculosBrigada(id);
+    }
+
+    @PutMapping("/brigadas/{id}/vehiculos")
+    public List<BrigadaVehiculoDto> actualizarVehiculosBrigada(
+            @PathVariable Long id, @RequestBody BrigadaVehiculosRequest request) {
+        return recursoService.actualizarVehiculosBrigada(id, request);
+    }
+
+    @GetMapping("/brigadas/{id}/elegibilidad-despacho")
+    public BrigadaElegibilidadDto elegibilidadDespacho(@PathVariable Long id) {
+        return recursoService.evaluarElegibilidadDespacho(id);
+    }
+
+    @GetMapping("/asignaciones/activas")
+    public List<AsignacionActivaDto> listarAsignacionesActivas() {
+        return recursoService.listarAsignacionesActivas();
     }
 
     @GetMapping("/incidente/{incidenteId}")

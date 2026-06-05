@@ -29,6 +29,16 @@ spring:
                   args:
                     maxRequests: 5
                     windowSeconds: 3600
+            - id: bff_ready_route
+              uri: http://bff-rev:8085
+              predicates:
+                - Path=/api/ready
+            - id: bff_auth_ready_route
+              uri: http://bff-rev:8085
+              predicates:
+                - Path=/api/ready/auth
+              filters:
+                - AuthenticationFilter
             - id: bff_route
               uri: http://bff-rev:8085
               predicates:

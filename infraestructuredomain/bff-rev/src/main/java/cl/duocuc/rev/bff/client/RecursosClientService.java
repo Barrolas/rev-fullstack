@@ -1,12 +1,20 @@
 package cl.duocuc.rev.bff.client;
 
+import cl.duocuc.rev.bff.dto.AsignacionActivaDto;
 import cl.duocuc.rev.bff.dto.AsignacionDto;
 import cl.duocuc.rev.bff.dto.AsignarRecursoRequest;
 import cl.duocuc.rev.bff.dto.BrigadaComposicionRequest;
 import cl.duocuc.rev.bff.dto.BrigadaCreateRequest;
 import cl.duocuc.rev.bff.dto.BrigadaDetalleDto;
+import cl.duocuc.rev.bff.dto.BrigadaElegibilidadDto;
+import cl.duocuc.rev.bff.dto.BrigadaVehiculoDto;
+import cl.duocuc.rev.bff.dto.BrigadaVehiculosRequest;
 import cl.duocuc.rev.bff.dto.BrigadistaCreateRequest;
+import cl.duocuc.rev.bff.dto.BrigadistaRolDto;
+import cl.duocuc.rev.bff.dto.ComunaDto;
+import cl.duocuc.rev.bff.dto.CompaniaDto;
 import cl.duocuc.rev.bff.dto.HerramientaCreateRequest;
+import cl.duocuc.rev.bff.dto.InstitucionDto;
 import cl.duocuc.rev.bff.dto.RecursosCatalogoDto;
 import cl.duocuc.rev.bff.dto.RecursosDisponiblesDto;
 import cl.duocuc.rev.bff.dto.RecursoDto;
@@ -31,6 +39,69 @@ public class RecursosClientService {
         return webClient()
                 .get()
                 .uri("/recursos/incidente/{incidenteId}", incidenteId)
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<>() {
+                });
+    }
+
+    public Mono<List<InstitucionDto>> listarInstituciones() {
+        return webClient()
+                .get()
+                .uri("/recursos/instituciones")
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<>() {
+                });
+    }
+
+    public Mono<List<CompaniaDto>> listarCompanias() {
+        return webClient()
+                .get()
+                .uri("/recursos/companias")
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<>() {
+                });
+    }
+
+    public Mono<List<ComunaDto>> listarComunas() {
+        return webClient()
+                .get()
+                .uri("/recursos/comunas")
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<>() {
+                });
+    }
+
+    public Mono<List<BrigadistaRolDto>> listarBrigadistaRoles() {
+        return webClient()
+                .get()
+                .uri("/recursos/brigadista-roles")
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<>() {
+                });
+    }
+
+    public Mono<BrigadaElegibilidadDto> elegibilidadDespacho(Long brigadaId) {
+        return webClient()
+                .get()
+                .uri("/recursos/brigadas/{id}/elegibilidad-despacho", brigadaId)
+                .retrieve()
+                .bodyToMono(BrigadaElegibilidadDto.class);
+    }
+
+    public Mono<List<BrigadaVehiculoDto>> actualizarVehiculosBrigada(Long id, BrigadaVehiculosRequest request) {
+        return webClient()
+                .put()
+                .uri("/recursos/brigadas/{id}/vehiculos", id)
+                .bodyValue(request)
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<>() {
+                });
+    }
+
+    public Mono<List<AsignacionActivaDto>> listarAsignacionesActivas() {
+        return webClient()
+                .get()
+                .uri("/recursos/asignaciones/activas")
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<>() {
                 });

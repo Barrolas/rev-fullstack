@@ -18,4 +18,14 @@ public class ApiExceptionHandler {
                         .build()
         );
     }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ExceptionResponse> handleGeneric(Exception ex) {
+        return ResponseEntity.internalServerError()
+                .body(ExceptionResponse.builder()
+                        .code("ERROR_INTERNO")
+                        .message(ex.getMessage() != null ? ex.getMessage() : "Error interno")
+                        .timestamp(LocalDateTime.now())
+                        .build());
+    }
 }

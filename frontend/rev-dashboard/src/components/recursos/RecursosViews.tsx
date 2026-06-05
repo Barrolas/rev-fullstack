@@ -1,20 +1,81 @@
-import { Badge } from 'react-bootstrap';
+import { Fragment } from 'react';
+import { Badge, Form } from 'react-bootstrap';
+import type { useBrigadaSelection } from '../../hooks/useBrigadaSelection';
 import { Link } from 'react-router-dom';
-import type { RecursosDisponibles } from '../../api';
+import type { RecursosCatalogo } from '../../api';
 import {
   computeRecursosStats,
   filterBrigadas,
+  filterBrigadistas,
   filterHerramientas,
   filterVehiculos,
   formatRecursoEstado,
+  groupBrigadistasByBrigada,
+  type RecursoTab,
   herramientaStockLevel,
   recursoEstadoVariant,
   recursoStockLabel,
   type RecursosFiltersState,
 } from '../../utils/recursosUtils';
 
+function BrigadistasGroupedTableBody({
+  brigadistas,
+  brigadas,
+}: {
+  brigadistas: RecursosCatalogo['brigadistas'];
+  brigadas: RecursosCatalogo['brigadas'];
+}) {
+  const groups = groupBrigadistasByBrigada(brigadistas, brigadas);
+
+  if (groups.length === 0) {
+    return (
+      <tr>
+        <td colSpan={3} className="text-muted small text-center py-3">
+          No hay brigadistas que coincidan con el filtro.
+        </td>
+      </tr>
+    );
+  }
+
+  return (
+    <>
+      {groups.map((g) => (
+        <Fragment key={`grp-${g.brigadaId ?? 'none'}`}>
+          <tr className="rev-recursos-table__group">
+            <td colSpan={3}>
+              <span className="rev-recursos-table__group-label">{g.brigadaNombre}</span>
+              {g.brigadaCodigo && (
+                <span className="rev-recursos-table__group-meta">{g.brigadaCodigo}</span>
+              )}
+              <span className="rev-recursos-table__group-count">{g.brigadistas.length}</span>
+            </td>
+          </tr>
+          {g.brigadistas.map((b) => (
+            <tr key={b.id} className="rev-recursos-table__row--group-member">
+              <td>
+                <span className="rev-recursos-table__name">
+                  {b.nombre} {b.apellido}
+                </span>
+                {b.especialidad && (
+                  <span className="d-block small text-muted">{b.especialidad}</span>
+                )}
+              </td>
+              <td className="small">{b.rolNombre ?? b.rolCodigo ?? '—'}</td>
+              <td>
+                <Badge bg={recursoEstadoVariant(b.estado)} className="rev-recursos-table__badge">
+                  {formatRecursoEstado(b.estado)}
+                </Badge>
+              </td>
+            </tr>
+          ))}
+        </Fragment>
+      ))}
+    </>
+  );
+}
+
 interface RecursosSummaryRailProps {
-  data: RecursosDisponibles;
+  data: RecursosCatalogo;
   onFilterDisponibles: () => void;
   onFilterEnUso: () => void;
   onFilterStockBajo: () => void;
@@ -56,6 +117,9 @@ export function RecursosSummaryRail({
         <span className="rev-recursos-rail__meta">
           {stats.disponiblesTotal} libres · {stats.enUsoTotal} en uso
         </span>
+        <p className="rev-recursos-rail__hint small text-muted mb-0">
+          «Libres» = estado DISPONIBLE; no implica lista para despacho.
+        </p>
       </header>
 
       <div className="rev-recursos-rail__bars">
@@ -99,25 +163,35 @@ export function RecursosSummaryRail({
 }
 
 interface RecursosTablesProps {
-  data: RecursosDisponibles;
+  data: RecursosCatalogo;
   filters: RecursosFiltersState;
-  activeTab: 'brigadas' | 'vehiculos' | 'herramientas';
-  onTabChange: (tab: 'brigadas' | 'vehiculos' | 'herramientas') => void;
+  activeTab: RecursoTab;
+  onTabChange: (tab: RecursoTab) => void;
+  brigadaSelection?: ReturnType<typeof useBrigadaSelection>;
 }
 
-const TABS = [
-  { id: 'brigadas' as const, label: 'Brigadas', icon: 'bi-people' },
-  { id: 'vehiculos' as const, label: 'Vehículos', icon: 'bi-truck' },
-  { id: 'herramientas' as const, label: 'Herramientas', icon: 'bi-tools' },
+const TABS: Array<{ id: RecursoTab; label: string; icon: string }> = [
+  { id: 'brigadas', label: 'Brigadas', icon: 'bi-people' },
+  { id: 'brigadistas', label: 'Brigadistas', icon: 'bi-person-badge' },
+  { id: 'vehiculos', label: 'Vehículos', icon: 'bi-truck' },
+  { id: 'herramientas', label: 'Herramientas', icon: 'bi-tools' },
 ];
 
-export function RecursosTables({ data, filters, activeTab, onTabChange }: RecursosTablesProps) {
+export function RecursosTables({
+  data,
+  filters,
+  activeTab,
+  onTabChange,
+  brigadaSelection,
+}: RecursosTablesProps) {
   const brigadas = filterBrigadas(data.brigadas, filters);
+  const brigadistas = filterBrigadistas(data.brigadistas, filters, data.brigadas);
   const vehiculos = filterVehiculos(data.vehiculos, filters);
   const herramientas = filterHerramientas(data.herramientas, filters);
 
-  const counts = {
+  const counts: Record<RecursoTab, number> = {
     brigadas: brigadas.length,
+    brigadistas: brigadistas.length,
     vehiculos: vehiculos.length,
     herramientas: herramientas.length,
   };
@@ -147,15 +221,43 @@ export function RecursosTables({ data, filters, activeTab, onTabChange }: Recurs
             <table className="rev-data-table rev-data-table--compact rev-recursos-table">
               <thead>
                 <tr>
+                  {brigadaSelection && (
+                    <th scope="col" className="rev-recursos-table__check-col">
+                      <Form.Check
+                        type="checkbox"
+                        aria-label="Seleccionar todas las brigadas visibles"
+                        checked={brigadaSelection.allVisibleSelected}
+                        onChange={brigadaSelection.toggleSelectAllVisible}
+                      />
+                    </th>
+                  )}
                   <th scope="col">Brigada</th>
-                  <th scope="col">Cap.</th>
+                  <th scope="col">Código</th>
+                  <th scope="col">Cupo máx.</th>
                   <th scope="col">Estado</th>
                 </tr>
               </thead>
               <tbody>
-                {brigadas.map((b) => (
+                {brigadas.map((b) => {
+                  const selectable = brigadaSelection?.canSelect({
+                    id: b.id,
+                    estado: b.estado,
+                  });
+                  return (
                   <tr key={b.id} className={b.estado === 'ASIGNADO' ? 'rev-recursos-table__row--assigned' : ''}>
+                    {brigadaSelection && (
+                      <td className="rev-recursos-table__check-col">
+                        <Form.Check
+                          type="checkbox"
+                          aria-label={`Seleccionar ${b.nombre}`}
+                          checked={brigadaSelection.isSelected(b.id)}
+                          disabled={!selectable}
+                          onChange={() => brigadaSelection.toggle(b.id)}
+                        />
+                      </td>
+                    )}
                     <td><span className="rev-recursos-table__name">{b.nombre}</span></td>
+                    <td className="small text-muted">{b.codigo ?? '—'}</td>
                     <td><span className="rev-recursos-table__num">{b.capacidad}</span></td>
                     <td>
                       <Badge bg={recursoEstadoVariant(b.estado)} className="rev-recursos-table__badge">
@@ -163,7 +265,25 @@ export function RecursosTables({ data, filters, activeTab, onTabChange }: Recurs
                       </Badge>
                     </td>
                   </tr>
-                ))}
+                );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className={`rev-recursos-panel${activeTab === 'brigadistas' ? ' rev-recursos-panel--active' : ''}`}>
+          <div className="rev-data-table-wrap">
+            <table className="rev-data-table rev-data-table--compact rev-recursos-table">
+              <thead>
+                <tr>
+                  <th scope="col">Nombre</th>
+                  <th scope="col">Rol</th>
+                  <th scope="col">Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                <BrigadistasGroupedTableBody brigadistas={brigadistas} brigadas={data.brigadas} />
               </tbody>
             </table>
           </div>
@@ -175,15 +295,22 @@ export function RecursosTables({ data, filters, activeTab, onTabChange }: Recurs
               <thead>
                 <tr>
                   <th scope="col">Patente</th>
-                  <th scope="col">Tipo</th>
+                  <th scope="col">Marca / modelo</th>
+                  <th scope="col">Plazas</th>
                   <th scope="col">Estado</th>
                 </tr>
               </thead>
               <tbody>
                 {vehiculos.map((v) => (
                   <tr key={v.id} className={v.estado === 'ASIGNADO' ? 'rev-recursos-table__row--assigned' : ''}>
-                    <td><span className="rev-recursos-table__name">{v.patente}</span></td>
-                    <td>{v.tipo}</td>
+                    <td>
+                      <span className="rev-recursos-table__name">{v.patente}</span>
+                      <span className="d-block small text-muted">{v.tipo}</span>
+                    </td>
+                    <td className="small text-muted">
+                      {[v.marca, v.modelo].filter(Boolean).join(' ') || '—'}
+                    </td>
+                    <td className="small">{v.capacidadPasajeros ?? '—'}</td>
                     <td>
                       <Badge bg={recursoEstadoVariant(v.estado)} className="rev-recursos-table__badge">
                         {formatRecursoEstado(v.estado)}
@@ -202,6 +329,7 @@ export function RecursosTables({ data, filters, activeTab, onTabChange }: Recurs
               <thead>
                 <tr>
                   <th scope="col">Herramienta</th>
+                  <th scope="col">SKU</th>
                   <th scope="col">Stock</th>
                   <th scope="col">Nivel</th>
                 </tr>
@@ -214,7 +342,15 @@ export function RecursosTables({ data, filters, activeTab, onTabChange }: Recurs
                     : 0;
                   return (
                     <tr key={h.id} className={`rev-recursos-table__row--stock-${level}`}>
-                      <td><span className="rev-recursos-table__name">{h.nombre}</span></td>
+                      <td>
+                        <span className="rev-recursos-table__name">{h.nombre}</span>
+                        {(h.marca || h.modelo) && (
+                          <span className="d-block small text-muted">
+                            {[h.marca, h.modelo].filter(Boolean).join(' · ')}
+                          </span>
+                        )}
+                      </td>
+                      <td className="small text-muted">{h.sku ?? '—'}</td>
                       <td>
                         <div className="rev-recursos-stock">
                           <span className="rev-recursos-stock__nums">
@@ -246,12 +382,13 @@ export function RecursosTables({ data, filters, activeTab, onTabChange }: Recurs
 }
 
 interface RecursosDesktopGridProps {
-  data: RecursosDisponibles;
+  data: RecursosCatalogo;
   filters: RecursosFiltersState;
 }
 
 export function RecursosDesktopGrid({ data, filters }: RecursosDesktopGridProps) {
   const brigadas = filterBrigadas(data.brigadas, filters);
+  const brigadistas = filterBrigadistas(data.brigadistas, filters, data.brigadas);
   const vehiculos = filterVehiculos(data.vehiculos, filters);
   const herramientas = filterHerramientas(data.herramientas, filters);
 
@@ -265,12 +402,13 @@ export function RecursosDesktopGrid({ data, filters }: RecursosDesktopGridProps)
         <div className="rev-data-table-wrap">
           <table className="rev-data-table rev-data-table--compact rev-recursos-table">
             <thead>
-              <tr><th scope="col">Nombre</th><th scope="col">Cap.</th><th scope="col">Estado</th></tr>
+              <tr><th scope="col">Nombre</th><th scope="col">Código</th><th scope="col">Cupo máx.</th><th scope="col">Estado</th></tr>
             </thead>
             <tbody>
               {brigadas.map((b) => (
                 <tr key={b.id} className={b.estado === 'ASIGNADO' ? 'rev-recursos-table__row--assigned' : ''}>
                   <td><span className="rev-recursos-table__name">{b.nombre}</span></td>
+                  <td className="small text-muted">{b.codigo ?? '—'}</td>
                   <td><span className="rev-recursos-table__num">{b.capacidad}</span></td>
                   <td>
                     <Badge bg={recursoEstadoVariant(b.estado)} className="rev-recursos-table__badge">
@@ -286,19 +424,44 @@ export function RecursosDesktopGrid({ data, filters }: RecursosDesktopGridProps)
 
       <section className="rev-recursos-grid__section rev-card">
         <h3 className="rev-recursos-grid__title">
+          <i className="bi bi-person-badge" aria-hidden="true" /> Brigadistas
+          <Badge bg="secondary">{brigadistas.length}</Badge>
+        </h3>
+        <div className="rev-data-table-wrap">
+          <table className="rev-data-table rev-data-table--compact rev-recursos-table">
+            <thead>
+              <tr>
+                <th scope="col">Nombre</th>
+                <th scope="col">Rol</th>
+                <th scope="col">Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <BrigadistasGroupedTableBody brigadistas={brigadistas} brigadas={data.brigadas} />
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="rev-recursos-grid__section rev-card">
+        <h3 className="rev-recursos-grid__title">
           <i className="bi bi-truck" aria-hidden="true" /> Vehículos
           <Badge bg="secondary">{vehiculos.length}</Badge>
         </h3>
         <div className="rev-data-table-wrap">
           <table className="rev-data-table rev-data-table--compact rev-recursos-table">
             <thead>
-              <tr><th scope="col">Patente</th><th scope="col">Tipo</th><th scope="col">Estado</th></tr>
+              <tr><th scope="col">Patente</th><th scope="col">Marca</th><th scope="col">Plazas</th><th scope="col">Estado</th></tr>
             </thead>
             <tbody>
               {vehiculos.map((v) => (
                 <tr key={v.id} className={v.estado === 'ASIGNADO' ? 'rev-recursos-table__row--assigned' : ''}>
-                  <td><span className="rev-recursos-table__name">{v.patente}</span></td>
-                  <td>{v.tipo}</td>
+                  <td>
+                    <span className="rev-recursos-table__name">{v.patente}</span>
+                    <span className="d-block small text-muted">{v.tipo}</span>
+                  </td>
+                  <td className="small">{v.marca ?? '—'}</td>
+                  <td className="small">{v.capacidadPasajeros ?? '—'}</td>
                   <td>
                     <Badge bg={recursoEstadoVariant(v.estado)} className="rev-recursos-table__badge">
                       {formatRecursoEstado(v.estado)}
@@ -319,7 +482,7 @@ export function RecursosDesktopGrid({ data, filters }: RecursosDesktopGridProps)
         <div className="rev-data-table-wrap">
           <table className="rev-data-table rev-data-table--compact rev-recursos-table">
             <thead>
-              <tr><th scope="col">Nombre</th><th scope="col">Stock</th><th scope="col">Nivel</th></tr>
+              <tr><th scope="col">Nombre</th><th scope="col">SKU</th><th scope="col">Stock</th><th scope="col">Nivel</th></tr>
             </thead>
             <tbody>
               {herramientas.map((h) => {
@@ -330,6 +493,7 @@ export function RecursosDesktopGrid({ data, filters }: RecursosDesktopGridProps)
                 return (
                   <tr key={h.id} className={`rev-recursos-table__row--stock-${level}`}>
                     <td><span className="rev-recursos-table__name">{h.nombre}</span></td>
+                    <td className="small text-muted">{h.sku ?? '—'}</td>
                     <td>
                       <div className="rev-recursos-stock">
                         <span className="rev-recursos-stock__nums">

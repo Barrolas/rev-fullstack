@@ -19,9 +19,11 @@ Puerto: **8083** · Base de datos: PostgreSQL `:5434`.
 src/main/java/cl/duocuc/rev/recursos/
 ├── controller/   RecursoController
 ├── service/      RecursoService
-├── entity/       Brigada, Vehiculo, Herramienta, Asignacion
+├── entity/       Brigada, Vehiculo, Herramienta, Asignacion, Institucion, Compania, BrigadaVehiculo, …
 └── repository/
 ```
+
+**Modelo organizacional (Flyway V5):** `INSTITUCION` → `COMPANIA` (`id_comuna` CASEN) → `BRIGADA` → integrantes con `BRIGADISTA_ROL`; N vehículos por brigada (`brigada_vehiculos`). Territorial: provincia Cordillera (132) + 3 comunas. Ver [flujo-despacho-rev.md](../../docs/flujo-despacho-rev.md).
 
 ---
 
@@ -29,9 +31,13 @@ src/main/java/cl/duocuc/rev/recursos/
 
 | Método | Ruta | Descripción |
 |--------|------|-------------|
+| GET | `/recursos/instituciones`, `/companias`, `/comunas` | Catálogo organizacional y territorial |
 | GET | `/recursos/disponibles` | Brigadas, vehículos y herramientas disponibles |
+| GET | `/recursos/brigadas/{id}/elegibilidad-despacho` | Validación lista para despacho |
+| PUT | `/recursos/brigadas/{id}/vehiculos` | Dotación N vehículos |
+| GET | `/recursos/asignaciones/activas` | Despachos vigentes |
 | GET | `/recursos/incidente/{id}` | Recursos asignados a un incidente |
-| POST | `/recursos/asignar` | Asignar brigada (vehículo opcional) |
+| POST | `/recursos/asignar` | Asignar brigada (vehículo obligatorio si hay varios) |
 | DELETE | `/recursos/asignar/{id}` | Desasignar |
 | POST | `/recursos/brigadas` | Alta brigada |
 | POST | `/recursos/vehiculos` | Alta vehículo |

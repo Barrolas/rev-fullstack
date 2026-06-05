@@ -16,7 +16,7 @@ export default function RecursosModuleTabs({ active, onChange }: RecursosModuleT
         onClick={() => onChange('inventario')}
       >
         <i className="bi bi-grid me-1" aria-hidden="true" />
-        Inventario
+        Consulta
       </button>
       <button
         type="button"
@@ -26,7 +26,7 @@ export default function RecursosModuleTabs({ active, onChange }: RecursosModuleT
         onClick={() => onChange('administracion')}
       >
         <i className="bi bi-gear me-1" aria-hidden="true" />
-        Administración
+        Gestión y dotación
       </button>
     </div>
   );

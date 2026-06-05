@@ -1,7 +1,7 @@
 import type { RecursosCatalogo, RecursosDisponibles } from '../api';
 
 export type RecursoAvailabilityFilter = 'ALL' | 'DISPONIBLE' | 'ASIGNADO';
-export type RecursoTab = 'brigadas' | 'vehiculos' | 'herramientas';
+export type RecursoTab = 'brigadas' | 'brigadistas' | 'vehiculos' | 'herramientas';
 
 export interface RecursosFiltersState {
   search: string;
@@ -117,6 +117,79 @@ export function filterVehiculos(
     });
 }
 
+export function filterBrigadistas(
+  brigadistas: RecursosCatalogo['brigadistas'],
+  filters: RecursosFiltersState,
+  brigadas: RecursosDisponibles['brigadas'],
+) {
+  const q = filters.search.trim();
+  const brigadaNombre = (id?: number) =>
+    id != null ? brigadas.find((b) => b.id === id)?.nombre : undefined;
+  return brigadistas
+    .filter((b) => {
+      if (filters.availability !== 'ALL' && b.estado !== filters.availability) return false;
+      if (!q) return true;
+      const brigada = brigadaNombre(b.idBrigada);
+      return (
+        matchesSearch(`${b.nombre} ${b.apellido}`, q) ||
+        matchesSearch(b.especialidad ?? '', q) ||
+        matchesSearch(b.estado, q) ||
+        matchesSearch(b.rolNombre ?? '', q) ||
+        (brigada != null && matchesSearch(brigada, q))
+      );
+    })
+    .sort((a, b) =>
+      `${a.apellido} ${a.nombre}`.localeCompare(`${b.apellido} ${b.nombre}`, 'es'),
+    );
+}
+
+export interface BrigadistaGrupo {
+  brigadaId: number | null;
+  brigadaNombre: string;
+  brigadaCodigo?: string;
+  brigadistas: RecursosCatalogo['brigadistas'];
+}
+
+/** Agrupa brigadistas por brigada de pertenencia (sin asignar al final). */
+export function groupBrigadistasByBrigada(
+  brigadistas: RecursosCatalogo['brigadistas'],
+  brigadas: RecursosDisponibles['brigadas'],
+  prioritizedBrigadaId?: number | null,
+): BrigadistaGrupo[] {
+  const brigadaMap = new Map(brigadas.map((b) => [b.id, b]));
+  const byBrigada = new Map<number | null, RecursosCatalogo['brigadistas']>();
+
+  for (const b of brigadistas) {
+    const key = b.idBrigada ?? null;
+    const list = byBrigada.get(key);
+    if (list) list.push(b);
+    else byBrigada.set(key, [b]);
+  }
+
+  const groups: BrigadistaGrupo[] = [];
+  for (const [id, list] of byBrigada) {
+    const brigada = id != null ? brigadaMap.get(id) : undefined;
+    groups.push({
+      brigadaId: id,
+      brigadaNombre: brigada?.nombre ?? 'Sin asignar',
+      brigadaCodigo: brigada?.codigo,
+      brigadistas: [...list].sort((a, b) =>
+        `${a.apellido} ${a.nombre}`.localeCompare(`${b.apellido} ${b.nombre}`, 'es'),
+      ),
+    });
+  }
+
+  return groups.sort((a, b) => {
+    if (prioritizedBrigadaId != null) {
+      if (a.brigadaId === prioritizedBrigadaId) return -1;
+      if (b.brigadaId === prioritizedBrigadaId) return 1;
+    }
+    if (a.brigadaId == null) return 1;
+    if (b.brigadaId == null) return -1;
+    return a.brigadaNombre.localeCompare(b.brigadaNombre, 'es');
+  });
+}
+
 export function filterHerramientas(
   herramientas: RecursosDisponibles['herramientas'],
   filters: RecursosFiltersState,
@@ -149,16 +222,22 @@ export function hasActiveRecursosFilters(filters: RecursosFiltersState): boolean
 }
 
 export function countFilteredRecursos(
-  data: RecursosDisponibles,
+  data: RecursosCatalogo,
   filters: RecursosFiltersState,
 ): number {
   return (
     filterBrigadas(data.brigadas, filters).length +
+    filterBrigadistas(data.brigadistas, filters, data.brigadas).length +
     filterVehiculos(data.vehiculos, filters).length +
     filterHerramientas(data.herramientas, filters).length
   );
 }
 
-export function countTotalRecursos(data: RecursosDisponibles): number {
-  return data.brigadas.length + data.vehiculos.length + data.herramientas.length;
+export function countTotalRecursos(data: RecursosCatalogo): number {
+  return (
+    data.brigadas.length +
+    data.brigadistas.length +
+    data.vehiculos.length +
+    data.herramientas.length
+  );
 }
