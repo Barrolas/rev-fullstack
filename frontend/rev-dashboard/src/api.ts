@@ -343,6 +343,7 @@ export interface DespachoAsignarLoteResponse {
 }
 
 import { formatApiError } from './utils/apiErrors';
+import { notifySessionExpired, SESSION_IDLE_MS } from './utils/sessionEvents';
 import {
   LOGIN_RETRY_DELAYS_MS,
   API_RETRY_DELAYS_MS,
@@ -352,9 +353,24 @@ import {
   isRetryableHttpStatus,
   sleep,
 } from './utils/apiRetry';
+import { getTokenExpiryMs } from './utils/jwt';
 import { formatLoginError, formatLoginNetworkError } from './utils/loginErrors';
-
 const TOKEN_KEY = 'rev_token';
+const REFRESH_TOKEN_KEY = 'rev_refresh_token';
+
+/** Renovar access token unos minutos antes de que expire. */
+const ACCESS_REFRESH_LEAD_MS = 2 * 60 * 1000;
+
+let lastActivityAt = Date.now();
+let refreshInFlight: Promise<void> | null = null;
+
+export function touchSessionActivity(): void {
+  lastActivityAt = Date.now();
+}
+
+function isSessionIdleExpired(): boolean {
+  return Date.now() - lastActivityAt >= SESSION_IDLE_MS;
+}
 
 function authHeaders(): HeadersInit {
   const token = getToken();
@@ -365,12 +381,95 @@ export function getToken(): string | null {
   return localStorage.getItem(TOKEN_KEY);
 }
 
+function getRefreshToken(): string | null {
+  return localStorage.getItem(REFRESH_TOKEN_KEY);
+}
+
+function setAuthTokens(accessToken: string, refreshToken?: string | null) {
+  localStorage.setItem(TOKEN_KEY, accessToken);
+  if (refreshToken) {
+    localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+  } else {
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
+  }
+  touchSessionActivity();
+}
+
 export function setToken(token: string) {
-  localStorage.setItem(TOKEN_KEY, token);
+  setAuthTokens(token, getRefreshToken());
 }
 
 export function clearToken() {
   localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
+}
+
+async function refreshAccessToken(): Promise<void> {
+  const refresh = getRefreshToken();
+  if (!refresh) {
+    throw new Error(SESSION_EXPIRED_MSG);
+  }
+  const body = new URLSearchParams({ refresh_token: refresh });
+  const res = await fetch('/auth/refresh', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body,
+  });
+  const text = await res.text();
+  if (!res.ok) {
+    throw new Error(SESSION_EXPIRED_MSG);
+  }
+  let data: { access_token?: string; refresh_token?: string };
+  try {
+    data = JSON.parse(text) as { access_token?: string; refresh_token?: string };
+  } catch {
+    throw new Error(SESSION_EXPIRED_MSG);
+  }
+  if (!data.access_token) {
+    throw new Error(SESSION_EXPIRED_MSG);
+  }
+  setAuthTokens(data.access_token, data.refresh_token ?? refresh);
+}
+
+async function ensureFreshAccessToken(): Promise<void> {
+  touchSessionActivity();
+  if (isSessionIdleExpired()) {
+    clearToken();
+    notifySessionExpired();
+    throw new Error(SESSION_EXPIRED_MSG);
+  }
+  const token = getToken();
+  if (!token) return;
+  const exp = getTokenExpiryMs(token);
+  if (exp != null && exp - Date.now() > ACCESS_REFRESH_LEAD_MS) {
+    return;
+  }
+  if (!getRefreshToken()) {
+    return;
+  }
+  if (!refreshInFlight) {
+    refreshInFlight = refreshAccessToken().finally(() => {
+      refreshInFlight = null;
+    });
+  }
+  await refreshInFlight;
+}
+
+/** Cierra sesión local y revoca refresh en Keycloak cuando es posible. */
+export async function logoutSession(): Promise<void> {
+  const refresh = getRefreshToken();
+  clearToken();
+  notifySessionExpired();
+  if (!refresh) return;
+  try {
+    await fetch('/auth/logout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ refresh_token: refresh }),
+    });
+  } catch {
+    /* sin red o adapter caído */
+  }
 }
 
 export type BackendStartupStep = 'bff' | 'auth-route' | 'auth-filter' | 'ready';
@@ -442,16 +541,16 @@ export async function login(username: string, password: string): Promise<void> {
 
     const text = await res.text();
     if (res.ok) {
-      let data: { access_token?: string };
+      let data: { access_token?: string; refresh_token?: string };
       try {
-        data = JSON.parse(text) as { access_token?: string };
+        data = JSON.parse(text) as { access_token?: string; refresh_token?: string };
       } catch {
         throw new Error('Respuesta de login inválida. Intente de nuevo.');
       }
       if (!data.access_token) {
         throw new Error('Respuesta de login sin token. Verifique Keycloak y el adaptador.');
       }
-      setToken(data.access_token);
+      setAuthTokens(data.access_token, data.refresh_token);
       const backendOk = await waitForRevBackend(STARTUP_BACKEND_MAX_MS);
       if (!backendOk) {
         throw new Error(
@@ -479,7 +578,7 @@ const SESSION_EXPIRED_MSG =
 
 function handleAuthFailure(text: string, status: number): never {
   clearToken();
-  window.location.assign('/login');
+  notifySessionExpired();
   throw new Error(formatApiError(text, status));
 }
 
@@ -487,6 +586,9 @@ async function apiFetch<T>(url: string, options: ApiFetchInit = {}, attempt = 0)
   const { authFailureMode = 'redirect', ...fetchOptions } = options;
 
   try {
+    if (getToken()) {
+      await ensureFreshAccessToken();
+    }
     const res = await fetch(url, {
       ...fetchOptions,
       headers: {
@@ -501,6 +603,7 @@ async function apiFetch<T>(url: string, options: ApiFetchInit = {}, attempt = 0)
 
       if (res.status === 401 || res.status === 403) {
         if (authFailureMode === 'throw') {
+          clearToken();
           throw new Error(SESSION_EXPIRED_MSG);
         }
         handleAuthFailure(text, res.status);
@@ -638,6 +741,7 @@ export async function createIncidente(data: IncidenteCreate): Promise<void> {
   await apiFetch('/api/incidentes', {
     method: 'POST',
     body: JSON.stringify(data),
+    authFailureMode: 'throw',
   });
 }
 

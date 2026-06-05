@@ -77,7 +77,12 @@ export default function IncidentFormFields({
         onSuccess();
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al registrar');
+      const msg = err instanceof Error ? err.message : 'Error al registrar';
+      setError(
+        msg.includes('Sesión expirada')
+          ? `${msg} Será redirigido al inicio de sesión.`
+          : msg,
+      );
     } finally {
       setSubmitting(false);
     }

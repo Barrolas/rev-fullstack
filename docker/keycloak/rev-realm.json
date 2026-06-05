@@ -1,6 +1,11 @@
 {
   "realm": "rev",
   "enabled": true,
+  "accessTokenLifespan": 900,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 28800,
+  "clientSessionIdleTimeout": 1800,
+  "clientSessionMaxLifespan": 28800,
   "verifyEmail": false,
   "loginWithEmailAllowed": true,
   "registrationEmailAsUsername": false,
