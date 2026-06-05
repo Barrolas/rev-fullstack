@@ -1,15 +1,18 @@
 package cl.duocuc.rev.zonas.service;
 
+import cl.duocuc.rev.zonas.dto.ComunaDto;
 import cl.duocuc.rev.zonas.dto.RiesgoZonaResponse;
 import cl.duocuc.rev.zonas.dto.WeatherDataDto;
 import cl.duocuc.rev.zonas.dto.ZonaRequest;
 import cl.duocuc.rev.zonas.dto.ZonaResponse;
 import cl.duocuc.rev.zonas.dto.ZonaResueltaResponse;
+import cl.duocuc.rev.zonas.entity.Comuna;
 import cl.duocuc.rev.zonas.entity.Zona;
 import cl.duocuc.rev.zonas.exception.BusinessRuleException;
 import cl.duocuc.rev.zonas.model.NivelRiesgo;
 import cl.duocuc.rev.zonas.model.TipoZona;
 import cl.duocuc.rev.zonas.port.WeatherDataPort;
+import cl.duocuc.rev.zonas.repository.ComunaRepository;
 import cl.duocuc.rev.zonas.repository.ZonaRepository;
 import cl.duocuc.rev.zonas.util.ZonaGeometryUtil;
 import java.util.Comparator;
@@ -25,9 +28,21 @@ import org.springframework.transaction.annotation.Transactional;
 public class ZonaService {
 
     private static final String COMUNA_DEFAULT = "Puente Alto";
+    private static final int COMUNA_DEFAULT_CASEN = 13201;
 
     private final ZonaRepository zonaRepository;
+    private final ComunaRepository comunaRepository;
     private final WeatherDataPort weatherDataPort;
+
+    public List<ComunaDto> listarComunas() {
+        return comunaRepository.findAll().stream()
+                .map(c -> ComunaDto.builder()
+                        .codigoCasen(c.getCodigoCasen())
+                        .nombre(c.getNombre())
+                        .codigoProvinciaCasen(c.getCodigoProvinciaCasen())
+                        .build())
+                .toList();
+    }
 
     public List<ZonaResponse> listar(boolean incluirInactivas) {
         List<Zona> zonas = incluirInactivas
@@ -146,13 +161,11 @@ public class ZonaService {
                 .centerLat(request.getCenterLat())
                 .centerLng(request.getCenterLng())
                 .radioMetros(request.getRadioMetros())
-                .comuna(request.getComuna() != null && !request.getComuna().isBlank()
-                        ? request.getComuna().trim()
-                        : COMUNA_DEFAULT)
                 .tipo(request.getTipo() != null && !request.getTipo().isBlank()
                         ? request.getTipo().toUpperCase()
                         : TipoZona.ESTRATEGICA)
                 .build();
+        aplicarComuna(zona, request);
         ZonaGeometryUtil.aplicarBboxDerivado(zona);
         return zona;
     }
@@ -163,8 +176,9 @@ public class ZonaService {
         zona.setCenterLat(request.getCenterLat());
         zona.setCenterLng(request.getCenterLng());
         zona.setRadioMetros(request.getRadioMetros());
-        if (request.getComuna() != null && !request.getComuna().isBlank()) {
-            zona.setComuna(request.getComuna().trim());
+        if (request.getIdComuna() != null
+                || (request.getComuna() != null && !request.getComuna().isBlank())) {
+            aplicarComuna(zona, request);
         }
         if (request.getTipo() != null && !request.getTipo().isBlank()) {
             zona.setTipo(request.getTipo().toUpperCase());
@@ -172,7 +186,35 @@ public class ZonaService {
         ZonaGeometryUtil.aplicarBboxDerivado(zona);
     }
 
+    private void aplicarComuna(Zona zona, ZonaRequest request) {
+        if (request.getIdComuna() != null) {
+            Comuna comuna = comunaRepository.findById(request.getIdComuna())
+                    .orElseThrow(() -> new BusinessRuleException(
+                            "COMUNA_NO_ENCONTRADA", "Comuna territorial no encontrada", HttpStatus.BAD_REQUEST));
+            zona.setIdComuna(comuna.getCodigoCasen());
+            zona.setComuna(comuna.getNombre());
+            return;
+        }
+        if (request.getComuna() != null && !request.getComuna().isBlank()) {
+            String nombre = request.getComuna().trim();
+            zona.setComuna(nombre);
+            comunaRepository.findAll().stream()
+                    .filter(c -> c.getNombre().equalsIgnoreCase(nombre))
+                    .findFirst()
+                    .ifPresentOrElse(
+                            c -> zona.setIdComuna(c.getCodigoCasen()),
+                            () -> zona.setIdComuna(COMUNA_DEFAULT_CASEN));
+            return;
+        }
+        zona.setIdComuna(COMUNA_DEFAULT_CASEN);
+        zona.setComuna(COMUNA_DEFAULT);
+    }
+
     private ZonaResponse toResponse(Zona zona) {
+        String nombreComuna = zona.getComuna();
+        if (zona.getIdComuna() != null) {
+            nombreComuna = comunaRepository.findById(zona.getIdComuna()).map(Comuna::getNombre).orElse(zona.getComuna());
+        }
         return ZonaResponse.builder()
                 .id(zona.getId())
                 .nombre(zona.getNombre())
@@ -181,6 +223,8 @@ public class ZonaService {
                 .centerLng(zona.getCenterLng())
                 .radioMetros(zona.getRadioMetros())
                 .comuna(zona.getComuna())
+                .idComuna(zona.getIdComuna())
+                .nombreComuna(nombreComuna)
                 .tipo(zona.getTipo())
                 .activa(zona.isActiva())
                 .minLat(zona.getMinLat())

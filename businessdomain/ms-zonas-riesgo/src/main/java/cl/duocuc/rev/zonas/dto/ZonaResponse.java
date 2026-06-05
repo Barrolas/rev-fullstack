@@ -18,6 +18,8 @@ public class ZonaResponse {
     private Double centerLng;
     private Double radioMetros;
     private String comuna;
+    private Integer idComuna;
+    private String nombreComuna;
     private String tipo;
     private boolean activa;
     private Double minLat;

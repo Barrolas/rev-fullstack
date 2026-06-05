@@ -1059,7 +1059,6 @@
     flex-wrap: nowrap;
     display: flex;
     padding-bottom: 4px;
-    scrollbar-width: thin;
   }
 
   .rev-inicio__estado-tile {

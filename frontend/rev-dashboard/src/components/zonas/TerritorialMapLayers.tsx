@@ -52,7 +52,7 @@ export default function TerritorialMapLayers({
               click: () => onSelectZone?.(z.id),
             }}
           >
-            <Popup className="rev-zones-map__popup">
+            <Popup className="rev-zones-map__popup" autoPan={false}>
               <div className="rev-zones-map__popup-title">{z.nombre}</div>
               <div className="rev-zones-map__popup-meta">
                 Riesgo: <strong>{riskLabel(z.nivelRiesgo)}</strong>
@@ -104,7 +104,7 @@ export default function TerritorialMapLayers({
                 click: () => onSelectIncidente?.(p.id),
               }}
             >
-              <Popup className="rev-zones-map__popup">
+              <Popup className="rev-zones-map__popup" autoPan={false}>
                 <ZonaIncidentePopup punto={p} />
               </Popup>
             </Marker>

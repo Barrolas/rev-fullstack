@@ -2,16 +2,11 @@ import type { PathOptions } from 'leaflet';
 
 import type { MapaIncidentePunto } from '../api';
 import { riskVariant } from '../components/RiskBadge';
+import { RISK_COLORS } from './riskColors';
 
 export function zonaMapStyle(nivel: string, selected = false): PathOptions {
-  const variant = riskVariant(nivel);
-  const styles: Record<string, { fill: string; stroke: string }> = {
-    high: { fill: 'rgba(249, 115, 22, 0.28)', stroke: '#f97316' },
-    medium: { fill: 'rgba(167, 180, 199, 0.18)', stroke: '#73839a' },
-    low: { fill: 'rgba(115, 131, 154, 0.12)', stroke: '#5a6a7e' },
-    unknown: { fill: 'rgba(115, 131, 154, 0.12)', stroke: '#73839a' },
-  };
-  const palette = styles[variant] ?? styles.unknown;
+  const variant = riskVariant(nivel) as keyof typeof RISK_COLORS;
+  const palette = RISK_COLORS[variant] ?? RISK_COLORS.unknown;
   return {
     color: palette.stroke,
     weight: selected ? 3 : 2,

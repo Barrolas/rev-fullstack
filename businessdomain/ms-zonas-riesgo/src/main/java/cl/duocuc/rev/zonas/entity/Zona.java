@@ -43,6 +43,9 @@ public class Zona {
     @Column(nullable = false, length = 80)
     private String comuna;
 
+    @Column(name = "id_comuna")
+    private Integer idComuna;
+
     @Column(nullable = false, length = 30)
     private String tipo;
 

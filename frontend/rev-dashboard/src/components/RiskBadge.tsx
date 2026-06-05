@@ -1,4 +1,5 @@
 import { Badge } from 'react-bootstrap';
+import { riskLabel } from '../utils/zonaMapStyles';
 
 interface RiskBadgeProps {
   nivel: string;
@@ -15,5 +16,5 @@ export function riskVariant(nivel: string): string {
 export default function RiskBadge({ nivel }: RiskBadgeProps) {
   const variant = riskVariant(nivel);
   const className = `badge-risk-${variant}`;
-  return <Badge className={className}>{nivel}</Badge>;
+  return <Badge className={className}>{riskLabel(nivel)}</Badge>;
 }

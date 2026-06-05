@@ -352,15 +352,15 @@
 }
 
 .rev-risk-distribution__segment--high {
-  background: var(--rev-orange);
+  background: var(--rev-risk-high);
 }
 
 .rev-risk-distribution__segment--medium {
-  background: var(--rev-surface-elevated);
+  background: var(--rev-risk-medium);
 }
 
 .rev-risk-distribution__segment--low {
-  background: rgba(115, 131, 154, 0.35);
+  background: var(--rev-risk-low);
 }
 
 .rev-risk-distribution__legend {
@@ -385,15 +385,15 @@
 }
 
 .rev-risk-distribution__dot--high {
-  background: var(--rev-orange);
+  background: var(--rev-risk-high);
 }
 
 .rev-risk-distribution__dot--medium {
-  background: var(--rev-text-tertiary);
+  background: var(--rev-risk-medium);
 }
 
 .rev-risk-distribution__dot--low {
-  background: rgba(115, 131, 154, 0.5);
+  background: var(--rev-risk-low);
 }
 
 .rev-risk-distribution__pct {
@@ -452,15 +452,15 @@
 }
 
 .rev-data-table__row--high td:first-child {
-  box-shadow: inset 3px 0 0 var(--rev-orange);
+  box-shadow: inset 3px 0 0 var(--rev-risk-high);
 }
 
 .rev-data-table__row--medium td:first-child {
-  box-shadow: inset 3px 0 0 var(--rev-text-tertiary);
+  box-shadow: inset 3px 0 0 var(--rev-risk-medium);
 }
 
 .rev-data-table__row--low td:first-child {
-  box-shadow: inset 3px 0 0 rgba(115, 131, 154, 0.45);
+  box-shadow: inset 3px 0 0 var(--rev-risk-low);
 }
 
 .rev-data-table__id {
@@ -816,15 +816,30 @@
 }
 
 .rev-zones-map__legend-item--high {
-  color: var(--rev-orange);
+  color: var(--rev-risk-high);
+}
+
+.rev-zones-map__legend-item--high::before {
+  background: var(--rev-risk-high-muted);
+  border-color: var(--rev-risk-high);
 }
 
 .rev-zones-map__legend-item--medium {
-  color: var(--rev-text-tertiary);
+  color: var(--rev-risk-medium);
+}
+
+.rev-zones-map__legend-item--medium::before {
+  background: var(--rev-risk-medium-muted);
+  border-color: var(--rev-risk-medium);
 }
 
 .rev-zones-map__legend-item--low {
-  color: #5a6a7e;
+  color: var(--rev-risk-low);
+}
+
+.rev-zones-map__legend-item--low::before {
+  background: var(--rev-risk-low-muted);
+  border-color: var(--rev-risk-low);
 }
 
 .rev-zones-map__legend-item--incident {
@@ -980,6 +995,18 @@
 .rev-zones-admin__list-card .list-group-item {
   padding-top: var(--rev-space-2);
   padding-bottom: var(--rev-space-2);
+}
+
+.rev-zones-admin__item--high {
+  border-left: 3px solid var(--rev-risk-high);
+}
+
+.rev-zones-admin__item--medium {
+  border-left: 3px solid var(--rev-risk-medium);
+}
+
+.rev-zones-admin__item--low {
+  border-left: 3px solid var(--rev-risk-low);
 }
 
 .rev-zones-admin__form-card .form-control,

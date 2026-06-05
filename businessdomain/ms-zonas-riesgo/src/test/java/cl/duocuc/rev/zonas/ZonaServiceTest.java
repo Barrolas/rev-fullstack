@@ -14,6 +14,7 @@ import cl.duocuc.rev.zonas.dto.ZonaResueltaResponse;
 import cl.duocuc.rev.zonas.entity.Zona;
 import cl.duocuc.rev.zonas.exception.BusinessRuleException;
 import cl.duocuc.rev.zonas.port.WeatherDataPort;
+import cl.duocuc.rev.zonas.repository.ComunaRepository;
 import cl.duocuc.rev.zonas.repository.ZonaRepository;
 import cl.duocuc.rev.zonas.service.ZonaService;
 import java.util.List;
@@ -32,6 +33,9 @@ class ZonaServiceTest {
 
     @Mock
     private ZonaRepository zonaRepository;
+
+    @Mock
+    private ComunaRepository comunaRepository;
 
     @Mock
     private WeatherDataPort weatherDataPort;

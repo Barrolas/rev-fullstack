@@ -1,5 +1,6 @@
 package cl.duocuc.rev.zonas.controller;
 
+import cl.duocuc.rev.zonas.dto.ComunaDto;
 import cl.duocuc.rev.zonas.dto.RiesgoZonaResponse;
 import cl.duocuc.rev.zonas.dto.ZonaRequest;
 import cl.duocuc.rev.zonas.dto.ZonaResponse;
@@ -25,6 +26,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class ZonaController {
 
     private final ZonaService zonaService;
+
+    @GetMapping("/comunas")
+    public List<ComunaDto> listarComunas() {
+        return zonaService.listarComunas();
+    }
 
     @GetMapping
     public List<ZonaResponse> listar(

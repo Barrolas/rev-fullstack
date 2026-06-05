@@ -11,5 +11,6 @@ public class ZonaRequest {
     private Double centerLng;
     private Double radioMetros;
     private String comuna;
+    private Integer idComuna;
     private String tipo;
 }

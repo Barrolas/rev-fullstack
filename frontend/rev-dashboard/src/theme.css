@@ -17,6 +17,14 @@
   --rev-orange-muted: rgba(249, 115, 22, 0.12);
   --rev-orange-border: rgba(249, 115, 22, 0.28);
 
+  /* —— Riesgo territorial (HIGH / MEDIUM / LOW) —— */
+  --rev-risk-high: #f97316;
+  --rev-risk-high-muted: rgba(249, 115, 22, 0.34);
+  --rev-risk-medium: #eab308;
+  --rev-risk-medium-muted: rgba(234, 179, 8, 0.32);
+  --rev-risk-low: #73839a;
+  --rev-risk-low-muted: rgba(115, 131, 154, 0.22);
+
   /* Aliases legacy (compatibilidad) */
   --rev-navy: var(--rev-bg-secondary);
   --rev-navy-dark: var(--rev-bg);
@@ -72,6 +80,17 @@
   --rev-shadow-card: 0 8px 24px rgba(0, 0, 0, 0.18);
   --rev-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.18);
   --rev-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.24);
+
+  /* —— Scrollbars (ver styles/scrollbars.css) —— */
+  --rev-scrollbar-size: 10px;
+  --rev-scrollbar-size-thin: 6px;
+  --rev-scrollbar-track: rgba(7, 17, 31, 0.35);
+  --rev-scrollbar-track-elevated: rgba(16, 35, 62, 0.65);
+  --rev-scrollbar-thumb: rgba(115, 131, 154, 0.52);
+  --rev-scrollbar-thumb-hover: rgba(167, 180, 199, 0.72);
+  --rev-scrollbar-thumb-active: rgba(249, 115, 22, 0.55);
+  --rev-scrollbar-radius: 999px;
+  --rev-scrollbar-border: 2px solid transparent;
 
   /* —— Bootstrap override —— */
   --bs-primary: var(--rev-orange);
@@ -250,15 +269,15 @@ body {
 }
 
 .badge-risk-medium {
-  background-color: var(--rev-surface-elevated) !important;
-  color: var(--rev-text-secondary) !important;
-  border: 1px solid var(--rev-border);
+  background-color: var(--rev-risk-medium-muted) !important;
+  color: #fef08a !important;
+  border: 1px solid rgba(234, 179, 8, 0.55);
 }
 
 .badge-risk-low {
-  background-color: rgba(115, 131, 154, 0.2) !important;
+  background-color: var(--rev-risk-low-muted) !important;
   color: var(--rev-text-secondary) !important;
-  border: 1px solid var(--rev-border);
+  border: 1px solid rgba(115, 131, 154, 0.45);
 }
 
 .badge-risk-unknown {

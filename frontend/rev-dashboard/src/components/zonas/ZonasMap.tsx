@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import L from 'leaflet';
 
@@ -31,8 +31,18 @@ function FitBounds({
   incidentes: MapaIncidentePunto[];
 }) {
   const map = useMap();
+  const lastFitKey = useRef<string | null>(null);
+
+  const fitKey = useMemo(() => {
+    const zonaIds = zonas.map((z) => z.id).join(',');
+    const incIds = incidentes.map((p) => p.grupoId).join(',');
+    return `${zonaIds}|${incIds}`;
+  }, [zonas, incidentes]);
 
   useEffect(() => {
+    if (lastFitKey.current === fitKey) return;
+    lastFitKey.current = fitKey;
+
     const points: [number, number][] = [];
     zonas.forEach((z) => points.push([z.centerLat, z.centerLng]));
     incidentes.forEach((p) => {
@@ -44,7 +54,7 @@ function FitBounds({
     }
     const bounds = L.latLngBounds(points);
     map.fitBounds(bounds, { padding: [36, 36], maxZoom: 11 });
-  }, [map, zonas, incidentes]);
+  }, [map, fitKey, zonas, incidentes]);
 
   return null;
 }
@@ -75,7 +85,10 @@ function FocusSelection({
     if (selectedZoneId == null) return;
     const zone = zonas.find((z) => z.id === selectedZoneId);
     if (!zone) return;
-    map.setView([zone.centerLat, zone.centerLng], 11, { animate: true });
+    const target = L.latLng(zone.centerLat, zone.centerLng);
+    if (!map.getBounds().pad(0.08).contains(target)) {
+      map.panTo(target, { animate: true });
+    }
   }, [map, zonas, incidentes, selectedZoneId, selectedIncidenteId]);
 
   return null;
