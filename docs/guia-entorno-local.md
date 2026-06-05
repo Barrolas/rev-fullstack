@@ -163,6 +163,40 @@ Estándares y trazabilidad: [estandares-gis-despacho-rev.md](./estandares-gis-de
 
 ---
 
+## Despacho operativo y organización territorial
+
+Tras migraciones **V5** (`ms-recursos`) y **V6** (`ms-zonas-riesgo`) con catálogo CASEN Cordillera, si Flyway falla en bases ya migradas:
+
+```powershell
+docker compose -p rev down
+docker volume rm rev_pg_recursos rev_pg_zonas rev_pg_incidentes
+.\scripts\dev-up.ps1 -DockerApps -Build
+```
+
+**Entorno limpio (incidentes, zonas y brigadas):** migraciones **V8/V9** en `ms-incidentes` (sin incidentes), **V9** en `ms-zonas-riesgo` (borra todas las zonas y recrea las 6 estratégicas de Puente Alto + catálogo Cordillera), **V8** en `ms-recursos` (2 brigadas municipales listas).
+
+```powershell
+.\scripts\reset-operacion-despacho.ps1 -Rebuild
+```
+
+Si la UI sigue mostrando datos antiguos (Flyway no corrió en el contenedor):
+
+```powershell
+.\scripts\reset-operacion-despacho.ps1 -ResetVolumes
+```
+
+| Recurso | URL / API |
+|---------|-----------|
+| Despacho operativo (UI) | http://localhost:15173/despacho/operacion |
+| Cola de despacho | `GET /api/despacho/cola` |
+| Asignaciones activas | `GET /api/despacho/activos` |
+| Dotación brigada (wizard) | Recursos → Administración → **Dotación** |
+| Catálogo comunas (BFF) | `GET /api/recursos/comunas` |
+
+Flujo y reglas de negocio: [flujo-despacho-rev.md](./flujo-despacho-rev.md). Seed territorial: [data/territorial/casen_cordillera_seed.sql](./data/territorial/casen_cordillera_seed.sql).
+
+---
+
 ## Detener
 
 ```powershell

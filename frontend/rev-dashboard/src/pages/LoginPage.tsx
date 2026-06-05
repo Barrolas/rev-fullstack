@@ -66,12 +66,16 @@ export default function LoginPage() {
   const [showDevHint, setShowDevHint] = useState(false);
   const [expandedFeature, setExpandedFeature] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loginPhase, setLoginPhase] = useState<'credentials' | 'services'>('credentials');
   const [authReady, setAuthReady] = useState<'checking' | 'ready' | 'pending'>('checking');
+  const [authWaitSec, setAuthWaitSec] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
     let cancelled = false;
-    waitForAuthLogin().then((ok) => {
+    waitForAuthLogin(undefined, (elapsed) => {
+      if (!cancelled) setAuthWaitSec(Math.floor(elapsed / 1000));
+    }).then((ok) => {
       if (!cancelled) setAuthReady(ok ? 'ready' : 'pending');
     });
     return () => {
@@ -93,13 +97,16 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
     setIsSubmitting(true);
+    setLoginPhase('credentials');
     try {
       await login(user, pass);
+      setLoginPhase('services');
       navigate('/inicio');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo iniciar sesión.');
     } finally {
       setIsSubmitting(false);
+      setLoginPhase('credentials');
     }
   };
 
@@ -282,7 +289,10 @@ export default function LoginPage() {
                 {authReady === 'checking' && (
                   <div className="rev-login__notice" role="status">
                     <i className="bi bi-hourglass-split" aria-hidden="true" />
-                    <span>Conectando con el servicio de autenticación…</span>
+                    <span>
+                      Conectando con el servicio de autenticación…
+                      {authWaitSec > 0 ? ` (${authWaitSec} s)` : ''}
+                    </span>
                   </div>
                 )}
 
@@ -311,7 +321,9 @@ export default function LoginPage() {
                   {isSubmitting ? (
                     <>
                       <span className="rev-login__spinner" aria-hidden="true" />
-                      Verificando…
+                      {loginPhase === 'services'
+                        ? 'Preparando servicios REV…'
+                        : 'Verificando credenciales…'}
                     </>
                   ) : (
                     <>

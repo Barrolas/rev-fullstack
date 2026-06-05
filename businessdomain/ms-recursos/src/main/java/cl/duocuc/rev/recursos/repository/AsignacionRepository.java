@@ -14,5 +14,9 @@ public interface AsignacionRepository extends JpaRepository<Asignacion, Long> {
 
     boolean existsByIncidenteIdAndActivaTrue(UUID incidenteId);
 
+    boolean existsByIncidenteIdAndBrigadaIdAndActivaTrue(UUID incidenteId, Long brigadaId);
+
     List<Asignacion> findAllByIncidenteIdAndActivaTrue(UUID incidenteId);
+
+    List<Asignacion> findByActivaTrueOrderByCreatedAtDesc();
 }

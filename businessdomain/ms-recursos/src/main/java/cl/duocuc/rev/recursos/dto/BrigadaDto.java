@@ -11,5 +11,9 @@ public class BrigadaDto {
     private String nombre;
     private Integer capacidad;
     private EstadoRecurso estado;
+    private String codigo;
+    private Long idCompania;
+    private Long idJefeBrigadista;
+    /** Vehículo principal activo de la dotación (compatibilidad). */
     private Long vehiculoId;
 }

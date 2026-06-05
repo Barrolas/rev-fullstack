@@ -3,7 +3,7 @@ import ErrorAlert from '../ErrorAlert';
 
 interface StateViewProps {
   state: 'loading' | 'empty' | 'error' | 'idle';
-  loadingMessage?: string;
+  loadingMessage?: React.ReactNode;
   emptyTitle?: string;
   emptyMessage?: string;
   emptyAction?: React.ReactNode;

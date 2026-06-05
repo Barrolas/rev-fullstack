@@ -14,6 +14,9 @@ public class BrigadaDetalleDto {
     private EstadoRecurso estado;
     private Long vehiculoId;
     private VehiculoDto vehiculo;
+    private List<BrigadaVehiculoDto> vehiculos;
+    private Long idJefeBrigadista;
+    private BrigadistaDto jefe;
     private List<BrigadistaDto> brigadistas;
     private List<BrigadaHerramientaItemDto> herramientas;
     private boolean listaParaDespacho;

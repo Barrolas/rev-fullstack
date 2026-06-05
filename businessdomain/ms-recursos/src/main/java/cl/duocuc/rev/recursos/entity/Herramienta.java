@@ -33,4 +33,16 @@ public class Herramienta {
 
     @Column(name = "cantidad_disponible", nullable = false)
     private Integer cantidadDisponible;
+
+    @Column(length = 80)
+    private String marca;
+
+    @Column(length = 80)
+    private String modelo;
+
+    @Column(length = 40)
+    private String sku;
+
+    @Column(nullable = false, length = 20)
+    private String estado;
 }

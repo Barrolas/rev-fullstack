@@ -8,4 +8,5 @@ public class BrigadistaRequest {
     private String apellido;
     private String rut;
     private String especialidad;
+    private Long idRolBrigadista;
 }

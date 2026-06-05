@@ -38,6 +38,12 @@ public class Brigada {
     @Column(nullable = false, length = 30)
     private EstadoRecurso estado;
 
-    @Column(name = "vehiculo_id")
-    private Long vehiculoId;
+    @Column(length = 30)
+    private String codigo;
+
+    @Column(name = "id_compania")
+    private Long idCompania;
+
+    @Column(name = "id_jefe_brigadista")
+    private Long idJefeBrigadista;
 }

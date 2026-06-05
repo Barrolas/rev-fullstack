@@ -43,4 +43,10 @@ public class Brigadista {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private EstadoRecurso estado;
+
+    @Column(name = "id_brigada")
+    private Long idBrigada;
+
+    @Column(name = "id_rol_brigadista")
+    private Long idRolBrigadista;
 }

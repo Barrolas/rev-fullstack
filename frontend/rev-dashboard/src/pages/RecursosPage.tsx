@@ -2,6 +2,9 @@ import { useCallback, useMemo, useState } from 'react';
 import { Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { fetchRecursosCatalogo } from '../api';
+import DespachoWizard from '../components/despacho/DespachoWizard';
+import BrigadaBulkActionBar from '../components/shared/BrigadaBulkActionBar';
+import DotacionWizard from '../components/recursos/DotacionWizard';
 import RecursosAdminPanel from '../components/recursos/RecursosAdminPanel';
 import RecursosFilters from '../components/recursos/RecursosFilters';
 import RecursosModuleTabs, { type RecursosModuleView } from '../components/recursos/RecursosModuleTabs';
@@ -17,24 +20,43 @@ import KpiCard from '../components/primitives/KpiCard';
 import StateView from '../components/primitives/StateView';
 import { useApiQuery } from '../hooks/useApiQuery';
 import { useAuth } from '../hooks/useAuth';
+import { useBrigadaSelection } from '../hooks/useBrigadaSelection';
+import { useBrigadasResumen } from '../hooks/useBrigadasResumen';
 import {
   computeRecursosStats,
   countFilteredRecursos,
   countTotalRecursos,
   DEFAULT_RECURSOS_FILTERS,
   hasActiveRecursosFilters,
+  type RecursoTab,
   type RecursosFiltersState,
 } from '../utils/recursosUtils';
 
 export default function RecursosPage() {
-  const { canManageIncidents } = useAuth();
+  const { canManageIncidents, displayName } = useAuth();
   const fetchFn = useCallback(() => fetchRecursosCatalogo(), []);
   const { data, loading, error, refetch } = useApiQuery({ fetchFn });
   const [moduleView, setModuleView] = useState<RecursosModuleView>('inventario');
   const [filters, setFilters] = useState<RecursosFiltersState>(DEFAULT_RECURSOS_FILTERS);
-  const [activeTab, setActiveTab] = useState<'brigadas' | 'vehiculos' | 'herramientas'>('brigadas');
+  const [activeTab, setActiveTab] = useState<RecursoTab>('brigadas');
 
   const stats = useMemo(() => (data ? computeRecursosStats(data) : null), [data]);
+  const brigadasResumen = useBrigadasResumen(data ?? null);
+  const { brigadasListas, resumenes } = brigadasResumen;
+  const [showDespachoWizard, setShowDespachoWizard] = useState(false);
+  const [dotacionBrigadaId, setDotacionBrigadaId] = useState<number | null>(null);
+
+  const brigadaSelectionRows = useMemo(
+    () =>
+      (data?.brigadas ?? []).map((b) => ({
+        id: b.id,
+        estado: b.estado,
+        listaParaDespacho: resumenes[b.id]?.elegibilidad?.listaParaDespacho,
+      })),
+    [data?.brigadas, resumenes],
+  );
+
+  const brigadaSelection = useBrigadaSelection({ rows: brigadaSelectionRows });
   const resultCount = data ? countFilteredRecursos(data, filters) : 0;
   const totalCount = data ? countTotalRecursos(data) : 0;
 
@@ -47,6 +69,19 @@ export default function RecursosPage() {
 
   const kpiSection = (
     <KpiRow>
+      <KpiCol>
+        <KpiCard
+          label="Brigadas listas"
+          value={brigadasListas}
+          icon="bi-check-circle"
+          iconVariant="cyan"
+          sub={
+            stats
+              ? `${brigadasListas} de ${stats.brigadasTotal} para despacho`
+              : '—'
+          }
+        />
+      </KpiCol>
       <KpiCol>
         <KpiCard
           label="Brigadas disp."
@@ -134,7 +169,13 @@ export default function RecursosPage() {
             )}
 
             {moduleView === 'administracion' && canManageIncidents && data ? (
-              <RecursosAdminPanel catalogo={data} onRefresh={refetch} />
+              <RecursosAdminPanel
+                catalogo={data}
+                onRefresh={refetch}
+                brigadasResumen={brigadasResumen}
+                brigadaSelection={brigadaSelection}
+                onDespacharSeleccion={() => setShowDespachoWizard(true)}
+              />
             ) : (
               <>
             <RecursosFilters
@@ -177,7 +218,24 @@ export default function RecursosPage() {
                         filters={filters}
                         activeTab={activeTab}
                         onTabChange={setActiveTab}
+                        brigadaSelection={
+                          canManageIncidents && activeTab === 'brigadas'
+                            ? brigadaSelection
+                            : undefined
+                        }
                       />
+                      {canManageIncidents && activeTab === 'brigadas' && (
+                        <BrigadaBulkActionBar
+                          count={brigadaSelection.count}
+                          onDespachar={() => setShowDespachoWizard(true)}
+                          onDotacion={
+                            brigadaSelection.count === 1
+                              ? () => setDotacionBrigadaId(brigadaSelection.selectedArray[0])
+                              : undefined
+                          }
+                          onClear={brigadaSelection.clear}
+                        />
+                      )}
                     </div>
                   </>
                 )
@@ -188,6 +246,34 @@ export default function RecursosPage() {
           </div>
         </ModuleHub>
       </AppPage>
+      {data && (
+        <>
+          <DespachoWizard
+            show={showDespachoWizard}
+            brigadaIds={brigadaSelection.selectedArray}
+            despachadoPor={displayName}
+            onHide={() => {
+              setShowDespachoWizard(false);
+              brigadaSelection.clear();
+            }}
+            onSuccess={() => {
+              refetch();
+              brigadasResumen.reload();
+            }}
+          />
+          <DotacionWizard
+            show={dotacionBrigadaId != null}
+            brigadaId={dotacionBrigadaId}
+            catalogo={data}
+            onHide={() => setDotacionBrigadaId(null)}
+            onSaved={() => {
+              refetch();
+              brigadasResumen.reload();
+            }}
+            onElegibilidadRefresh={brigadasResumen.refreshOne}
+          />
+        </>
+      )}
     </>
   );
 }

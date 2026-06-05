@@ -18,6 +18,9 @@ public class BrigadaDetalleDto {
     private String estado;
     private Long vehiculoId;
     private RecursosDisponiblesDto.VehiculoItemDto vehiculo;
+    private List<BrigadaVehiculoDto> vehiculos;
+    private Long idJefeBrigadista;
+    private RecursosCatalogoDto.BrigadistaItemDto jefe;
     private List<RecursosCatalogoDto.BrigadistaItemDto> brigadistas;
     private List<BrigadaHerramientaItemDto> herramientas;
     private boolean listaParaDespacho;

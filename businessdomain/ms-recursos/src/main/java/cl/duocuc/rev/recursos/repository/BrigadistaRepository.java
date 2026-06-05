@@ -8,4 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface BrigadistaRepository extends JpaRepository<Brigadista, Long> {
 
     List<Brigadista> findByEstado(EstadoRecurso estado);
+
+    List<Brigadista> findByIdBrigada(Long idBrigada);
 }

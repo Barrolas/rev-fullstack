@@ -1,268 +1,205 @@
-import { FormEvent, useState } from 'react';
-import { Badge, Button, Col, Form, Row, Table } from 'react-bootstrap';
-import {
-  RecursosCatalogo,
-  createBrigada,
-  createBrigadista,
-  createHerramienta,
-  createVehiculo,
-} from '../../api';
-import { formatRecursoEstado } from '../../utils/recursosUtils';
-import BrigadaComposicionModal from './BrigadaComposicionModal';
+import { useState } from 'react';
+import { Badge, Button, Form, Table } from 'react-bootstrap';
+import type { RecursosCatalogo } from '../../api';
+import type { useBrigadaSelection } from '../../hooks/useBrigadaSelection';
+import type { useBrigadasResumen } from '../../hooks/useBrigadasResumen';
+import { labelListaDespacho, labelEstadoOperacion } from '../../utils/recursosLabels';
+import BrigadaBulkActionBar from '../shared/BrigadaBulkActionBar';
+import DotacionWizard from './DotacionWizard';
+import RecursosAltaHub from './RecursosAltaHub';
+import RecursosGlosario from './RecursosGlosario';
 
 interface RecursosAdminPanelProps {
   catalogo: RecursosCatalogo;
   onRefresh: () => void;
+  brigadasResumen: ReturnType<typeof useBrigadasResumen>;
+  brigadaSelection: ReturnType<typeof useBrigadaSelection>;
+  onDespacharSeleccion: () => void;
 }
 
-export default function RecursosAdminPanel({ catalogo, onRefresh }: RecursosAdminPanelProps) {
-  const [composicionBrigadaId, setComposicionBrigadaId] = useState<number | null>(null);
-  const [error, setError] = useState('');
-  const [busy, setBusy] = useState(false);
+export default function RecursosAdminPanel({
+  catalogo,
+  onRefresh,
+  brigadasResumen,
+  brigadaSelection,
+  onDespacharSeleccion,
+}: RecursosAdminPanelProps) {
+  const [dotacionBrigadaId, setDotacionBrigadaId] = useState<number | null>(null);
 
-  const [brigadaNombre, setBrigadaNombre] = useState('');
-  const [brigadaCapacidad, setBrigadaCapacidad] = useState('8');
-  const [brigNombre, setBrigNombre] = useState('');
-  const [brigApellido, setBrigApellido] = useState('');
-  const [brigRut, setBrigRut] = useState('');
-  const [brigEsp, setBrigEsp] = useState('');
-  const [vehPatente, setVehPatente] = useState('');
-  const [vehTipo, setVehTipo] = useState('CAMIONETA');
-  const [herNombre, setHerNombre] = useState('');
-  const [herCantidad, setHerCantidad] = useState('1');
+  const {
+    resumenes,
+    loading: resumenLoading,
+    brigadasListas,
+    refreshOne,
+    reload,
+  } = brigadasResumen;
 
-  const runCreate = async (fn: () => Promise<unknown>) => {
-    setBusy(true);
-    setError('');
-    try {
-      await fn();
-      onRefresh();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error al registrar');
-    } finally {
-      setBusy(false);
+  const handleRefresh = () => {
+    onRefresh();
+    reload();
+  };
+
+  const handleDotacionSaved = () => {
+    handleRefresh();
+    if (dotacionBrigadaId != null) {
+      refreshOne(dotacionBrigadaId);
     }
-  };
-
-  const handleBrigada = (e: FormEvent) => {
-    e.preventDefault();
-    runCreate(() =>
-      createBrigada({ nombre: brigadaNombre.trim(), capacidad: Number(brigadaCapacidad) }),
-    ).then(() => {
-      setBrigadaNombre('');
-    });
-  };
-
-  const handleBrigadista = (e: FormEvent) => {
-    e.preventDefault();
-    runCreate(() =>
-      createBrigadista({
-        nombre: brigNombre.trim(),
-        apellido: brigApellido.trim(),
-        rut: brigRut.trim() || undefined,
-        especialidad: brigEsp.trim() || undefined,
-      }),
-    ).then(() => {
-      setBrigNombre('');
-      setBrigApellido('');
-      setBrigRut('');
-      setBrigEsp('');
-    });
-  };
-
-  const handleVehiculo = (e: FormEvent) => {
-    e.preventDefault();
-    runCreate(() => createVehiculo({ patente: vehPatente.trim(), tipo: vehTipo.trim() })).then(() => {
-      setVehPatente('');
-    });
-  };
-
-  const handleHerramienta = (e: FormEvent) => {
-    e.preventDefault();
-    runCreate(() =>
-      createHerramienta({ nombre: herNombre.trim(), cantidadTotal: Number(herCantidad) }),
-    ).then(() => {
-      setHerNombre('');
-      setHerCantidad('1');
-    });
   };
 
   return (
     <div className="rev-recursos-admin">
-      <p className="text-muted small mb-3">
-        Registre brigadistas, vehículos y herramientas; cree brigadas y arme su composición para
-        despacho operativo.
-      </p>
+      <RecursosGlosario
+        brigadasListas={brigadasListas}
+        brigadasTotal={catalogo.brigadas.length}
+      />
 
-      {error && <p className="text-danger small">{error}</p>}
+      <RecursosAltaHub
+        onRefresh={handleRefresh}
+        counts={{
+          brigadistas: catalogo.brigadistas.length,
+          vehiculos: catalogo.vehiculos.length,
+          herramientas: catalogo.herramientas.length,
+          brigadas: catalogo.brigadas.length,
+        }}
+      />
 
-      <Row className="g-3 mb-4">
-        <Col md={6} lg={3}>
-          <div className="rev-card p-3 h-100">
-            <h3 className="h6 mb-3">Nueva brigada</h3>
-            <Form onSubmit={handleBrigada}>
-              <Form.Group className="mb-2">
-                <Form.Control
-                  placeholder="Nombre"
-                  value={brigadaNombre}
-                  onChange={(e) => setBrigadaNombre(e.target.value)}
-                  required
-                />
-              </Form.Group>
-              <Form.Group className="mb-2">
-                <Form.Control
-                  type="number"
-                  min={1}
-                  placeholder="Capacidad"
-                  value={brigadaCapacidad}
-                  onChange={(e) => setBrigadaCapacidad(e.target.value)}
-                  required
-                />
-              </Form.Group>
-              <Button type="submit" size="sm" variant="primary" disabled={busy} className="w-100">
-                Crear brigada
-              </Button>
-            </Form>
+      <section className="rev-recursos-admin__section">
+        <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+          <div>
+            <h2 className="h6 rev-recursos-admin__heading mb-1">Brigadas operativas</h2>
+            <p className="small text-muted mb-0">
+              Configure la dotación de cada brigada y verifique si está lista para despacho.
+            </p>
           </div>
-        </Col>
-        <Col md={6} lg={3}>
-          <div className="rev-card p-3 h-100">
-            <h3 className="h6 mb-3">Nuevo brigadista</h3>
-            <Form onSubmit={handleBrigadista}>
-              <Form.Group className="mb-2">
-                <Form.Control
-                  placeholder="Nombre"
-                  value={brigNombre}
-                  onChange={(e) => setBrigNombre(e.target.value)}
-                  required
-                />
-              </Form.Group>
-              <Form.Group className="mb-2">
-                <Form.Control
-                  placeholder="Apellido"
-                  value={brigApellido}
-                  onChange={(e) => setBrigApellido(e.target.value)}
-                  required
-                />
-              </Form.Group>
-              <Form.Group className="mb-2">
-                <Form.Control
-                  placeholder="Especialidad"
-                  value={brigEsp}
-                  onChange={(e) => setBrigEsp(e.target.value)}
-                />
-              </Form.Group>
-              <Button type="submit" size="sm" variant="primary" disabled={busy} className="w-100">
-                Registrar
-              </Button>
-            </Form>
-          </div>
-        </Col>
-        <Col md={6} lg={3}>
-          <div className="rev-card p-3 h-100">
-            <h3 className="h6 mb-3">Nuevo vehículo</h3>
-            <Form onSubmit={handleVehiculo}>
-              <Form.Group className="mb-2">
-                <Form.Control
-                  placeholder="Patente"
-                  value={vehPatente}
-                  onChange={(e) => setVehPatente(e.target.value)}
-                  required
-                />
-              </Form.Group>
-              <Form.Group className="mb-2">
-                <Form.Select value={vehTipo} onChange={(e) => setVehTipo(e.target.value)}>
-                  <option value="CAMIONETA">Camioneta</option>
-                  <option value="CISTERNA">Cisterna</option>
-                  <option value="AMBULANCIA">Ambulancia</option>
-                  <option value="OTRO">Otro</option>
-                </Form.Select>
-              </Form.Group>
-              <Button type="submit" size="sm" variant="primary" disabled={busy} className="w-100">
-                Registrar
-              </Button>
-            </Form>
-          </div>
-        </Col>
-        <Col md={6} lg={3}>
-          <div className="rev-card p-3 h-100">
-            <h3 className="h6 mb-3">Nueva herramienta</h3>
-            <Form onSubmit={handleHerramienta}>
-              <Form.Group className="mb-2">
-                <Form.Control
-                  placeholder="Nombre"
-                  value={herNombre}
-                  onChange={(e) => setHerNombre(e.target.value)}
-                  required
-                />
-              </Form.Group>
-              <Form.Group className="mb-2">
-                <Form.Control
-                  type="number"
-                  min={1}
-                  value={herCantidad}
-                  onChange={(e) => setHerCantidad(e.target.value)}
-                  required
-                />
-              </Form.Group>
-              <Button type="submit" size="sm" variant="primary" disabled={busy} className="w-100">
-                Agregar stock
-              </Button>
-            </Form>
-          </div>
-        </Col>
-      </Row>
+        </div>
 
-      <div className="rev-card p-3">
-        <h3 className="h6 mb-3">Brigadas — armar composición</h3>
-        <div className="table-responsive">
-          <Table hover className="rev-data-table rev-data-table--compact mb-0">
-            <thead>
-              <tr>
-                <th>Brigada</th>
-                <th>Cap.</th>
-                <th>Estado</th>
-                <th>Vehículo</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
-              {catalogo.brigadas.map((b) => {
-                const veh = catalogo.vehiculos.find((v) => v.id === b.vehiculoId);
-                return (
-                  <tr key={b.id}>
-                    <td>{b.nombre}</td>
-                    <td>{b.capacidad}</td>
-                    <td>
-                      <Badge bg={b.estado === 'DISPONIBLE' ? 'secondary' : 'warning'} text="dark">
-                        {formatRecursoEstado(b.estado)}
-                      </Badge>
-                    </td>
-                    <td className="small text-muted">{veh ? veh.patente : '—'}</td>
-                    <td className="text-end">
-                      <Button
-                        size="sm"
-                        variant="outline-primary"
-                        disabled={b.estado === 'ASIGNADO'}
-                        onClick={() => setComposicionBrigadaId(b.id)}
-                      >
-                        Composición
-                      </Button>
+        <div className="rev-card p-3">
+          {resumenLoading && (
+            <p className="text-muted small">Cargando estado de brigadas…</p>
+          )}
+          <div className="table-responsive">
+            <Table hover className="rev-data-table rev-data-table--compact mb-0">
+              <thead>
+                <tr>
+                  <th className="rev-recursos-table__check-col">
+                    <Form.Check
+                      type="checkbox"
+                      aria-label="Seleccionar todas"
+                      checked={brigadaSelection.allVisibleSelected}
+                      onChange={brigadaSelection.toggleSelectAllVisible}
+                    />
+                  </th>
+                  <th>Brigada</th>
+                  <th>Cupo máx.</th>
+                  <th>Integrantes</th>
+                  <th>Vehículos</th>
+                  <th>Operación</th>
+                  <th>Despacho</th>
+                  <th />
+                </tr>
+              </thead>
+              <tbody>
+                {catalogo.brigadas.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="text-muted small text-center py-4">
+                      No hay brigadas. Use <strong>Agregar recurso → Brigada</strong> para crear la
+                      primera.
                     </td>
                   </tr>
-                );
-              })}
-            </tbody>
-          </Table>
+                ) : (
+                  catalogo.brigadas.map((b) => {
+                    const resumen = resumenes[b.id];
+                    const eleg = resumen?.elegibilidad;
+                    const integ = eleg?.integrantes ?? 0;
+                    const cap = eleg?.capacidadBrigada ?? b.capacidad;
+                    const lista = eleg?.listaParaDespacho ?? false;
+                    const selectable = brigadaSelection.canSelect({
+                      id: b.id,
+                      estado: b.estado,
+                      listaParaDespacho: lista,
+                    });
+                    return (
+                      <tr key={b.id}>
+                        <td className="rev-recursos-table__check-col">
+                          <Form.Check
+                            type="checkbox"
+                            aria-label={`Seleccionar ${b.nombre}`}
+                            checked={brigadaSelection.isSelected(b.id)}
+                            disabled={!selectable}
+                            onChange={() => brigadaSelection.toggle(b.id)}
+                          />
+                        </td>
+                        <td>
+                          <span className="rev-recursos-table__name">{b.nombre}</span>
+                          {b.codigo && (
+                            <span className="d-block small text-muted">{b.codigo}</span>
+                          )}
+                        </td>
+                        <td>{b.capacidad}</td>
+                        <td className="small">
+                          {resumenLoading && !resumen ? '…' : `${integ} / ${cap}`}
+                        </td>
+                        <td className="small text-muted">
+                          {resumen
+                            ? resumen.vehiculoCount > 0
+                              ? resumen.vehiculoPatentes
+                              : '—'
+                            : '…'}
+                        </td>
+                        <td>
+                          <Badge bg={b.estado === 'DISPONIBLE' ? 'secondary' : 'warning'} text="dark">
+                            {labelEstadoOperacion(b.estado)}
+                          </Badge>
+                        </td>
+                        <td>
+                          {resumenLoading && !eleg ? (
+                            <span className="text-muted small">…</span>
+                          ) : (
+                            <Badge bg={lista ? 'success' : 'warning'} text={lista ? undefined : 'dark'}>
+                              {labelListaDespacho(lista)}
+                            </Badge>
+                          )}
+                        </td>
+                        <td className="text-end">
+                          <Button
+                            size="sm"
+                            variant="primary"
+                            disabled={b.estado === 'ASIGNADO'}
+                            onClick={() => setDotacionBrigadaId(b.id)}
+                          >
+                            Configurar dotación
+                          </Button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </Table>
+          </div>
+          <BrigadaBulkActionBar
+            count={brigadaSelection.count}
+            onDespachar={onDespacharSeleccion}
+            onDotacion={
+              brigadaSelection.count === 1
+                ? () => setDotacionBrigadaId(brigadaSelection.selectedArray[0])
+                : undefined
+            }
+            onClear={brigadaSelection.clear}
+            dotacionDisabled={brigadaSelection.count === 1 && catalogo.brigadas.find(
+              (x) => x.id === brigadaSelection.selectedArray[0],
+            )?.estado === 'ASIGNADO'}
+          />
         </div>
-      </div>
+      </section>
 
-      <BrigadaComposicionModal
-        show={composicionBrigadaId != null}
-        brigadaId={composicionBrigadaId}
+      <DotacionWizard
+        show={dotacionBrigadaId != null}
+        brigadaId={dotacionBrigadaId}
         catalogo={catalogo}
-        onHide={() => setComposicionBrigadaId(null)}
-        onSaved={onRefresh}
+        onHide={() => setDotacionBrigadaId(null)}
+        onSaved={handleDotacionSaved}
+        onElegibilidadRefresh={refreshOne}
       />
     </div>
   );

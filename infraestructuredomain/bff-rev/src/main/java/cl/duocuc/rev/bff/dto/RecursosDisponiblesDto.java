@@ -26,6 +26,8 @@ public class RecursosDisponiblesDto {
         private Integer capacidad;
         private String estado;
         private Long vehiculoId;
+        private String codigo;
+        private Long idCompania;
     }
 
     @Data
@@ -37,6 +39,11 @@ public class RecursosDisponiblesDto {
         private String patente;
         private String tipo;
         private String estado;
+        private String marca;
+        private String modelo;
+        private Short anio;
+        private Integer capacidadPasajeros;
+        private Integer capacidadCarga;
     }
 
     @Data
@@ -48,5 +55,9 @@ public class RecursosDisponiblesDto {
         private String nombre;
         private Integer cantidadTotal;
         private Integer cantidadDisponible;
+        private String marca;
+        private String modelo;
+        private String sku;
+        private String estado;
     }
 }

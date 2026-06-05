@@ -20,7 +20,7 @@ const NAV_ITEMS = [
 
   { to: '/inicio', label: 'Inicio', icon: 'bi-house', end: false },
 
-  { to: '/', label: 'Despacho', icon: 'bi-speedometer2', end: true },
+  { to: '/despacho/operacion', label: 'Despacho', icon: 'bi-speedometer2', end: true },
 
   { to: '/incidentes', label: 'Incidentes', icon: 'bi-fire', end: false },
 

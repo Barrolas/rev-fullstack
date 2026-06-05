@@ -5,12 +5,20 @@ import cl.duocuc.rev.bff.dto.AsignarRecursoRequest;
 import cl.duocuc.rev.bff.dto.BrigadaComposicionRequest;
 import cl.duocuc.rev.bff.dto.BrigadaCreateRequest;
 import cl.duocuc.rev.bff.dto.BrigadaDetalleDto;
+import cl.duocuc.rev.bff.dto.BrigadaElegibilidadDto;
+import cl.duocuc.rev.bff.dto.BrigadaVehiculoDto;
+import cl.duocuc.rev.bff.dto.BrigadaVehiculosRequest;
 import cl.duocuc.rev.bff.dto.BrigadistaCreateRequest;
+import cl.duocuc.rev.bff.dto.BrigadistaRolDto;
+import cl.duocuc.rev.bff.dto.ComunaDto;
+import cl.duocuc.rev.bff.dto.CompaniaDto;
 import cl.duocuc.rev.bff.dto.HerramientaCreateRequest;
+import cl.duocuc.rev.bff.dto.InstitucionDto;
 import cl.duocuc.rev.bff.dto.RecursosCatalogoDto;
 import cl.duocuc.rev.bff.dto.RecursosDisponiblesDto;
 import cl.duocuc.rev.bff.dto.VehiculoCreateRequest;
 import cl.duocuc.rev.bff.service.RecursosFacadeService;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -30,6 +38,26 @@ public class RecursosBffController {
 
     private final RecursosFacadeService recursosFacadeService;
 
+    @GetMapping("/instituciones")
+    public List<InstitucionDto> listarInstituciones() {
+        return recursosFacadeService.listarInstituciones();
+    }
+
+    @GetMapping("/companias")
+    public List<CompaniaDto> listarCompanias() {
+        return recursosFacadeService.listarCompanias();
+    }
+
+    @GetMapping("/comunas")
+    public List<ComunaDto> listarComunas() {
+        return recursosFacadeService.listarComunas();
+    }
+
+    @GetMapping("/brigadista-roles")
+    public List<BrigadistaRolDto> listarBrigadistaRoles() {
+        return recursosFacadeService.listarBrigadistaRoles();
+    }
+
     @GetMapping("/catalogo")
     public RecursosCatalogoDto listarCatalogo() {
         return recursosFacadeService.listarCatalogo();
@@ -43,6 +71,17 @@ public class RecursosBffController {
     @GetMapping("/brigadas/{id}")
     public BrigadaDetalleDto obtenerBrigada(@PathVariable Long id) {
         return recursosFacadeService.obtenerBrigada(id);
+    }
+
+    @GetMapping("/brigadas/{id}/elegibilidad-despacho")
+    public BrigadaElegibilidadDto elegibilidadDespacho(@PathVariable Long id) {
+        return recursosFacadeService.elegibilidadDespacho(id);
+    }
+
+    @PutMapping("/brigadas/{id}/vehiculos")
+    public List<BrigadaVehiculoDto> actualizarVehiculos(
+            @PathVariable Long id, @RequestBody BrigadaVehiculosRequest request) {
+        return recursosFacadeService.actualizarVehiculosBrigada(id, request);
     }
 
     @PutMapping("/brigadas/{id}/composicion")

@@ -41,4 +41,13 @@ public class Asignacion {
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "despachado_por", length = 100)
+    private String despachadoPor;
+
+    @Column(name = "estado_despacho", nullable = false, length = 30)
+    private String estadoDespacho;
+
+    @Column(name = "f_actualizacion")
+    private LocalDateTime fActualizacion;
 }

@@ -1,0 +1,14 @@
+{
+  "properties": [
+    {
+      "name": "rev.territorio.region-codigo-casen",
+      "type": "java.lang.Integer",
+      "description": "Codigo CASEN de la region (RM = 13, implicita en el modelo)."
+    },
+    {
+      "name": "rev.territorio.region-nombre",
+      "type": "java.lang.String",
+      "description": "Nombre de la region para documentacion y logs."
+    }
+  ]
+}
