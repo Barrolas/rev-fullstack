@@ -55,8 +55,11 @@ docs/test-*.html
 docs/Presentacion-REV-EVA2.pdf
 docs/presentacion-diagramas/*.svg
 docs/presentacion-diagramas/*.mmd
+docs/presentacion-diagramas/*.png
+docs/presentacion-rev-pdf-build.md
 docs/presentacion-assets/portada-rev-source.pdf
 docs/images/ops-*.png
+entrega/
 
 # Env local (usar .env.example como plantilla)
 .env

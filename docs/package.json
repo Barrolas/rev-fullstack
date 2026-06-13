@@ -7,7 +7,7 @@
     "audit:presentacion": "node audit-presentacion-slides.mjs",
     "capture:ux": "node capture-ux-screenshots.mjs",
     "preprocess:presentacion": "node preprocess-mermaid-presentacion.mjs",
-    "build:presentacion": "node preprocess-mermaid-presentacion.mjs && npx --yes @marp-team/marp-cli@4.1.2 --no-stdin presentacion-rev-build.md -o \"Presentacion-REV-EVA2-v5.pdf\" --allow-local-files",
+    "build:presentacion": "node build-presentacion-pdf.mjs",
     "sync:presentacion-images": "node sync-presentacion-images.mjs",
     "build:presentacion:html": "node build-presentacion-html.mjs",
     "build:presentacion:all": "npm run build:presentacion:html && npm run audit:presentacion && npm run build:presentacion"

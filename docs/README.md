@@ -12,6 +12,7 @@
 | [informe-sistema-rev.md](informe-sistema-rev.md) | Informe funcional: UI, backend, API, permisos |
 | [informe-tecnico-integral-rev.html](informe-tecnico-integral-rev.html) | **Informe técnico integral EVA2** — exportar a PDF desde el navegador ([contrato A4](informe-tecnico-A4-contrato.md)) |
 | [presentacion-rev-final.md](presentacion-rev-final.md) | **Presentación Marp** — fuente editable; HTML/PDF con `npm run build:presentacion:html` |
+| [guion-defensa-oral-eva2.md](guion-defensa-oral-eva2.md) | **Guión defensa oral** — 15 min, Nicolás / Giannina, preguntas modelo |
 | [Presentacion-REV-EVA2-v5.html](Presentacion-REV-EVA2-v5.html) | **Presentación HTML** — 29 slides, tema REV; generar con `npm run build:presentacion:html` |
 | [patrones-y-arquitectura-rev.md](patrones-y-arquitectura-rev.md) | Arquitectura, arquetipos y patrones con trazabilidad al código |
 | [guia-entorno-local.md](guia-entorno-local.md) | Arranque con Docker, Maven y Vite |

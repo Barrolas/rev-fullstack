@@ -59,8 +59,8 @@ function inlineDiagramSvgs(html) {
   };
 
   let out = html.replace(
-    /<div class="rev-diagram-img"><img src="presentacion-diagramas\/(diag-\d+\.svg)" alt="[^"]*"\s*\/?>\s*<\/div>/g,
-    (_match, fname) => embedSvg(fname) ?? _match,
+    /<div class="rev-diagram-img"><img src="presentacion-diagramas\/(diag-\d+)\.(?:png|svg)" alt="[^"]*"\s*\/?>\s*<\/div>/g,
+    (_match, id) => embedSvg(`${id}.svg`) ?? _match,
   );
 
   out = out.replace(

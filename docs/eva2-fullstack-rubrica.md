@@ -244,5 +244,5 @@ Cada equipo presenta el trabajo en defensa oral de **15 minutos**. Cada integran
 | BFF + README | ✓ | `infraestructuredomain/bff-rev/` |
 | 2+ microservicios + README | ✓ | `businessdomain/ms-*` |
 | Arquetipo Maven + README | ✓ | `archetypes/rev-microservice-archetype/` |
-| `repositorios.txt` | Pendiente | `docs/repositorios.txt` |
-| ZIP Blackboard | Pendiente | — |
+| `repositorios.txt` | ✓ | `docs/repositorios.txt` |
+| ZIP Blackboard | Generar con `scripts/pack-entrega-eva2.ps1` | `entrega/REV-EVA2-Barra-Guerrero.zip` |
