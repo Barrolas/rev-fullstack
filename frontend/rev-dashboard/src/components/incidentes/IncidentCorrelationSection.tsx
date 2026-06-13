@@ -1,13 +1,15 @@
 import { useCallback, useState } from 'react';
-import { Alert, Badge, Button, ListGroup } from 'react-bootstrap';
+import { Alert, Badge, Button, Collapse, ListGroup, Table } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import {
   CorrelacionItem,
   GrupoIncidente,
   confirmarCorrelacion,
   descartarCorrelacion,
+  fetchCorrelacionesPorIncidente,
   fetchIncidenteGrupo,
 } from '../../api';
+import RevertirCorrelacionModal from './RevertirCorrelacionModal';
 import { useApiQuery } from '../../hooks/useApiQuery';
 import { isLinkedReport } from '../../utils/incidentesFilters';
 import type { DashboardItem } from '../../api';
@@ -140,6 +142,22 @@ function SugerenciaCard({
   );
 }
 
+function formatFecha(iso?: string): string {
+  if (!iso) return '—';
+  try {
+    return new Date(iso).toLocaleString('es-CL', { dateStyle: 'short', timeStyle: 'short' });
+  } catch {
+    return iso;
+  }
+}
+
+function folioCanonicoDe(c: CorrelacionItem): string {
+  if (!c.incidenteCanonicoId) return '—';
+  if (c.incidenteA.id === c.incidenteCanonicoId) return c.incidenteA.folio ?? 'A';
+  if (c.incidenteB.id === c.incidenteCanonicoId) return c.incidenteB.folio ?? 'B';
+  return '—';
+}
+
 export default function IncidentCorrelationSection({
   incidenteId,
   item,
@@ -148,6 +166,12 @@ export default function IncidentCorrelationSection({
 }: IncidentCorrelationSectionProps) {
   const fetchFn = useCallback(() => fetchIncidenteGrupo(incidenteId), [incidenteId]);
   const { data: grupo, loading, refetch } = useApiQuery<GrupoIncidente>({ fetchFn });
+  const historialFn = useCallback(() => fetchCorrelacionesPorIncidente(incidenteId), [incidenteId]);
+  const { data: historialRaw, refetch: refetchHistorial } = useApiQuery<CorrelacionItem[]>({
+    fetchFn: historialFn,
+  });
+  const [showHistorial, setShowHistorial] = useState(false);
+  const [revertirTarget, setRevertirTarget] = useState<CorrelacionItem | null>(null);
 
   const linked = isLinkedReport(item);
   const canonicoId = item.incidente.incidenteCanonicoId ?? incidenteId;
@@ -155,6 +179,7 @@ export default function IncidentCorrelationSection({
 
   const handleResolved = () => {
     refetch();
+    refetchHistorial();
     onUpdated();
   };
 
@@ -162,8 +187,11 @@ export default function IncidentCorrelationSection({
 
   const pendientes = grupo?.sugerenciasPendientes?.filter((s) => s.estado === 'PENDIENTE') ?? [];
   const vinculados = grupo?.vinculados ?? [];
+  const historial = (historialRaw ?? []).filter(
+    (c) => c.estado === 'CONFIRMADA' || c.estado === 'DESCARTADA',
+  );
 
-  if (!linked && pendientes.length === 0 && vinculados.length === 0) {
+  if (!linked && pendientes.length === 0 && vinculados.length === 0 && historial.length === 0) {
     return null;
   }
 
@@ -208,6 +236,71 @@ export default function IncidentCorrelationSection({
           ))}
         </>
       )}
+
+      {historial.length > 0 && (
+        <div className="mt-3">
+          <Button
+            variant="link"
+            className="p-0 text-decoration-none small"
+            onClick={() => setShowHistorial((v) => !v)}
+            aria-expanded={showHistorial}
+          >
+            Historial de correlaciones ({historial.length})
+          </Button>
+          <Collapse in={showHistorial}>
+            <div className="mt-2">
+              <Table size="sm" className="rev-data-table rev-data-table--compact mb-0">
+                <thead>
+                  <tr>
+                    <th>Estado</th>
+                    <th>Par</th>
+                    <th>Canónico</th>
+                    <th>Decisión</th>
+                    <th />
+                  </tr>
+                </thead>
+                <tbody>
+                  {historial.map((c) => (
+                    <tr key={c.id}>
+                      <td>
+                        <Badge bg={c.estado === 'CONFIRMADA' ? 'success' : 'secondary'}>
+                          {c.estado}
+                        </Badge>
+                      </td>
+                      <td className="small">
+                        {c.incidenteA.folio} ↔ {c.incidenteB.folio}
+                      </td>
+                      <td className="small">{folioCanonicoDe(c)}</td>
+                      <td className="small">
+                        <div>{c.decididoPor ?? '—'}</div>
+                        <div className="text-muted">{formatFecha(c.decididoAt)}</div>
+                      </td>
+                      <td className="text-end">
+                        {canManage && c.estado === 'CONFIRMADA' && (
+                          <Button
+                            size="sm"
+                            variant="outline-warning"
+                            onClick={() => setRevertirTarget(c)}
+                          >
+                            Deshacer
+                          </Button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </div>
+          </Collapse>
+        </div>
+      )}
+
+      <RevertirCorrelacionModal
+        correlacion={revertirTarget}
+        show={revertirTarget != null}
+        onClose={() => setRevertirTarget(null)}
+        onDone={handleResolved}
+      />
     </div>
   );
 }

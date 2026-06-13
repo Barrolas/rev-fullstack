@@ -5,6 +5,8 @@ import cl.duocuc.rev.bff.dto.CorrelacionDto;
 import cl.duocuc.rev.bff.dto.DescartarCorrelacionDto;
 import cl.duocuc.rev.bff.dto.GrupoIncidenteDto;
 import cl.duocuc.rev.bff.dto.IncidenteResumenDto;
+import cl.duocuc.rev.bff.dto.RevertirCorrelacionPreviewDto;
+import cl.duocuc.rev.bff.dto.RevertirCorrelacionRequest;
 import cl.duocuc.rev.bff.service.CorrelacionFacadeService;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -28,6 +31,22 @@ public class CorrelacionBffController {
     @GetMapping("/correlaciones/pendientes")
     public List<CorrelacionDto> listarPendientes() {
         return correlacionFacadeService.listarPendientes();
+    }
+
+    @GetMapping("/correlaciones/confirmadas")
+    public List<CorrelacionDto> listarConfirmadas() {
+        return correlacionFacadeService.listarPorEstado("CONFIRMADA");
+    }
+
+    @GetMapping("/correlaciones/descartadas")
+    public List<CorrelacionDto> listarDescartadas() {
+        return correlacionFacadeService.listarPorEstado("DESCARTADA");
+    }
+
+    @GetMapping("/correlaciones")
+    public List<CorrelacionDto> listarPorEstado(
+            @RequestParam(defaultValue = "PENDIENTE") String estado) {
+        return correlacionFacadeService.listarPorEstado(estado);
     }
 
     @GetMapping("/correlaciones/pendientes/count")
@@ -64,5 +83,25 @@ public class CorrelacionBffController {
             @RequestBody(required = false) DescartarCorrelacionDto request,
             @RequestHeader(value = "X-REV-Usuario", required = false) String usuario) {
         return correlacionFacadeService.descartar(correlacionId, request, usuario);
+    }
+
+    @GetMapping("/correlaciones/{correlacionId}/revertir/preview")
+    public RevertirCorrelacionPreviewDto previewRevertir(@PathVariable UUID correlacionId) {
+        return correlacionFacadeService.previewRevertir(correlacionId);
+    }
+
+    @PostMapping("/correlaciones/{correlacionId}/revertir")
+    public CorrelacionDto revertir(
+            @PathVariable UUID correlacionId,
+            @RequestBody(required = false) RevertirCorrelacionRequest request,
+            @RequestHeader(value = "X-REV-Usuario", required = false) String usuario) {
+        return correlacionFacadeService.revertir(correlacionId, request, usuario);
+    }
+
+    @PostMapping("/correlaciones/{correlacionId}/reabrir")
+    public CorrelacionDto reabrir(
+            @PathVariable UUID correlacionId,
+            @RequestHeader(value = "X-REV-Usuario", required = false) String usuario) {
+        return correlacionFacadeService.reabrir(correlacionId, usuario);
     }
 }

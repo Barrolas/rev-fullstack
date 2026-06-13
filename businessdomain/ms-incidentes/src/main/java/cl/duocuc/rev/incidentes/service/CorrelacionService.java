@@ -21,7 +21,9 @@ import cl.duocuc.rev.incidentes.repository.IncidenteRepository;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -67,9 +69,17 @@ public class CorrelacionService {
     }
 
     public List<CorrelacionResponse> listarPendientes() {
-        return correlacionRepository.findByEstadoOrderByScoreDescCreatedAtDesc(EstadoCorrelacion.PENDIENTE).stream()
+        return listarPorEstado(EstadoCorrelacion.PENDIENTE);
+    }
+
+    public List<CorrelacionResponse> listarPorEstado(EstadoCorrelacion estado) {
+        return correlacionRepository.findByEstadoOrderByScoreDescCreatedAtDesc(estado).stream()
                 .map(this::toResponse)
                 .toList();
+    }
+
+    public CorrelacionResponse obtener(UUID correlacionId) {
+        return toResponse(findCorrelacionOrThrow(correlacionId));
     }
 
     public List<CorrelacionResponse> listarPorIncidente(UUID incidenteId) {
@@ -203,6 +213,83 @@ public class CorrelacionService {
     }
 
     @Transactional
+    public CorrelacionResponse revertir(UUID correlacionId, String revertidoPor) {
+        IncidenteCorrelacion correlacion = findCorrelacionOrThrow(correlacionId);
+        if (correlacion.getEstado() != EstadoCorrelacion.CONFIRMADA) {
+            throw new BusinessRuleException(
+                    "ESTADO_INVALIDO", "Solo se pueden revertir correlaciones confirmadas", HttpStatus.CONFLICT);
+        }
+        UUID canonicoId = correlacion.getIncidenteCanonicoId();
+        if (canonicoId == null) {
+            throw new BusinessRuleException(
+                    "ESTADO_INVALIDO", "La correlacion confirmada no tiene incidente canonico registrado", HttpStatus.CONFLICT);
+        }
+
+        UUID idA = correlacion.getIncidenteAId();
+        UUID idB = correlacion.getIncidenteBId();
+        UUID vinculadoId = canonicoId.equals(idA) ? idB : idA;
+        Incidente vinculado = findOrThrow(vinculadoId);
+        if (canonicoId.equals(vinculado.getIncidenteCanonicoId())) {
+            vinculado.setIncidenteCanonicoId(null);
+            vinculado.setUpdatedAt(LocalDateTime.now());
+            incidenteRepository.save(vinculado);
+        }
+
+        appendAuditoriaMotivo(correlacion, "reversiones", Map.of(
+                "usuario", revertidoPor,
+                "at", LocalDateTime.now().toString(),
+                "canonicoAnterior", canonicoId.toString(),
+                "vinculadoDesvinculado", vinculadoId.toString(),
+                "confirmadoPor", correlacion.getDecididoPor() != null ? correlacion.getDecididoPor() : "",
+                "confirmadoAt",
+                        correlacion.getDecididoAt() != null ? correlacion.getDecididoAt().toString() : ""));
+
+        correlacion.setEstado(EstadoCorrelacion.PENDIENTE);
+        correlacion.setIncidenteCanonicoId(null);
+        correlacion.setDecididoPor(null);
+        correlacion.setDecididoAt(null);
+        correlacionRepository.save(correlacion);
+
+        return toResponse(correlacion);
+    }
+
+    @Transactional
+    public CorrelacionResponse reabrir(UUID correlacionId, String reabiertoPor) {
+        IncidenteCorrelacion correlacion = findCorrelacionOrThrow(correlacionId);
+        if (correlacion.getEstado() != EstadoCorrelacion.DESCARTADA) {
+            throw new BusinessRuleException(
+                    "ESTADO_INVALIDO", "Solo se pueden reabrir correlaciones descartadas", HttpStatus.CONFLICT);
+        }
+
+        UUID idA = correlacion.getIncidenteAId();
+        UUID idB = correlacion.getIncidenteBId();
+        Incidente a = findOrThrow(idA);
+        Incidente b = findOrThrow(idB);
+        UUID canonicoA = resolveCanonicoId(a);
+        UUID canonicoB = resolveCanonicoId(b);
+        if (canonicoA.equals(canonicoB)) {
+            throw new BusinessRuleException(
+                    "YA_VINCULADOS",
+                    "Los reportes ya pertenecen al mismo grupo canonico",
+                    HttpStatus.CONFLICT);
+        }
+
+        appendAuditoriaMotivo(correlacion, "reaperturas", Map.of(
+                "usuario", reabiertoPor,
+                "at", LocalDateTime.now().toString(),
+                "descartadoPor", correlacion.getDecididoPor() != null ? correlacion.getDecididoPor() : "",
+                "descartadoAt",
+                        correlacion.getDecididoAt() != null ? correlacion.getDecididoAt().toString() : ""));
+
+        correlacion.setEstado(EstadoCorrelacion.PENDIENTE);
+        correlacion.setDecididoPor(null);
+        correlacion.setDecididoAt(null);
+        correlacionRepository.save(correlacion);
+
+        return toResponse(correlacion);
+    }
+
+    @Transactional
     public IncidenteResumen vincularManual(UUID incidenteId, VincularIncidenteRequest request, String decididoPor) {
         if (request.getIncidenteCanonicoId() == null) {
             throw new BusinessRuleException(
@@ -309,11 +396,31 @@ public class CorrelacionService {
                 : incidente.getId();
     }
 
+    private IncidenteCorrelacion findCorrelacionOrThrow(UUID id) {
+        return correlacionRepository
+                .findById(id)
+                .orElseThrow(() -> new BusinessRuleException(
+                        "NOT_FOUND", "Correlacion no encontrada", HttpStatus.NOT_FOUND));
+    }
+
     private Incidente findOrThrow(UUID id) {
         return incidenteRepository
                 .findById(id)
                 .orElseThrow(() -> new BusinessRuleException(
                         "NOT_FOUND", "Incidente no encontrado", HttpStatus.NOT_FOUND));
+    }
+
+    @SuppressWarnings("unchecked")
+    private void appendAuditoriaMotivo(IncidenteCorrelacion correlacion, String clave, Map<String, Object> entrada) {
+        Map<String, Object> motivo = correlacion.getMotivo() != null
+                ? new LinkedHashMap<>(correlacion.getMotivo())
+                : new LinkedHashMap<>();
+        List<Map<String, Object>> historial = motivo.containsKey(clave)
+                ? new ArrayList<>((List<Map<String, Object>>) motivo.get(clave))
+                : new ArrayList<>();
+        historial.add(new LinkedHashMap<>(entrada));
+        motivo.put(clave, historial);
+        correlacion.setMotivo(motivo);
     }
 
     private CorrelacionResponse toResponse(IncidenteCorrelacion correlacion) {

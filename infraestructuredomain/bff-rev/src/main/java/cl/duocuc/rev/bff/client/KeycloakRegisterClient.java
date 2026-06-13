@@ -24,4 +24,14 @@ public class KeycloakRegisterClient {
                 .retrieve()
                 .bodyToMono(RegisterCiudadanoResponse.class);
     }
+
+    public Mono<RegisterCiudadanoResponse> registrarBrigadista(RegisterCiudadanoRequest request) {
+        return webClientBuilder.baseUrl(BASE_URL)
+                .build()
+                .post()
+                .uri("/register/brigadista")
+                .bodyValue(request)
+                .retrieve()
+                .bodyToMono(RegisterCiudadanoResponse.class);
+    }
 }

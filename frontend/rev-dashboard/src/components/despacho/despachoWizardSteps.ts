@@ -1,8 +1,6 @@
 export const DESPACHO_WIZARD_STEPS = [
   'Incidente',
-  'Resumen',
   'Composición',
-  'Vehículos',
   'Confirmar',
 ] as const;
 

@@ -69,14 +69,31 @@ export function gpsFallbackLabel(lat: number, lng: number): string {
   return `Ubicación GPS (${lat.toFixed(5)}, ${lng.toFixed(5)})`;
 }
 
+/** Comuna demo REV (Valle del Sol = Puente Alto en OSM). */
+const SEARCH_CONTEXT = 'Puente Alto, Región Metropolitana, Chile';
+
+/** viewbox Nominatim: lon_min, lat_max, lon_max, lat_min — Cordillera / Puente Alto */
+const PUENTE_ALTO_VIEWBOX = '-70.62,-33.56,-70.52,-33.67';
+
+function buildSearchQuery(raw: string): string {
+  const q = raw.trim();
+  if (/puente\s*alto/i.test(q)) {
+    return q;
+  }
+  return `${q}, ${SEARCH_CONTEXT}`;
+}
+
 export async function searchAddress(
   query: string,
   signal?: AbortSignal,
 ): Promise<NominatimSearchResult[]> {
   const params = new URLSearchParams({
-    q: `${query.trim()}, Valle del Sol, Chile`,
+    q: buildSearchQuery(query),
     format: 'json',
     limit: '5',
+    countrycodes: 'cl',
+    viewbox: PUENTE_ALTO_VIEWBOX,
+    bounded: '0',
   });
 
   const res = await fetch(`https://nominatim.openstreetmap.org/search?${params}`, {

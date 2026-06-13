@@ -22,8 +22,10 @@ import cl.duocuc.rev.recursos.dto.HerramientaRequest;
 import cl.duocuc.rev.recursos.dto.RecursoAsignadoDto;
 import cl.duocuc.rev.recursos.dto.RecursosCatalogoResponse;
 import cl.duocuc.rev.recursos.dto.RecursosDisponiblesResponse;
+import cl.duocuc.rev.recursos.dto.TransferirIncidenteRequest;
 import cl.duocuc.rev.recursos.dto.VehiculoDto;
 import cl.duocuc.rev.recursos.dto.VehiculoRequest;
+import cl.duocuc.rev.recursos.dto.VincularKeycloakRequest;
 import cl.duocuc.rev.recursos.service.RecursoService;
 import java.util.List;
 import java.util.UUID;
@@ -108,6 +110,11 @@ public class RecursoController {
         return recursoService.listarAsignacionesActivas();
     }
 
+    @GetMapping("/asignaciones/{id}")
+    public AsignacionActivaDto obtenerAsignacionActiva(@PathVariable Long id) {
+        return recursoService.obtenerAsignacionActiva(id);
+    }
+
     @GetMapping("/incidente/{incidenteId}")
     public List<RecursoAsignadoDto> listarPorIncidente(@PathVariable UUID incidenteId) {
         return recursoService.listarPorIncidente(incidenteId);
@@ -122,6 +129,11 @@ public class RecursoController {
     @ResponseStatus(HttpStatus.CREATED)
     public AsignacionResponse asignar(@RequestBody AsignarRequest request) {
         return recursoService.asignar(request);
+    }
+
+    @PostMapping("/asignar/transferir-incidente")
+    public List<AsignacionActivaDto> transferirIncidente(@RequestBody TransferirIncidenteRequest request) {
+        return recursoService.transferirIncidente(request);
     }
 
     @DeleteMapping("/asignar/{id}")
@@ -164,5 +176,31 @@ public class RecursoController {
     @ResponseStatus(HttpStatus.CREATED)
     public BrigadistaDto crearBrigadista(@RequestBody BrigadistaRequest request) {
         return recursoService.crearBrigadista(request);
+    }
+
+    @GetMapping("/brigadistas/por-keycloak/{sub}")
+    public BrigadistaDto obtenerPorKeycloakSub(@PathVariable UUID sub) {
+        return recursoService.obtenerBrigadistaPorKeycloakSub(sub);
+    }
+
+    @GetMapping("/brigadistas/por-username/{username}")
+    public BrigadistaDto obtenerPorUsername(@PathVariable String username) {
+        return recursoService.obtenerBrigadistaPorUsername(username);
+    }
+
+    @PutMapping("/brigadistas/{id}/vincular-keycloak")
+    public BrigadistaDto vincularKeycloak(@PathVariable Long id, @RequestBody VincularKeycloakRequest request) {
+        return recursoService.vincularKeycloakSub(
+                id, request.getKeycloakSub(), request.getKeycloakUsername(), request.getEmail());
+    }
+
+    @GetMapping("/brigadas/{id}/asignaciones-activas")
+    public List<AsignacionActivaDto> listarAsignacionesActivasPorBrigada(@PathVariable Long id) {
+        return recursoService.listarAsignacionesActivasPorBrigada(id);
+    }
+
+    @GetMapping("/brigadas/{id}/incidentes-activos")
+    public List<UUID> listarIncidenteIdsActivosPorBrigada(@PathVariable Long id) {
+        return recursoService.listarIncidenteIdsActivosPorBrigada(id);
     }
 }

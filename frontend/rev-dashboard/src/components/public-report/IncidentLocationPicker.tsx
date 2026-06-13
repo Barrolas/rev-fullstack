@@ -9,9 +9,7 @@ import {
   searchAddress,
 } from '../../utils/nominatim';
 import MapViewController from './MapViewController';
-import { OSM_ATTRIBUTION, OSM_TILE_URL } from '../../utils/mapConfig';
-
-const VALLE_CENTER: [number, number] = [-33.452, -70.664];
+import { OSM_ATTRIBUTION, OSM_TILE_URL, VALLE_DEL_SOL_CENTER } from '../../utils/mapConfig';
 
 export interface LocationValue {
   lat: number | null;
@@ -23,6 +21,8 @@ interface IncidentLocationPickerProps {
   value: LocationValue;
   onChange: (value: LocationValue) => void;
   disabled?: boolean;
+  /** Permite ingresar latitud y longitud manualmente (despacho interno). */
+  allowManualCoords?: boolean;
 }
 
 function MapClickHandler({
@@ -45,21 +45,31 @@ export default function IncidentLocationPicker({
   value,
   onChange,
   disabled = false,
+  allowManualCoords = false,
 }: IncidentLocationPickerProps) {
-  const [searchQuery, setSearchQuery] = useState(value.direccionReferencia);
+  const [searchInput, setSearchInput] = useState('');
+  const [searchFocused, setSearchFocused] = useState(false);
   const [searchResults, setSearchResults] = useState<NominatimSearchResult[]>([]);
   const [searching, setSearching] = useState(false);
   const [geoLoading, setGeoLoading] = useState(false);
   const [resolvingAddress, setResolvingAddress] = useState(false);
   const [geoError, setGeoError] = useState('');
   const [flyToCenter, setFlyToCenter] = useState<[number, number] | null>(null);
+  const [latText, setLatText] = useState('');
+  const [lngText, setLngText] = useState('');
   const reverseAbortRef = useRef<AbortController | null>(null);
+  const searchBlurTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    setLatText(value.lat != null ? String(value.lat) : '');
+    setLngText(value.lng != null ? String(value.lng) : '');
+  }, [value.lat, value.lng]);
 
   const mapCenter = useMemo<[number, number]>(() => {
     if (value.lat != null && value.lng != null) {
       return [value.lat, value.lng];
     }
-    return VALLE_CENTER;
+    return VALLE_DEL_SOL_CENTER;
   }, [value.lat, value.lng]);
 
   const applyLocation = useCallback(
@@ -88,7 +98,7 @@ export default function IncidentLocationPicker({
         }
       }
 
-      setSearchQuery(direccion);
+      setSearchResults([]);
       onChange({
         lat: roundedLat,
         lng: roundedLng,
@@ -101,6 +111,24 @@ export default function IncidentLocationPicker({
     },
     [onChange],
   );
+
+  const applyManualCoords = () => {
+    const lat = parseFloat(latText.trim().replace(',', '.'));
+    const lng = parseFloat(lngText.trim().replace(',', '.'));
+    if (
+      Number.isNaN(lat) ||
+      Number.isNaN(lng) ||
+      lat < -90 ||
+      lat > 90 ||
+      lng < -180 ||
+      lng > 180
+    ) {
+      setGeoError('Ingrese latitud (-90 a 90) y longitud (-180 a 180) válidas.');
+      return;
+    }
+    setGeoError('');
+    void applyLocation(lat, lng, { flyTo: true });
+  };
 
   const useMyLocation = () => {
     if (!navigator.geolocation) {
@@ -124,7 +152,7 @@ export default function IncidentLocationPicker({
   };
 
   useEffect(() => {
-    if (searchQuery.trim().length < 3) {
+    if (!searchFocused || searchInput.trim().length < 3) {
       setSearchResults([]);
       return;
     }
@@ -133,7 +161,7 @@ export default function IncidentLocationPicker({
     const timer = window.setTimeout(async () => {
       setSearching(true);
       try {
-        const data = await searchAddress(searchQuery, controller.signal);
+        const data = await searchAddress(searchInput, controller.signal);
         setSearchResults(data);
       } catch {
         /* búsqueda cancelada o fallida */
@@ -146,19 +174,42 @@ export default function IncidentLocationPicker({
       controller.abort();
       window.clearTimeout(timer);
     };
-  }, [searchQuery]);
+  }, [searchFocused, searchInput]);
 
   useEffect(
     () => () => {
       reverseAbortRef.current?.abort();
+      if (searchBlurTimerRef.current != null) {
+        window.clearTimeout(searchBlurTimerRef.current);
+      }
     },
     [],
   );
 
+  const handleSearchFocus = () => {
+    if (searchBlurTimerRef.current != null) {
+      window.clearTimeout(searchBlurTimerRef.current);
+      searchBlurTimerRef.current = null;
+    }
+    setSearchFocused(true);
+  };
+
+  const handleSearchBlur = () => {
+    searchBlurTimerRef.current = window.setTimeout(() => {
+      setSearchFocused(false);
+      setSearchResults([]);
+    }, 200);
+  };
+
   const selectSearchResult = (result: NominatimSearchResult) => {
     const lat = parseFloat(result.lat);
     const lng = parseFloat(result.lon);
-    setSearchQuery(result.display_name);
+    if (searchBlurTimerRef.current != null) {
+      window.clearTimeout(searchBlurTimerRef.current);
+      searchBlurTimerRef.current = null;
+    }
+    setSearchInput('');
+    setSearchFocused(false);
     onChange({
       lat,
       lng,
@@ -200,6 +251,48 @@ export default function IncidentLocationPicker({
         </p>
       )}
 
+      {allowManualCoords && (
+        <div className="rev-public-location__manual-coords">
+          <label className="rev-field__label" htmlFor="location-lat-manual">
+            Coordenadas manuales
+          </label>
+          <div className="rev-public-location__manual-row">
+            <input
+              id="location-lat-manual"
+              className="rev-public-location__manual-input"
+              type="text"
+              inputMode="decimal"
+              placeholder="Latitud"
+              value={latText}
+              onChange={(e) => setLatText(e.target.value)}
+              disabled={disabled || busy}
+              aria-label="Latitud"
+            />
+            <input
+              className="rev-public-location__manual-input"
+              type="text"
+              inputMode="decimal"
+              placeholder="Longitud"
+              value={lngText}
+              onChange={(e) => setLngText(e.target.value)}
+              disabled={disabled || busy}
+              aria-label="Longitud"
+            />
+            <button
+              type="button"
+              className="rev-public-location__manual-apply"
+              onClick={applyManualCoords}
+              disabled={disabled || busy}
+            >
+              Aplicar
+            </button>
+          </div>
+          <p className="rev-public-location__ref-note mb-0">
+            Ejemplo: -33.59279, -70.57909. También puede marcar el punto en el mapa.
+          </p>
+        </div>
+      )}
+
       <div className="rev-public-location__search-wrap">
         <label className="rev-field__label" htmlFor="location-search">
           Buscar dirección
@@ -210,13 +303,22 @@ export default function IncidentLocationPicker({
           className="rev-public-location__search-input"
           type="search"
           placeholder="Ej: Av. Principal 120, sector norte"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          onFocus={handleSearchFocus}
+          onBlur={handleSearchBlur}
           disabled={disabled}
           autoComplete="off"
         />
-        {searching && <p className="rev-public-location__status">Buscando…</p>}
-        {searchResults.length > 0 && (
+        {searchFocused && searching && (
+          <p className="rev-public-location__status">Buscando…</p>
+        )}
+        {searchFocused && !searching && searchInput.trim().length >= 3 && searchResults.length === 0 && (
+          <p className="rev-public-location__status rev-public-location__status--warn">
+            Sin resultados. Pruebe «Concha y Toro» o marque el punto en el mapa.
+          </p>
+        )}
+        {searchFocused && searchResults.length > 0 && (
           <ul className="rev-public-location__results">
             {searchResults.map((r) => (
               <li key={`${r.lat}-${r.lon}-${r.display_name}`}>
@@ -240,7 +342,7 @@ export default function IncidentLocationPicker({
         </p>
         <MapContainer
           center={mapCenter}
-          zoom={14}
+          zoom={12}
           scrollWheelZoom={!disabled}
           className={`rev-public-map${disabled ? ' rev-public-map--disabled' : ''}`}
         >
@@ -277,10 +379,7 @@ export default function IncidentLocationPicker({
           rows={2}
           placeholder="Calle, sector o punto de referencia"
           value={value.direccionReferencia}
-          onChange={(e) => {
-            setSearchQuery(e.target.value);
-            onChange({ ...value, direccionReferencia: e.target.value });
-          }}
+          onChange={(e) => onChange({ ...value, direccionReferencia: e.target.value })}
           disabled={disabled}
           required
         />

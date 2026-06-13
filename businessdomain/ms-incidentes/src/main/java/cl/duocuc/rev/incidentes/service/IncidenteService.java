@@ -3,6 +3,7 @@ package cl.duocuc.rev.incidentes.service;
 import cl.duocuc.rev.incidentes.dto.AdjuntoResponse;
 import cl.duocuc.rev.incidentes.dto.IncidenteRequest;
 import cl.duocuc.rev.incidentes.dto.IncidenteResponse;
+import cl.duocuc.rev.incidentes.dto.IncidenteTimelineItemDto;
 import cl.duocuc.rev.incidentes.dto.PublicIncidenteRequest;
 import cl.duocuc.rev.incidentes.entity.Incidente;
 import cl.duocuc.rev.incidentes.entity.TransicionEstado;
@@ -13,6 +14,7 @@ import cl.duocuc.rev.incidentes.repository.IncidenteRepository;
 import cl.duocuc.rev.incidentes.repository.TransicionEstadoRepository;
 import cl.duocuc.rev.incidentes.state.IncidentStateFactory;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -102,6 +104,11 @@ public class IncidenteService {
 
     @Transactional
     public IncidenteResponse transicionar(UUID id, EstadoIncidente destino) {
+        return transicionar(id, destino, null, null);
+    }
+
+    @Transactional
+    public IncidenteResponse transicionar(UUID id, EstadoIncidente destino, String realizadoPor, String origen) {
         Incidente incidente = findOrThrow(id);
         stateFactory.validarTransicion(incidente, destino);
         EstadoIncidente anterior = incidente.getEstado();
@@ -113,8 +120,32 @@ public class IncidenteService {
                 .estadoAnterior(anterior)
                 .estadoNuevo(destino)
                 .createdAt(LocalDateTime.now())
+                .realizadoPor(realizadoPor)
+                .origen(origen)
                 .build());
         return toResponse(incidente);
+    }
+
+    public List<IncidenteTimelineItemDto> timeline(UUID id) {
+        Incidente incidente = findOrThrow(id);
+        List<IncidenteTimelineItemDto> items = new ArrayList<>();
+        items.add(IncidenteTimelineItemDto.builder()
+                .tipo("REGISTRO")
+                .estado(incidente.getEstado().name())
+                .fechaHora(incidente.getCreatedAt())
+                .origen(incidente.getOrigenReporte() != null ? incidente.getOrigenReporte().name() : "SISTEMA")
+                .build());
+        for (TransicionEstado t : transicionEstadoRepository.findByIncidenteIdOrderByCreatedAtAsc(id)) {
+            items.add(IncidenteTimelineItemDto.builder()
+                    .tipo("TRANSICION")
+                    .estado(t.getEstadoNuevo().name())
+                    .estadoAnterior(t.getEstadoAnterior() != null ? t.getEstadoAnterior().name() : null)
+                    .fechaHora(t.getCreatedAt())
+                    .realizadoPor(t.getRealizadoPor())
+                    .origen(t.getOrigen())
+                    .build());
+        }
+        return items;
     }
 
     private void validarPublico(PublicIncidenteRequest request) {

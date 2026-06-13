@@ -3,6 +3,7 @@ package cl.duocuc.rev.bff.client;
 import cl.duocuc.rev.bff.dto.AdjuntoDto;
 import cl.duocuc.rev.bff.dto.IncidenteCreateRequest;
 import cl.duocuc.rev.bff.dto.IncidenteDto;
+import cl.duocuc.rev.bff.dto.IncidenteTimelineItemDto;
 import cl.duocuc.rev.bff.dto.PublicIncidenteCreateRequest;
 import java.util.List;
 import java.util.Map;
@@ -118,12 +119,34 @@ public class IncidenteClientService {
     }
 
     public Mono<IncidenteDto> transicionar(UUID id, String estadoDestino) {
+        return transicionarConAuditoria(id, estadoDestino, null, null);
+    }
+
+    public Mono<IncidenteDto> transicionarConAuditoria(
+            UUID id, String estadoDestino, String realizadoPor, String origen) {
+        Map<String, Object> body = new java.util.HashMap<>();
+        body.put("estadoDestino", estadoDestino);
+        if (realizadoPor != null) {
+            body.put("realizadoPor", realizadoPor);
+        }
+        if (origen != null) {
+            body.put("origen", origen);
+        }
         return webClient()
                 .put()
                 .uri("/incidentes/{id}/transicion", id)
-                .bodyValue(Map.of("estadoDestino", estadoDestino))
+                .bodyValue(body)
                 .retrieve()
                 .bodyToMono(IncidenteDto.class);
+    }
+
+    public Mono<List<IncidenteTimelineItemDto>> timeline(UUID id) {
+        return webClient()
+                .get()
+                .uri("/incidentes/{id}/timeline", id)
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<>() {
+                });
     }
 
     private WebClient webClient() {

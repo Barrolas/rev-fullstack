@@ -3,6 +3,7 @@ package cl.duocuc.rev.incidentes.controller;
 import cl.duocuc.rev.incidentes.dto.AdjuntoResponse;
 import cl.duocuc.rev.incidentes.dto.IncidenteRequest;
 import cl.duocuc.rev.incidentes.dto.IncidenteResponse;
+import cl.duocuc.rev.incidentes.dto.IncidenteTimelineItemDto;
 import cl.duocuc.rev.incidentes.dto.PublicIncidenteRequest;
 import cl.duocuc.rev.incidentes.dto.TransicionRequest;
 import cl.duocuc.rev.incidentes.entity.IncidenteAdjunto;
@@ -70,7 +71,13 @@ public class IncidenteController {
 
     @PutMapping("/{id}/transicion")
     public IncidenteResponse transicionar(@PathVariable UUID id, @RequestBody TransicionRequest request) {
-        return incidenteService.transicionar(id, request.getEstadoDestino());
+        return incidenteService.transicionar(
+                id, request.getEstadoDestino(), request.getRealizadoPor(), request.getOrigen());
+    }
+
+    @GetMapping("/{id}/timeline")
+    public List<IncidenteTimelineItemDto> timeline(@PathVariable UUID id) {
+        return incidenteService.timeline(id);
     }
 
     @GetMapping("/{id}/adjuntos")

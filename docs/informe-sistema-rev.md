@@ -573,41 +573,46 @@ Usuarios Keycloak (realm `rev`):
 | Usuario | Rol | Nombre | Clave dev |
 |---------|-----|--------|-----------|
 | `despachador` | Despachador | Ana Despacho | `rev123` |
-| `brigadista` | Brigadista | Luis Brigada | `rev123` |
+| `maria.gonzalez` | Brigadista (jefe MUN-RAPIDA) | María González | `rev123` |
+| `luis.rojas` | Brigadista (integrante) | Luis Rojas | `rev123` |
+| `patricia.nunez` | Brigadista (jefe MUN-URBANA) | Patricia Núñez | `rev123` |
+| `brigadista` | Brigadista (cuenta huérfana, demo) | Cuenta Huérfana | `rev123` |
 | `admin` | Admin | Carlos Admin | `rev123` |
 
-Lógica de permisos: `useAuth.ts` → `canManageIncidents` = Admin **o** Despachador.
+Lógica de permisos: `useAuth.ts` — `canManageIncidents` / `canDispatch` = Admin **o** Despachador. Gateway propaga `X-REV-*` y restringe escritura en rutas de despacho/recursos/zonas. BFF expone `GET /api/perfil/operativo` y endpoints `/api/brigadista/**`.
 
 ### 7.1 Por pantalla
 
-| Pantalla / acción | Despachador | Brigadista | Admin |
-|-------------------|:-----------:|:----------:|:-----:|
-| **Login** — autenticarse | ✓ | ✓ | ✓ |
-| **Portal** — reporte ciudadano | ✓ (público) | ✓ (público) | ✓ (público) |
-| **Inicio** — bienvenida y accesos | ✓ | ✓ | ✓ |
-| **Despacho** — ver KPIs y accesos | ✓ | ✓ | ✓ |
-| **Incidentes** — listar / ver cards | ✓ | ✓ | ✓ |
-| **Incidentes** — botón «Nuevo incidente» | ✓ | ✗ | ✓ |
-| **Incidentes** — modal registrar | ✓ | ✗ | ✓ |
-| **Detalle** — ver ficha completa | ✓ | ✓ | ✓ |
-| **Detalle** — asignar recurso | ✓ | ✗ | ✓ |
-| **Zonas** — consultar (cards + tabla) | ✓ | ✓ | ✓ |
-| **Recursos** — consultar tablas | ✓ | ✓ | ✓ |
-| **Sidebar** — Admin Keycloak | ✗ | ✗ | ✓ |
-| **Sidebar** — contraer menú | ✓ | ✓ | ✓ |
-| **Sidebar** — cerrar sesión | ✓ | ✓ | ✓ |
-| **Navegación** — todos los módulos | ✓ | ✓ | ✓ |
+| Pantalla / acción | Despachador | Brigadista integrante | Brigadista jefe | Admin |
+|-------------------|:-----------:|:---------------------:|:---------------:|:-----:|
+| **Login** | ✓ | ✓ | ✓ | ✓ |
+| **Mis incidentes** — asignaciones de su brigada | ✓ | ✓ | ✓ | ✓ |
+| **Despacho** — wizard / asignar | ✓ | ✗ | ✗ | ✓ |
+| **Incidentes** — listar todos | ✓ | ✗ (solo asignados) | ✗ (solo asignados) | ✓ |
+| **Incidentes** — nuevo / correlaciones | ✓ | ✗ | ✗ | ✓ |
+| **Detalle** — timeline y hora de registro | ✓ | ✓ | ✓ | ✓ |
+| **Detalle** — despachar brigada | ✓ | ✗ | ✗ | ✓ |
+| **Detalle** — avanzar estado (terreno) | ✓ | ✗ | ✓ | ✓ |
+| **Zonas** — consulta mapa | ✓ | ✓ | ✓ | ✓ |
+| **Zonas** — administración CRUD | ✓ | ✗ | ✗ | ✓ |
+| **Recursos** — administración | ✓ | ✗ | ✗ | ✓ |
+| **Recursos** — consulta / mi brigada | ✓ | ✓ | ✓ | ✓ |
 
 ### 7.2 Perfiles en la operación
 
 **Despachador (Ana Despacho)**  
-Operador principal. Puede registrar incidentes, asignar brigadas/vehículos y monitorear KPIs. Es el usuario objetivo del panel de mando.
+Operador principal. Registra incidentes, despacha brigadas, ve antigüedad en cola y timeline de estados.
 
-**Brigadista (Luis Brigada)**  
-Perfil de consulta. Accede al mismo panel para ver incidentes activos, riesgo territorial y disponibilidad de recursos, pero **no puede crear incidentes ni asignar recursos** desde la UI.
+**Brigadista integrante (ej. `luis.rojas`)**  
+Ve solo incidentes con asignación activa de su brigada (`brigada_brigadistas.es_jefe = false`). Sin despacho ni edición de zonas.
+
+**Brigadista jefe (ej. `maria.gonzalez`)**  
+Igual alcance de lectura que el integrante, más transiciones de estado de despacho e incidente vía `/api/brigadista/**` (EN_CAMINO, EN_INCIDENTE, EN_PROGRESO, CONTROLADO).
 
 **Admin (Carlos Admin)**  
-Todas las capacidades operativas del Despachador más acceso a la consola Keycloak para gestión de identidades del realm `rev`.
+Capacidades de Despachador más consola Keycloak.
+
+**Provisioning:** cada brigadista operativo tiene usuario Keycloak (rol `Brigadista`) vinculado por `keycloak_sub` / `keycloak_username` en `ms-recursos`. Script: `scripts/provision-brigadistas-keycloak.ps1`.
 
 ---
 

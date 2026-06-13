@@ -1,7 +1,8 @@
 import { FormEvent, useMemo, useState } from 'react';
 import { Alert, Button, Col, Form, Row } from 'react-bootstrap';
-import { createIncidente, createPublicIncidente } from '../../api';
+import { createIncidente, createPublicIncidente, uploadIncidenteAdjunto } from '../../api';
 import IncidentLocationPicker, { LocationValue } from '../public-report/IncidentLocationPicker';
+import IncidentMediaCapture, { MediaCaptureValue } from '../public-report/IncidentMediaCapture';
 
 interface FormErrors {
   tipo?: string;
@@ -32,9 +33,11 @@ export default function IncidentFormFields({
     lng: null,
     direccionReferencia: '',
   });
+  const [media, setMedia] = useState<MediaCaptureValue>({ fotos: [], video: null });
   const [errors, setErrors] = useState<FormErrors>({});
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const internalMode = !publicMode;
 
   const hasLocation = useMemo(() => {
     const hasCoords = location.lat != null && location.lng != null;
@@ -73,16 +76,46 @@ export default function IncidentFormFields({
         const result = await createPublicIncidente(payload);
         onSuccess(result.id || undefined);
       } else {
-        await createIncidente(payload);
-        onSuccess();
+        const created = await createIncidente(payload);
+        const uploadErrors: string[] = [];
+        for (const foto of media.fotos) {
+          try {
+            await uploadIncidenteAdjunto(created.id, 'FOTO', foto);
+          } catch (uploadErr) {
+            uploadErrors.push(
+              uploadErr instanceof Error ? uploadErr.message : 'Error al subir una foto',
+            );
+          }
+        }
+        if (media.video) {
+          try {
+            await uploadIncidenteAdjunto(created.id, 'VIDEO', media.video);
+          } catch (uploadErr) {
+            uploadErrors.push(
+              uploadErr instanceof Error ? uploadErr.message : 'Error al subir el video',
+            );
+          }
+        }
+        if (uploadErrors.length > 0) {
+          setError(
+            `Incidente registrado (${created.id.slice(0, 8)}…), pero hubo problemas con adjuntos: ${uploadErrors.join(' · ')}`,
+          );
+          onSuccess(created.id);
+          return;
+        }
+        onSuccess(created.id);
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Error al registrar';
-      setError(
-        msg.includes('Sesión expirada')
-          ? `${msg} Será redirigido al inicio de sesión.`
-          : msg,
-      );
+      if (err instanceof DOMException && err.name === 'TimeoutError') {
+        setError('El servidor tardó demasiado. Verifique que los microservicios estén activos e intente de nuevo.');
+      } else {
+        setError(
+          msg.includes('Sesión expirada')
+            ? `${msg} Será redirigido al inicio de sesión.`
+            : msg,
+        );
+      }
     } finally {
       setSubmitting(false);
     }
@@ -131,11 +164,25 @@ export default function IncidentFormFields({
           value={location}
           onChange={setLocation}
           disabled={submitting}
+          allowManualCoords={internalMode}
         />
         {errors.ubicacion && (
           <div className="invalid-feedback d-block">{errors.ubicacion}</div>
         )}
       </Form.Group>
+
+      {internalMode && (
+        <Form.Group className="mb-3">
+          <Form.Label className="d-flex align-items-center gap-2">
+            <i className="bi bi-paperclip" aria-hidden="true" />
+            Imágenes y video (opcional)
+          </Form.Label>
+          <IncidentMediaCapture value={media} onChange={setMedia} disabled={submitting} />
+          <p className="text-muted small mb-0 mt-2">
+            Hasta 3 fotos (JPG, PNG, WebP) y 1 video (MP4, WebM). Se adjuntan al folio al registrar.
+          </p>
+        </Form.Group>
+      )}
 
       <Alert variant="secondary" className="small rev-alert rev-alert--info">
         {publicMode ? (
@@ -145,8 +192,8 @@ export default function IncidentFormFields({
           </>
         ) : (
           <>
-            Valle del Sol: marque el punto en el mapa, busque la direccion o use su ubicacion.
-            Las coordenadas se registran para despacho y evaluacion de riesgo territorial.
+            Marque el punto en el mapa, busque la dirección, ingrese latitud/longitud manualmente o use
+            su ubicación. Las coordenadas se registran para despacho y evaluación de riesgo territorial.
           </>
         )}
       </Alert>

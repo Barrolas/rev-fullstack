@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api")
@@ -84,6 +85,15 @@ public class OperacionesController {
     @GetMapping("/mapa/territorial")
     public MapaTerritorialResponse mapaTerritorial() {
         return mapaTerritorialFacadeService.obtenerMapaTerritorial();
+    }
+
+    @PostMapping(value = "/incidentes/{id}/adjuntos", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
+    public AdjuntoDto agregarAdjunto(
+            @PathVariable UUID id,
+            @RequestParam String tipo,
+            @RequestParam("file") MultipartFile file) {
+        return incidenteClientService.agregarAdjunto(id, tipo, file).block();
     }
 
     @GetMapping("/incidentes/{id}/adjuntos")

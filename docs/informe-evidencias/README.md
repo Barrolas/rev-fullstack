@@ -1,5 +1,9 @@
 # Evidencias del informe técnico REV
 
+## Video demo — tour por módulos (5 min)
+
+Guion híbrido de grabación (reporte en vivo, módulos, admin, SBA :18099): [guion-video-tour-modulos.md](./guion-video-tour-modulos.md). Plan futuro reportes vs incidentes: [plan-reportes-vs-incidentes-v2.md](../plan-reportes-vs-incidentes-v2.md).
+
 ## Capturas UX reales (Playwright)
 
 Generadas con `node docs/capture-ux-screenshots.mjs` (requiere stack Docker + `vite` en :15173).

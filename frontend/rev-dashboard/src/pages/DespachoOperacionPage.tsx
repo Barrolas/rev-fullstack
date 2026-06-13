@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Alert, Badge, Button, Form, Nav, Tab } from 'react-bootstrap';
+import BrigadaSeleccionList from '../components/despacho/BrigadaSeleccionList';
 import DespachoWizard from '../components/despacho/DespachoWizard';
+import ConfirmDialog from '../components/primitives/ConfirmDialog';
 import BrigadaBulkActionBar from '../components/shared/BrigadaBulkActionBar';
 import { useBrigadaSelection } from '../hooks/useBrigadaSelection';
 
@@ -9,13 +11,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 
 import {
 
-  AsignarRecurso,
-
-  DespachoBrigadaCard,
-
   DespachoColaItem,
-
-  asignarRecurso,
 
   fetchDespachoActivos,
 
@@ -64,6 +60,8 @@ import StateView from '../components/primitives/StateView';
 import { useApiQuery } from '../hooks/useApiQuery';
 
 import { useAuth } from '../hooks/useAuth';
+import { tiempoRelativo } from '../utils/formatFecha';
+import { ejecutarDespachoRapido } from '../utils/despachoRapido';
 
 
 
@@ -80,14 +78,6 @@ function colaRiskClass(nivel?: string): string {
   if (nivel === 'LOW') return 'rev-despacho-cola-item--risk-low';
 
   return '';
-
-}
-
-
-
-function semaforoClass(lista: boolean): string {
-
-  return lista ? 'rev-despacho-semaforo--ok' : 'rev-despacho-semaforo--warn';
 
 }
 
@@ -119,19 +109,17 @@ export default function DespachoOperacionPage() {
 
   const [detalle, setDetalle] = useState<DashboardItem | null>(null);
 
-  const [selectedBrigada, setSelectedBrigada] = useState<DespachoBrigadaCard | null>(null);
-
-  const [vehiculoDespachoId, setVehiculoDespachoId] = useState<number | ''>('');
-
-  const [assigning, setAssigning] = useState(false);
-
-  const [assignError, setAssignError] = useState('');
-
   const [colaSearch, setColaSearch] = useState('');
 
   const [riesgoFiltro, setRiesgoFiltro] = useState<RiesgoFiltro>('');
 
   const [showDespachoWizard, setShowDespachoWizard] = useState(false);
+
+  const [quickDispatchOpen, setQuickDispatchOpen] = useState(false);
+
+  const [quickDispatching, setQuickDispatching] = useState(false);
+
+  const [quickDispatchError, setQuickDispatchError] = useState('');
 
   const [activosActionId, setActivosActionId] = useState<number | null>(null);
 
@@ -193,51 +181,7 @@ export default function DespachoOperacionPage() {
 
 
 
-  useEffect(() => {
-
-    if (!selectedBrigada?.detalle) {
-
-      setVehiculoDespachoId('');
-
-      return;
-
-    }
-
-    const principal =
-
-      selectedBrigada.detalle.vehiculos?.find((v) => v.principal)?.vehiculoId ??
-
-      selectedBrigada.detalle.vehiculoId;
-
-    setVehiculoDespachoId(principal ?? '');
-
-  }, [selectedBrigada]);
-
-
-
   const brigadas = colaData?.brigadasDisponibles ?? [];
-
-
-
-  const brigadasSorted = useMemo(
-
-    () =>
-
-      [...brigadas].sort((a, b) => {
-
-        if (a.listaParaDespacho !== b.listaParaDespacho) {
-
-          return a.listaParaDespacho ? -1 : 1;
-
-        }
-
-        return a.nombre.localeCompare(b.nombre, 'es');
-
-      }),
-
-    [brigadas],
-
-  );
 
 
 
@@ -296,29 +240,16 @@ export default function DespachoOperacionPage() {
 
 
 
-  const vehiculosOpciones = useMemo(() => {
+  const pasoActual =
+    selectedIncidente && brigadaSelection.count > 0 ? 3 : selectedIncidente ? 2 : 1;
 
-    if (!selectedBrigada?.detalle?.vehiculos?.length) {
-
-      const v = selectedBrigada?.detalle?.vehiculo;
-
-      return v ? [{ id: v.id, label: `${v.patente} (${v.tipo})` }] : [];
-
-    }
-
-    return selectedBrigada.detalle.vehiculos.map((v) => ({
-
-      id: v.vehiculoId,
-
-      label: `${v.patente ?? ''} ${v.tipo ?? ''}`.trim(),
-
-    }));
-
-  }, [selectedBrigada]);
-
-
-
-  const pasoActual = selectedIncidente && selectedBrigada ? 3 : selectedIncidente ? 2 : 1;
+  const brigadasSeleccionadasNombres = useMemo(() => {
+    const ids = new Set(brigadaSelection.selectedArray);
+    return brigadas
+      .filter((b) => ids.has(b.id))
+      .map((b) => b.nombre)
+      .join(', ');
+  }, [brigadas, brigadaSelection.selectedArray]);
 
 
 
@@ -388,35 +319,27 @@ export default function DespachoOperacionPage() {
 
 
 
-  const handleAsignar = async () => {
+  const handleDespachoRapido = async () => {
 
-    if (!selectedIncidente || !selectedBrigada) return;
+    if (!selectedIncidente || brigadaSelection.count === 0) return;
 
-    setAssigning(true);
+    setQuickDispatching(true);
 
-    setAssignError('');
+    setQuickDispatchError('');
 
     try {
 
-      const payload: AsignarRecurso = {
+      await ejecutarDespachoRapido(
+        selectedIncidente.incidenteId,
+        brigadaSelection.selectedArray,
+        displayName || username || 'despachador',
+      );
 
-        incidenteId: selectedIncidente.incidenteId,
+      setQuickDispatchOpen(false);
 
-        brigadaId: selectedBrigada.id,
-
-        vehiculoId: vehiculoDespachoId ? Number(vehiculoDespachoId) : undefined,
-
-        usarComposicionBrigada: true,
-
-        despachadoPor: displayName || username || 'despachador',
-
-      };
-
-      await asignarRecurso(payload);
+      brigadaSelection.clear();
 
       setSelectedIncidente(null);
-
-      setSelectedBrigada(null);
 
       setSearchParams({});
 
@@ -428,11 +351,13 @@ export default function DespachoOperacionPage() {
 
     } catch (e) {
 
-      setAssignError(e instanceof Error ? e.message : 'Error al despachar');
+      setQuickDispatchError(e instanceof Error ? e.message : 'Error al despachar');
+
+      setQuickDispatchOpen(false);
 
     } finally {
 
-      setAssigning(false);
+      setQuickDispatching(false);
 
     }
 
@@ -444,9 +369,9 @@ export default function DespachoOperacionPage() {
 
     setSelectedIncidente(item);
 
-    setSelectedBrigada(null);
+    brigadaSelection.clear();
 
-    setAssignError('');
+    setQuickDispatchError('');
 
     setSearchParams({ incidente: item.incidenteId });
 
@@ -772,6 +697,12 @@ export default function DespachoOperacionPage() {
 
                                   {item.tipo} — {item.descripcion}
 
+                                  {item.createdAt && (
+                                    <span className="rev-despacho-cola-item__time text-muted small d-block">
+                                      Registrado {tiempoRelativo(item.createdAt)}
+                                    </span>
+                                  )}
+
                                 </span>
 
                               </button>
@@ -922,162 +853,37 @@ export default function DespachoOperacionPage() {
 
                       </h2>
 
-                      <span className="rev-despacho-panel-col__count">{brigadasSorted.length}</span>
+                      <span className="rev-despacho-panel-col__count">{brigadas.length}</span>
 
                     </header>
 
                     <div className="rev-despacho-panel-col__body">
 
-                      {!selectedIncidente ? (
-
-                        <p className="rev-despacho-brigadas-hint mb-0">
-
-                          Seleccione primero un incidente para habilitar la asignación de brigada.
-
-                        </p>
-
-                      ) : brigadasSorted.length === 0 ? (
-
-                        <div className="rev-despacho-empty">
-
-                          <i className="bi bi-people" aria-hidden />
-
-                          <p className="mb-2">No hay brigadas registradas como disponibles.</p>
-
-                          <Link to="/recursos" className="btn btn-sm btn-outline-primary">
-
-                            Ir a Recursos
-
-                          </Link>
-
-                        </div>
-
-                      ) : (
-
-                        <div className="rev-despacho-brigadas-list">
-
-                          {brigadasSorted.map((b) => {
-
-                            const cap = b.elegibilidad?.capacidadBrigada ?? 0;
-
-                            const integ = b.elegibilidad?.integrantes ?? 0;
-
-                            const pct = cap > 0 ? Math.min(100, Math.round((integ / cap) * 100)) : 0;
-
-                            const bulkSelectable = brigadaSelection.canSelect({
-                              id: b.id,
-                              estado: b.estado,
-                              listaParaDespacho: b.listaParaDespacho,
-                            });
-
-                            return (
-
-                              <button
-
-                                key={b.id}
-
-                                type="button"
-
-                                className={`rev-despacho-brigada-card${selectedBrigada?.id === b.id ? ' selected' : ''}`}
-
-                                onClick={() => {
-
-                                  setSelectedBrigada(b);
-
-                                  setAssignError('');
-
-                                }}
-
-                              >
-
-                                <div className="rev-despacho-brigada-card__row">
-
-                                  <Form.Check
-                                    type="checkbox"
-                                    className="rev-despacho-brigada-card__check"
-                                    aria-label={`Seleccionar ${b.nombre} para despacho masivo`}
-                                    checked={brigadaSelection.isSelected(b.id)}
-                                    disabled={!bulkSelectable || !selectedIncidente}
-                                    onClick={(e) => e.stopPropagation()}
-                                    onChange={() => brigadaSelection.toggle(b.id)}
-                                  />
-
-                                  <span className={`rev-despacho-semaforo ${semaforoClass(b.listaParaDespacho)}`} />
-
-                                  <span className="rev-despacho-brigada-card__nombre">{b.nombre}</span>
-
-                                  <span
-
-                                    className={`rev-despacho-brigada-card__estado ${b.listaParaDespacho ? 'rev-despacho-brigada-card__estado--ok' : 'rev-despacho-brigada-card__estado--warn'}`}
-
-                                  >
-
-                                    {b.listaParaDespacho ? 'Lista' : 'Incompleta'}
-
-                                  </span>
-
-                                </div>
-
-                                {cap > 0 && (
-
-                                  <>
-
-                                    <div className="rev-despacho-brigada-card__progress" aria-hidden>
-
-                                      <div
-
-                                        className={`rev-despacho-brigada-card__progress-bar${b.listaParaDespacho ? ' rev-despacho-brigada-card__progress-bar--ok' : ''}`}
-
-                                        style={{ width: `${pct}%` }}
-
-                                      />
-
-                                    </div>
-
-                                    <span className="rev-despacho-brigada-card__meta">
-
-                                      Dotación {integ}/{cap} integrantes
-
-                                      {b.elegibilidad?.capacidadPasajerosVehiculoPrincipal != null &&
-
-                                        ` · ${b.elegibilidad.capacidadPasajerosVehiculoPrincipal} plazas vehículo principal`}
-
-                                    </span>
-
-                                  </>
-
-                                )}
-
-                                {!b.listaParaDespacho && b.elegibilidad?.motivos?.length ? (
-
-                                  <ul className="rev-despacho-brigada-card__motivos">
-
-                                    {b.elegibilidad.motivos.map((m) => (
-
-                                      <li key={m}>{m}</li>
-
-                                    ))}
-
-                                  </ul>
-
-                                ) : null}
-
-                              </button>
-
-                            );
-
-                          })}
-
-                        </div>
-
-                      )}
+                      <BrigadaSeleccionList
+                        brigadas={brigadas}
+                        selection={brigadaSelection}
+                        enabled={!!selectedIncidente}
+                        onToggle={() => setQuickDispatchError('')}
+                      />
 
                       {selectedIncidente && (
-                        <BrigadaBulkActionBar
-                          count={brigadaSelection.count}
-                          onDespachar={() => setShowDespachoWizard(true)}
-                          onClear={brigadaSelection.clear}
-                        />
+                        <>
+                          {quickDispatchError && (
+                            <Alert variant="danger" className="small py-2 mt-2 mb-0">
+                              {quickDispatchError}
+                            </Alert>
+                          )}
+                          <BrigadaBulkActionBar
+                            count={brigadaSelection.count}
+                            onDespachar={() => setShowDespachoWizard(true)}
+                            onDespachoRapido={() => {
+                              setQuickDispatchError('');
+                              setQuickDispatchOpen(true);
+                            }}
+                            despachoRapidoLoading={quickDispatching}
+                            onClear={brigadaSelection.clear}
+                          />
+                        </>
                       )}
 
                     </div>
@@ -1087,186 +893,6 @@ export default function DespachoOperacionPage() {
                 </div>
 
 
-
-                {selectedIncidente && selectedBrigada && (
-
-                  <aside className="rev-despacho-dock" aria-label="Confirmar despacho">
-
-                    <div className="rev-despacho-dock__grid">
-
-                      <div>
-
-                        <h3 className="h6 mb-2">Confirmar despacho</h3>
-
-                        <div className="rev-despacho-dock__summary">
-
-                          <span>
-
-                            <i className="bi bi-fire me-1 text-danger" aria-hidden />
-
-                            <strong>{selectedIncidente.folio ?? 'Incidente'}</strong>
-
-                          </span>
-
-                          <span className="rev-despacho-dock__arrow" aria-hidden>
-
-                            →
-
-                          </span>
-
-                          <span>
-
-                            <i className="bi bi-people me-1" aria-hidden />
-
-                            <strong>{selectedBrigada.nombre}</strong>
-
-                          </span>
-
-                          {selectedBrigada.detalle?.jefe && (
-
-                            <span className="text-muted small">
-
-                              Jefe: {selectedBrigada.detalle.jefe.nombre}{' '}
-
-                              {selectedBrigada.detalle.jefe.apellido}
-
-                            </span>
-
-                          )}
-
-                        </div>
-
-                        {vehiculosOpciones.length > 1 && (
-
-                          <Form.Group className="mb-2 mt-2">
-
-                            <Form.Label className="small mb-1">Vehículo de salida</Form.Label>
-
-                            <Form.Select
-
-                              size="sm"
-
-                              value={vehiculoDespachoId}
-
-                              onChange={(e) => setVehiculoDespachoId(Number(e.target.value))}
-
-                            >
-
-                              {vehiculosOpciones.map((v) => (
-
-                                <option key={v.id} value={v.id}>
-
-                                  {v.label}
-
-                                </option>
-
-                              ))}
-
-                            </Form.Select>
-
-                          </Form.Group>
-
-                        )}
-
-                        {!selectedBrigada.listaParaDespacho && (
-
-                          <Alert variant="warning" className="small py-2 mb-2">
-
-                            <strong>Brigada incompleta.</strong>{' '}
-
-                            {selectedBrigada.elegibilidad?.motivos?.length
-
-                              ? selectedBrigada.elegibilidad.motivos.join(' · ')
-
-                              : 'Complete dotación en Recursos.'}{' '}
-
-                            <Link to="/recursos" className="alert-link">
-
-                              Completar dotación
-
-                            </Link>
-
-                          </Alert>
-
-                        )}
-
-                        {assignError && (
-
-                          <Alert variant="danger" className="small py-2 mb-2">
-
-                            {assignError}
-
-                          </Alert>
-
-                        )}
-
-                      </div>
-
-                      <div className="d-flex flex-column gap-2 align-items-stretch align-items-md-end">
-
-                        <Button
-
-                          variant="outline-secondary"
-
-                          size="sm"
-
-                          onClick={() => {
-
-                            setSelectedBrigada(null);
-
-                            setAssignError('');
-
-                          }}
-
-                        >
-
-                          Cambiar brigada
-
-                        </Button>
-
-                        <Button
-
-                          variant="success"
-
-                          size="lg"
-
-                          disabled={assigning || !selectedBrigada.listaParaDespacho}
-
-                          onClick={handleAsignar}
-
-                        >
-
-                          {assigning ? (
-
-                            <>
-
-                              <span className="spinner-border spinner-border-sm me-2" role="status" />
-
-                              Despachando…
-
-                            </>
-
-                          ) : (
-
-                            <>
-
-                              <i className="bi bi-send-check me-2" aria-hidden />
-
-                              Confirmar despacho
-
-                            </>
-
-                          )}
-
-                        </Button>
-
-                      </div>
-
-                    </div>
-
-                  </aside>
-
-                )}
 
               </StateView>
 
@@ -1532,9 +1158,23 @@ export default function DespachoOperacionPage() {
         onSuccess={() => {
           refetchCola();
           loadActivos();
-          setSelectedBrigada(null);
           setTab('activos');
         }}
+      />
+
+      <ConfirmDialog
+        show={quickDispatchOpen}
+        title="Despacho rápido"
+        message={
+          selectedIncidente
+            ? `Se despachará ${selectedIncidente.folio ?? 'el incidente seleccionado'} con dotación completa (integrantes, vehículos y kit por defecto) hacia: ${brigadasSeleccionadasNombres || 'las brigadas seleccionadas'}.`
+            : 'Confirme el despacho rápido con la dotación completa.'
+        }
+        confirmLabel="Sí, despachar"
+        cancelLabel="Seguir revisando"
+        variant="primary"
+        onConfirm={() => void handleDespachoRapido()}
+        onCancel={() => setQuickDispatchOpen(false)}
       />
 
     </>

@@ -43,4 +43,10 @@ public class TransicionEstado {
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "realizado_por", length = 120)
+    private String realizadoPor;
+
+    @Column(length = 30)
+    private String origen;
 }

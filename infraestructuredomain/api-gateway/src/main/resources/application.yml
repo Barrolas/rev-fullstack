@@ -52,6 +52,12 @@ eureka:
     serviceUrl:
       defaultZone: ${EUREKA_URL:http://localhost:18761/eureka/}
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
 logging:
   level:
     "[org.springframework.cloud.gateway]": INFO

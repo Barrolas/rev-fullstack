@@ -24,12 +24,14 @@ import cl.duocuc.rev.recursos.dto.InstitucionDto;
 import cl.duocuc.rev.recursos.dto.RecursoAsignadoDto;
 import cl.duocuc.rev.recursos.dto.RecursosCatalogoResponse;
 import cl.duocuc.rev.recursos.dto.RecursosDisponiblesResponse;
+import cl.duocuc.rev.recursos.dto.TransferirIncidenteRequest;
 import cl.duocuc.rev.recursos.dto.VehiculoDto;
 import cl.duocuc.rev.recursos.dto.VehiculoRequest;
 import cl.duocuc.rev.recursos.entity.Asignacion;
 import cl.duocuc.rev.recursos.entity.AsignacionBrigadista;
 import cl.duocuc.rev.recursos.entity.AsignacionHerramienta;
 import cl.duocuc.rev.recursos.entity.Brigada;
+import cl.duocuc.rev.recursos.entity.BrigadaBrigadista;
 import cl.duocuc.rev.recursos.entity.BrigadaHerramienta;
 import cl.duocuc.rev.recursos.entity.BrigadaVehiculo;
 import cl.duocuc.rev.recursos.entity.Brigadista;
@@ -44,6 +46,7 @@ import cl.duocuc.rev.recursos.model.EstadoRecurso;
 import cl.duocuc.rev.recursos.repository.AsignacionBrigadistaRepository;
 import cl.duocuc.rev.recursos.repository.AsignacionHerramientaRepository;
 import cl.duocuc.rev.recursos.repository.AsignacionRepository;
+import cl.duocuc.rev.recursos.repository.BrigadaBrigadistaRepository;
 import cl.duocuc.rev.recursos.repository.BrigadaHerramientaRepository;
 import cl.duocuc.rev.recursos.repository.BrigadaRepository;
 import cl.duocuc.rev.recursos.repository.BrigadaVehiculoRepository;
@@ -82,6 +85,7 @@ public class RecursoService {
     private final ComunaRepository comunaRepository;
     private final BrigadistaRolRepository brigadistaRolRepository;
     private final BrigadaVehiculoRepository brigadaVehiculoRepository;
+    private final BrigadaBrigadistaRepository brigadaBrigadistaRepository;
 
     public List<InstitucionDto> listarInstituciones() {
         return institucionRepository.findAll().stream().map(this::toInstitucionDto).toList();
@@ -139,8 +143,16 @@ public class RecursoService {
         }
         if (detalle.getBrigadistas() == null || detalle.getBrigadistas().isEmpty()) {
             motivos.add("Sin integrantes asignados");
-        } else if (detalle.getBrigadistas().size() > detalle.getCapacidad()) {
-            motivos.add("Integrantes exceden capacidad de la brigada");
+        } else {
+            if (detalle.getBrigadistas().size() > detalle.getCapacidad()) {
+                motivos.add("Integrantes exceden capacidad de la brigada");
+            }
+            long noDisponibles = detalle.getBrigadistas().stream()
+                    .filter(b -> b.getEstado() != EstadoRecurso.DISPONIBLE)
+                    .count();
+            if (noDisponibles > 0) {
+                motivos.add(noDisponibles + " integrante(s) no disponible(s) (en otro despacho)");
+            }
         }
         if (detalle.getVehiculos() == null || detalle.getVehiculos().isEmpty()) {
             motivos.add("Sin vehículo activo en dotación");
@@ -148,8 +160,17 @@ public class RecursoService {
         if (detalle.getEstado() != EstadoRecurso.DISPONIBLE) {
             motivos.add("Brigada no disponible");
         }
+        if (detalle.getHerramientas() != null) {
+            for (BrigadaHerramientaItemDto item : detalle.getHerramientas()) {
+                Herramienta h = herramientaRepository.findById(item.getHerramientaId()).orElse(null);
+                if (h == null || h.getCantidadDisponible() < item.getCantidad()) {
+                    motivos.add("Stock insuficiente de " + item.getNombre());
+                    break;
+                }
+            }
+        }
         if (!detalle.isListaParaDespacho() && motivos.isEmpty()) {
-            motivos.add("Composición o stock de herramientas incompleto");
+            motivos.add("Composición de despacho incompleta");
         }
         Integer capPasajeros = detalle.getVehiculo() != null ? detalle.getVehiculo().getCapacidadPasajeros() : null;
         return BrigadaElegibilidadDto.builder()
@@ -216,9 +237,12 @@ public class RecursoService {
             Brigadista brigadista = brigadistaRepository.findById(brigadistaId)
                     .orElseThrow(() -> new BusinessRuleException(
                             "BRIGADISTA_NO_ENCONTRADO", "Brigadista no encontrado", HttpStatus.NOT_FOUND));
+            boolean esJefe = jefeId != null && jefeId.equals(brigadistaId);
+            Long rolId = esJefe ? rolJefe.getId() : rolCombatiente.getId();
             brigadista.setIdBrigada(brigadaId);
-            brigadista.setIdRolBrigadista(jefeId != null && jefeId.equals(brigadistaId) ? rolJefe.getId() : rolCombatiente.getId());
+            brigadista.setIdRolBrigadista(rolId);
             brigadistaRepository.save(brigadista);
+            vincularBrigadistaABrigada(brigadaId, brigadistaId, rolId, esJefe);
         }
         brigada.setIdJefeBrigadista(jefeId);
         brigadaRepository.save(brigada);
@@ -264,6 +288,36 @@ public class RecursoService {
                 .toList();
     }
 
+    @Transactional
+    public List<AsignacionActivaDto> transferirIncidente(TransferirIncidenteRequest request) {
+        if (request.getAsignacionIds() == null || request.getAsignacionIds().isEmpty()) {
+            throw new BusinessRuleException(
+                    "VALIDATION", "asignacionIds es obligatorio", HttpStatus.BAD_REQUEST);
+        }
+        if (request.getNuevoIncidenteId() == null) {
+            throw new BusinessRuleException(
+                    "VALIDATION", "nuevoIncidenteId es obligatorio", HttpStatus.BAD_REQUEST);
+        }
+        LocalDateTime now = LocalDateTime.now();
+        List<AsignacionActivaDto> resultado = new ArrayList<>();
+        for (Long asignacionId : request.getAsignacionIds()) {
+            Asignacion asignacion = asignacionRepository
+                    .findById(asignacionId)
+                    .orElseThrow(() -> new BusinessRuleException(
+                            "NOT_FOUND", "Asignacion no encontrada: " + asignacionId, HttpStatus.NOT_FOUND));
+            if (!Boolean.TRUE.equals(asignacion.getActiva())) {
+                throw new BusinessRuleException(
+                        "ASIGNACION_INACTIVA",
+                        "La asignacion " + asignacionId + " ya no esta activa",
+                        HttpStatus.CONFLICT);
+            }
+            asignacion.setIncidenteId(request.getNuevoIncidenteId());
+            asignacion.setFActualizacion(now);
+            resultado.add(toAsignacionActivaDto(asignacionRepository.save(asignacion)));
+        }
+        return resultado;
+    }
+
     public List<RecursoAsignadoDto> listarPorIncidente(UUID incidenteId) {
         List<RecursoAsignadoDto> resultado = new ArrayList<>();
         for (Asignacion asignacion : asignacionRepository.findAllByIncidenteIdAndActivaTrue(incidenteId)) {
@@ -306,16 +360,14 @@ public class RecursoService {
                     "VEHICULO_REQUERIDO", "Debe indicar vehículo para el despacho", HttpStatus.BAD_REQUEST);
         }
 
-        if (usarComposicion && vehiculoId != null) {
-            Vehiculo vehiculo = vehiculoRepository.findById(vehiculoId)
-                    .orElseThrow(() -> new BusinessRuleException(
-                            "VEHICULO_NO_ENCONTRADO", "Vehículo no encontrado", HttpStatus.NOT_FOUND));
+        if (usarComposicion) {
             int integrantes = integrantesDespacho.size();
-            if (vehiculo.getCapacidadPasajeros() != null && integrantes > vehiculo.getCapacidadPasajeros()) {
+            int plazasTotales = sumCapacidadPasajerosVehiculosDespacho(detalle, request);
+            if (plazasTotales > 0 && integrantes > plazasTotales) {
                 throw new BusinessRuleException(
                         "CAPACIDAD_PASAJEROS_EXCEDIDA",
-                        "Integrantes (" + integrantes + ") superan capacidad del vehículo ("
-                                + vehiculo.getCapacidadPasajeros() + ")",
+                        "Integrantes (" + integrantes + ") superan plazas de los vehículos del despacho ("
+                                + plazasTotales + ")",
                         HttpStatus.BAD_REQUEST);
             }
         }
@@ -374,9 +426,69 @@ public class RecursoService {
                 .rut(request.getRut() != null ? request.getRut().trim() : null)
                 .especialidad(request.getEspecialidad() != null ? request.getEspecialidad().trim() : null)
                 .idRolBrigadista(rolId)
+                .keycloakSub(request.getKeycloakSub())
+                .keycloakUsername(trimOrNull(request.getKeycloakUsername()))
+                .email(trimOrNull(request.getEmail()))
                 .estado(EstadoRecurso.DISPONIBLE)
                 .build();
         return toBrigadistaDto(brigadistaRepository.save(brigadista));
+    }
+
+    public BrigadistaDto obtenerBrigadistaPorKeycloakSub(UUID keycloakSub) {
+        Brigadista brigadista = brigadistaRepository.findByKeycloakSub(keycloakSub)
+                .orElseThrow(() -> new BusinessRuleException(
+                        "BRIGADISTA_NO_VINCULADO",
+                        "No hay brigadista operativo vinculado a esta cuenta",
+                        HttpStatus.NOT_FOUND));
+        return toBrigadistaDto(brigadista);
+    }
+
+    public BrigadistaDto obtenerBrigadistaPorUsername(String username) {
+        Brigadista brigadista = brigadistaRepository.findByKeycloakUsername(username)
+                .orElseThrow(() -> new BusinessRuleException(
+                        "BRIGADISTA_NO_VINCULADO",
+                        "No hay brigadista operativo vinculado a esta cuenta",
+                        HttpStatus.NOT_FOUND));
+        return toBrigadistaDto(brigadista);
+    }
+
+    @Transactional
+    public BrigadistaDto vincularKeycloakSub(Long brigadistaId, UUID keycloakSub, String keycloakUsername, String email) {
+        Brigadista brigadista = brigadistaRepository.findById(brigadistaId)
+                .orElseThrow(() -> new BusinessRuleException(
+                        "BRIGADISTA_NO_ENCONTRADO", "Brigadista no encontrado", HttpStatus.NOT_FOUND));
+        brigadista.setKeycloakSub(keycloakSub);
+        if (keycloakUsername != null && !keycloakUsername.isBlank()) {
+            brigadista.setKeycloakUsername(keycloakUsername.trim());
+        }
+        if (email != null && !email.isBlank()) {
+            brigadista.setEmail(email.trim());
+        }
+        return toBrigadistaDto(brigadistaRepository.save(brigadista));
+    }
+
+    public AsignacionActivaDto obtenerAsignacionActiva(Long asignacionId) {
+        Asignacion asignacion = asignacionRepository.findByIdAndActivaTrue(asignacionId)
+                .orElseThrow(() -> new BusinessRuleException(
+                        "ASIGNACION_NO_ENCONTRADA", "Asignación activa no encontrada", HttpStatus.NOT_FOUND));
+        return toAsignacionActivaDto(asignacion);
+    }
+
+    public List<AsignacionActivaDto> listarAsignacionesActivasPorBrigada(Long brigadaId) {
+        return asignacionRepository.findByBrigadaIdAndActivaTrueOrderByCreatedAtDesc(brigadaId).stream()
+                .map(this::toAsignacionActivaDto)
+                .toList();
+    }
+
+    public List<UUID> listarIncidenteIdsActivosPorBrigada(Long brigadaId) {
+        return asignacionRepository.findByBrigadaIdAndActivaTrueOrderByCreatedAtDesc(brigadaId).stream()
+                .map(Asignacion::getIncidenteId)
+                .distinct()
+                .toList();
+    }
+
+    public boolean brigadaTieneAsignacionActivaEnIncidente(Long brigadaId, UUID incidenteId) {
+        return asignacionRepository.existsByIncidenteIdAndBrigadaIdAndActivaTrue(incidenteId, brigadaId);
     }
 
     @Transactional
@@ -449,12 +561,22 @@ public class RecursoService {
             vehiculoRepository.save(vehiculo);
         }
 
-        for (AsignacionBrigadista ab : asignacionBrigadistaRepository.findByAsignacionId(asignacionId)) {
+        List<AsignacionBrigadista> brigadistasAsignacion =
+                asignacionBrigadistaRepository.findByAsignacionId(asignacionId);
+        for (AsignacionBrigadista ab : brigadistasAsignacion) {
             Brigadista brigadista = brigadistaRepository.findById(ab.getBrigadistaId()).orElseThrow();
             brigadista.setEstado(EstadoRecurso.DISPONIBLE);
             brigadistaRepository.save(brigadista);
         }
         asignacionBrigadistaRepository.deleteByAsignacionId(asignacionId);
+        if (brigadistasAsignacion.isEmpty()) {
+            for (Brigadista brigadista : brigadistaRepository.findByIdBrigada(asignacion.getBrigadaId())) {
+                if (brigadista.getEstado() == EstadoRecurso.ASIGNADO) {
+                    brigadista.setEstado(EstadoRecurso.DISPONIBLE);
+                    brigadistaRepository.save(brigadista);
+                }
+            }
+        }
 
         for (AsignacionHerramienta ah : asignacionHerramientaRepository.findByAsignacionId(asignacionId)) {
             Herramienta herramienta = herramientaRepository.findById(ah.getHerramientaId()).orElseThrow();
@@ -539,11 +661,42 @@ public class RecursoService {
     }
 
     private void desvincularBrigadistasDeBrigada(Long brigadaId) {
-        for (Brigadista b : brigadistaRepository.findByIdBrigada(brigadaId)) {
-            b.setIdBrigada(null);
-            b.setIdRolBrigadista(null);
-            brigadistaRepository.save(b);
+        LocalDateTime ahora = LocalDateTime.now();
+        for (BrigadaBrigadista membresia : brigadaBrigadistaRepository.findByBrigadaIdAndActivaTrue(brigadaId)) {
+            membresia.setActiva(false);
+            membresia.setFHasta(ahora);
+            brigadaBrigadistaRepository.save(membresia);
+            Brigadista b = brigadistaRepository.findById(membresia.getBrigadistaId()).orElse(null);
+            if (b != null) {
+                b.setIdBrigada(null);
+                b.setIdRolBrigadista(null);
+                brigadistaRepository.save(b);
+            }
         }
+    }
+
+    private void vincularBrigadistaABrigada(Long brigadaId, Long brigadistaId, Long rolId, boolean esJefe) {
+        LocalDateTime ahora = LocalDateTime.now();
+        brigadaBrigadistaRepository.findByBrigadistaIdAndActivaTrue(brigadistaId).ifPresent(m -> {
+            if (!m.getBrigadaId().equals(brigadaId)) {
+                m.setActiva(false);
+                m.setFHasta(ahora);
+                brigadaBrigadistaRepository.save(m);
+            }
+        });
+        brigadaBrigadistaRepository.findByBrigadaIdAndBrigadistaIdAndActivaTrue(brigadaId, brigadistaId)
+                .ifPresentOrElse(m -> {
+                    m.setIdRolBrigadista(rolId);
+                    m.setEsJefe(esJefe);
+                    brigadaBrigadistaRepository.save(m);
+                }, () -> brigadaBrigadistaRepository.save(BrigadaBrigadista.builder()
+                        .brigadaId(brigadaId)
+                        .brigadistaId(brigadistaId)
+                        .idRolBrigadista(rolId)
+                        .esJefe(esJefe)
+                        .activa(true)
+                        .fDesde(ahora)
+                        .build()));
     }
 
     private Brigada validarBrigadaEditable(Long brigadaId) {
@@ -644,6 +797,31 @@ public class RecursoService {
                     .toList();
         }
         return detalle.getHerramientas() != null ? detalle.getHerramientas() : List.of();
+    }
+
+    private int sumCapacidadPasajerosVehiculosDespacho(BrigadaDetalleDto detalle, AsignarRequest request) {
+        List<Long> vehiculoIds;
+        if (request.getVehiculoIds() != null && !request.getVehiculoIds().isEmpty()) {
+            vehiculoIds = request.getVehiculoIds();
+        } else if (detalle.getVehiculos() != null && !detalle.getVehiculos().isEmpty()) {
+            vehiculoIds = detalle.getVehiculos().stream().map(BrigadaVehiculoDto::getVehiculoId).toList();
+        } else if (request.getPrincipalVehiculoId() != null) {
+            vehiculoIds = List.of(request.getPrincipalVehiculoId());
+        } else if (request.getVehiculoId() != null) {
+            vehiculoIds = List.of(request.getVehiculoId());
+        } else if (detalle.getVehiculoId() != null) {
+            vehiculoIds = List.of(detalle.getVehiculoId());
+        } else {
+            return 0;
+        }
+        int sum = 0;
+        for (Long vehiculoId : vehiculoIds) {
+            Vehiculo vehiculo = vehiculoRepository.findById(vehiculoId).orElse(null);
+            if (vehiculo != null && vehiculo.getCapacidadPasajeros() != null) {
+                sum += vehiculo.getCapacidadPasajeros();
+            }
+        }
+        return sum;
     }
 
     private Long resolverVehiculoPrincipalDespacho(BrigadaDetalleDto detalle, AsignarRequest request) {
@@ -765,7 +943,9 @@ public class RecursoService {
             vehiculoOk = false;
         }
 
-        List<BrigadistaDto> brigadistas = brigadistaRepository.findByIdBrigada(brigada.getId()).stream()
+        List<BrigadistaDto> brigadistas = brigadaBrigadistaRepository.findByBrigadaIdAndActivaTrue(brigada.getId()).stream()
+                .map(m -> brigadistaRepository.findById(m.getBrigadistaId()).orElse(null))
+                .filter(b -> b != null)
                 .map(this::toBrigadistaDto)
                 .toList();
 
@@ -913,6 +1093,10 @@ public class RecursoService {
                 rolNombre = rol.getNombre();
             }
         }
+        Boolean esJefe = brigadaBrigadistaRepository
+                .findByBrigadistaIdAndActivaTrue(brigadista.getId())
+                .map(BrigadaBrigadista::getEsJefe)
+                .orElse(null);
         return BrigadistaDto.builder()
                 .id(brigadista.getId())
                 .nombre(brigadista.getNombre())
@@ -924,6 +1108,9 @@ public class RecursoService {
                 .idRolBrigadista(brigadista.getIdRolBrigadista())
                 .rolCodigo(rolCodigo)
                 .rolNombre(rolNombre)
+                .keycloakUsername(brigadista.getKeycloakUsername())
+                .email(brigadista.getEmail())
+                .esJefe(esJefe)
                 .build();
     }
 

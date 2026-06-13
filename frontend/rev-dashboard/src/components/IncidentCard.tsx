@@ -4,6 +4,7 @@ import { DashboardItem } from '../api';
 import RiskBadge from './RiskBadge';
 import { formatEstadoLabel } from '../utils/dashboardAggregates';
 import { getEstadoVisual, hasPendingCorrelation, isHighPriorityIncident, isLinkedReport } from '../utils/incidentesFilters';
+import { tiempoRelativo } from '../utils/formatFecha';
 
 interface IncidentCardProps {
   item: DashboardItem;
@@ -81,6 +82,13 @@ export default function IncidentCard({ item, selected = false, canOperate = fals
         </div>
 
         <p className="rev-incident-card__desc">{incidente.descripcion}</p>
+
+        {incidente.createdAt && (
+          <p className="text-muted small mb-2">
+            <i className="bi bi-clock me-1" aria-hidden="true" />
+            Registrado {tiempoRelativo(incidente.createdAt)}
+          </p>
+        )}
 
         {incidente.estado === 'CERRADO' && (
           <p className="rev-incident-card__closed-hint">

@@ -35,7 +35,11 @@ function payloadForApi(form: ZonaPayload): ZonaPayload {
   };
 }
 
-export default function ZonasAdminPanel() {
+interface ZonasAdminPanelProps {
+  onChanged?: () => void;
+}
+
+export default function ZonasAdminPanel({ onChanged }: ZonasAdminPanelProps) {
   const [zonas, setZonas] = useState<Zona[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -97,6 +101,7 @@ export default function ZonasAdminPanel() {
       }
       resetForm();
       await load();
+      onChanged?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo guardar la zona');
     } finally {
@@ -115,6 +120,7 @@ export default function ZonasAdminPanel() {
       setMessage('Zona desactivada.');
       if (editingId === id) resetForm();
       await load();
+      onChanged?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo desactivar');
     } finally {

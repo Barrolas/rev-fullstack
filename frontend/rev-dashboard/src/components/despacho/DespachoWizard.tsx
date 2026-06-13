@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, Button, Form, ListGroup } from 'react-bootstrap';
+import { Alert, Button, ListGroup } from 'react-bootstrap';
 import {
   asignarDespachoLote,
   fetchBrigadaDetalle,
@@ -10,9 +10,12 @@ import {
 import {
   createDraftFromDetalle,
   draftToAsignarItem,
+  validateDraftForDespacho,
   type DespachoBrigadaDraft,
 } from '../../utils/despachoWizardState';
+import ConfirmDialog from '../primitives/ConfirmDialog';
 import RevModal from '../primitives/RevModal';
+import DespachoCompositionSummary from './DespachoCompositionSummary';
 import DespachoTreeCheckbox from './DespachoTreeCheckbox';
 import { DESPACHO_WIZARD_STEPS } from './despachoWizardSteps';
 
@@ -45,17 +48,26 @@ export default function DespachoWizard({
   const [incidenteId, setIncidenteId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [loteResult, setLoteResult] = useState<DespachoAsignarLoteResponse | null>(null);
+  const [confirmDespachoOpen, setConfirmDespachoOpen] = useState(false);
 
   const incidenteSeleccionado = useMemo(
     () => cola.find((c) => c.incidenteId === incidenteId) ?? null,
     [cola, incidenteId],
   );
 
+  const composicionError = useMemo(
+    () => drafts.map(validateDraftForDespacho).find((msg) => msg != null) ?? null,
+    [drafts],
+  );
+
+  const incidenteFijado = !!incidenteIdPreseleccionado;
+
   const reset = useCallback(() => {
-    setStep(0);
+    setStep(incidenteIdPreseleccionado ? 1 : 0);
     setDrafts([]);
     setError('');
     setLoteResult(null);
+    setConfirmDespachoOpen(false);
     setIncidenteId(incidenteIdPreseleccionado ?? null);
   }, [incidenteIdPreseleccionado]);
 
@@ -87,17 +99,17 @@ export default function DespachoWizard({
 
   const canNext = (): boolean => {
     if (step === 0) return !!incidenteId;
-    if (step === 3) {
-      return drafts.every((d) => {
-        if (d.vehiculoIds.size <= 1) return true;
-        return d.principalVehiculoId != null && d.vehiculoIds.has(d.principalVehiculoId);
-      });
-    }
+    if (step === 1) return composicionError == null;
     return true;
   };
 
   const handleDespachar = async () => {
     if (!incidenteId) return;
+    const validation = drafts.map(validateDraftForDespacho).find((msg) => msg != null);
+    if (validation) {
+      setError(validation);
+      return;
+    }
     setSubmitting(true);
     setError('');
     try {
@@ -118,13 +130,23 @@ export default function DespachoWizard({
 
   const handleNext = () => {
     if (step === LAST_FORM_STEP) {
-      void handleDespachar();
+      setConfirmDespachoOpen(true);
       return;
     }
     if (step < LAST_FORM_STEP) setStep((s) => s + 1);
   };
 
+  const confirmDespachoMessage = useMemo(() => {
+    const folio = incidenteSeleccionado?.folio ?? incidenteId ?? '—';
+    const brigadas = drafts.map((d) => d.nombre).join(', ');
+    return `¿Confirma el despacho de ${drafts.length} brigada${drafts.length !== 1 ? 's' : ''} (${brigadas}) al incidente ${folio}?`;
+  }, [drafts, incidenteId, incidenteSeleccionado]);
+
   const handleBack = () => {
+    if (step === 1 && incidenteFijado) {
+      onHide();
+      return;
+    }
     if (step > 0 && step < STEPS.length - 1) setStep((s) => s - 1);
   };
 
@@ -138,14 +160,19 @@ export default function DespachoWizard({
       size="lg"
     >
       <div className="rev-dotacion-wizard__steps mb-3" aria-label="Pasos del asistente">
-        {STEPS.map((label, i) => (
+        {STEPS.map((label, i) => {
+          const done = i < step || (incidenteFijado && i === 0);
+          const active = i === step;
+          return (
           <span
             key={label}
-            className={`rev-dotacion-wizard__step${i === step ? ' rev-dotacion-wizard__step--active' : ''}${i < step ? ' rev-dotacion-wizard__step--done' : ''}`}
+            className={`rev-dotacion-wizard__step${active ? ' active' : ''}${done ? ' done' : ''}`}
+            aria-current={active ? 'step' : undefined}
           >
             {i + 1}. {label}
           </span>
-        ))}
+          );
+        })}
       </div>
 
       {error && (
@@ -158,7 +185,7 @@ export default function DespachoWizard({
 
       {!loading && !isResultStep && (
         <>
-          {step === 0 && (
+          {step === 0 && !incidenteFijado && (
             <div>
               <p className="small text-muted">
                 Seleccione el incidente de la cola operativa ({brigadaIds.length} brigada
@@ -172,20 +199,24 @@ export default function DespachoWizard({
                 </Alert>
               ) : (
                 <ListGroup className="rev-despacho-wizard-cola">
-                  {cola.map((item) => (
+                  {cola.map((item) => {
+                    const selected = incidenteId === item.incidenteId;
+                    return (
                     <ListGroup.Item
                       key={item.incidenteId}
-                      action
-                      active={incidenteId === item.incidenteId}
+                      className={`rev-despacho-wizard-cola-item${selected ? ' rev-despacho-wizard-cola-item--selected' : ''}`}
                       onClick={() => setIncidenteId(item.incidenteId)}
                     >
-                      <div className="fw-semibold">
+                      <div className="rev-despacho-wizard-cola-item__head">
                         {item.folio ?? item.incidenteId.slice(0, 8)}
                         <span className="ms-2 badge bg-secondary">{item.estado}</span>
                       </div>
-                      <div className="small text-muted">{item.tipo} · {item.descripcion}</div>
+                      <div className="rev-despacho-wizard-cola-item__desc">
+                        {item.tipo} · {item.descripcion}
+                      </div>
                     </ListGroup.Item>
-                  ))}
+                    );
+                  })}
                 </ListGroup>
               )}
             </div>
@@ -194,20 +225,13 @@ export default function DespachoWizard({
           {step === 1 && (
             <div>
               <p className="small text-muted mb-3">
-                Revise la selección. Si está correcta, pulse <strong>Siguiente</strong> para ajustar
-                excepciones en la composición.
+                Ajuste integrantes, vehículos (plazas se suman; marque <strong>Prioritario</strong> el de salida) y kit.
               </p>
-              {drafts.map((d) => (
-                <DespachoTreeCheckbox key={d.brigadaId} draft={d} editable={false} />
-              ))}
-            </div>
-          )}
-
-          {step === 2 && (
-            <div>
-              <p className="small text-muted mb-3">
-                Todo el kit viene marcado por defecto. Desmarque solo las excepciones de esta salida.
-              </p>
+              {composicionError && (
+                <Alert variant="warning" className="small py-2">
+                  {composicionError}
+                </Alert>
+              )}
               {drafts.map((d, i) => (
                 <DespachoTreeCheckbox
                   key={d.brigadaId}
@@ -219,55 +243,27 @@ export default function DespachoWizard({
             </div>
           )}
 
-          {step === 3 && (
-            <div>
+          {step === 2 && (
+            <div className="rev-despacho-wizard-confirm">
               <p className="small text-muted mb-3">
-                Confirme el vehículo principal cuando hay más de un vehículo en la salida.
+                Revise el resumen antes de despachar. Use <strong>Atrás</strong> si necesita modificar la composición.
               </p>
-              {drafts.map((d, i) => (
-                <div key={d.brigadaId} className="rev-despacho-wizard-veh mb-3">
-                  <div className="fw-semibold mb-2">{d.nombre}</div>
-                  {[...d.vehiculoIds].length <= 1 ? (
-                    <p className="small text-muted mb-0">
-                      {d.principalVehiculoId
-                        ? `Vehículo único: ${d.detalle.vehiculos?.find((v) => v.vehiculoId === d.principalVehiculoId)?.patente ?? d.principalVehiculoId}`
-                        : 'Sin vehículo en composición'}
-                    </p>
-                  ) : (
-                    <Form.Select
-                      size="sm"
-                      value={d.principalVehiculoId ?? ''}
-                      onChange={(e) => {
-                        const next = { ...d, principalVehiculoId: Number(e.target.value) };
-                        updateDraft(i, next);
-                      }}
-                    >
-                      <option value="" disabled>
-                        Elija principal…
-                      </option>
-                      {[...d.vehiculoIds].map((vid) => {
-                        const v = d.detalle.vehiculos?.find((x) => x.vehiculoId === vid);
-                        return (
-                          <option key={vid} value={vid}>
-                            {v?.patente ?? vid} {v?.tipo ? `· ${v.tipo}` : ''}
-                          </option>
-                        );
-                      })}
-                    </Form.Select>
+              <div className="rev-despacho-wizard-confirm__incidente">
+                <div className="rev-despacho-wizard-confirm__incidente-label">Incidente</div>
+                <div className="rev-despacho-wizard-confirm__incidente-folio">
+                  {incidenteSeleccionado?.folio ?? incidenteId}
+                  {incidenteSeleccionado?.estado && (
+                    <span className="badge bg-secondary ms-2">{incidenteSeleccionado.estado}</span>
                   )}
                 </div>
-              ))}
-            </div>
-          )}
-
-          {step === 4 && (
-            <div>
-              <p className="small mb-2">
-                <strong>Incidente:</strong>{' '}
-                {incidenteSeleccionado?.folio ?? incidenteId}
-              </p>
+                {incidenteSeleccionado?.descripcion && (
+                  <p className="rev-despacho-wizard-confirm__incidente-desc mb-0">
+                    {incidenteSeleccionado.tipo} · {incidenteSeleccionado.descripcion}
+                  </p>
+                )}
+              </div>
               {drafts.map((d) => (
-                <DespachoTreeCheckbox key={d.brigadaId} draft={d} editable={false} />
+                <DespachoCompositionSummary key={d.brigadaId} draft={d} />
               ))}
             </div>
           )}
@@ -312,6 +308,20 @@ export default function DespachoWizard({
           </Button>
         )}
       </div>
+
+      <ConfirmDialog
+        show={confirmDespachoOpen}
+        title="Confirmar despacho"
+        message={confirmDespachoMessage}
+        confirmLabel="Sí, despachar"
+        cancelLabel="Seguir revisando"
+        variant="primary"
+        onConfirm={() => {
+          setConfirmDespachoOpen(false);
+          void handleDespachar();
+        }}
+        onCancel={() => setConfirmDespachoOpen(false)}
+      />
     </RevModal>
   );
 }

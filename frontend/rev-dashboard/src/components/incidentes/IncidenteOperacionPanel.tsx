@@ -143,9 +143,9 @@ export default function IncidenteOperacionPanel({
         </div>
         <div className="rev-incidente-ops__head-actions">
           {onAssignClick ? (
-            <Button variant="outline-primary" size="sm" onClick={onAssignClick}>
-              <i className="bi bi-truck me-1" aria-hidden />
-              Despachar brigada
+            <Button variant="primary" size="sm" onClick={onAssignClick}>
+              <i className="bi bi-list-check me-1" aria-hidden />
+              Despachar brigada…
             </Button>
           ) : (
             <Link

@@ -16,18 +16,18 @@ import ConfirmDialog from '../primitives/ConfirmDialog';
 
 
 
-const NAV_ITEMS = [
-
+const NAV_OPERADOR = [
   { to: '/inicio', label: 'Inicio', icon: 'bi-house', end: false },
-
   { to: '/despacho/operacion', label: 'Despacho', icon: 'bi-speedometer2', end: true },
-
   { to: '/incidentes', label: 'Incidentes', icon: 'bi-fire', end: false },
-
   { to: '/zonas', label: 'Zonas de riesgo', icon: 'bi-map', end: false },
-
   { to: '/recursos', label: 'Recursos', icon: 'bi-truck', end: false },
+];
 
+const NAV_BRIGADISTA = [
+  { to: '/mis-incidentes', label: 'Mis incidentes', icon: 'bi-clipboard-check', end: true },
+  { to: '/zonas', label: 'Zonas de riesgo', icon: 'bi-map', end: false },
+  { to: '/recursos', label: 'Mi brigada', icon: 'bi-people', end: false },
 ];
 
 
@@ -36,7 +36,8 @@ export default function Sidebar() {
 
   const { sidebarOpen, sidebarCollapsed, closeSidebar, toggleSidebarCollapsed } = useLayout();
 
-  const { displayName, role, isAdmin, keycloakAdminUrl, username } = useAuth();
+  const { displayName, role, isAdmin, keycloakAdminUrl, username, isBrigadistaOnly } = useAuth();
+  const navItems = isBrigadistaOnly ? NAV_BRIGADISTA : NAV_OPERADOR;
 
   const [logoutOpen, setLogoutOpen] = useState(false);
 
@@ -91,7 +92,7 @@ export default function Sidebar() {
 
         <p className="rev-sidebar__nav-heading">Módulos</p>
 
-        {NAV_ITEMS.map((item) => (
+        {navItems.map((item) => (
 
           <NavLink
 

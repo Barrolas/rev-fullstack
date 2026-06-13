@@ -32,7 +32,23 @@ public class KeycloakAdminService {
     public RegisterResponse registerCiudadano(RegisterRequest request) {
         validate(request);
         String adminToken = obtainAdminToken();
+        UUID userId = crearUsuario(adminToken, request);
+        assignRealmRole(adminToken, userId, "Ciudadano");
+        return RegisterResponse.builder().userId(userId).username(request.getUsername()).build();
+    }
 
+    public RegisterResponse registerBrigadista(RegisterRequest request) {
+        validate(request);
+        if (request.getEmail() == null || request.getEmail().isBlank()) {
+            throw new BusinessRuleException("VALIDATION", "El email es obligatorio para brigadistas", HttpStatus.BAD_REQUEST);
+        }
+        String adminToken = obtainAdminToken();
+        UUID userId = crearUsuario(adminToken, request);
+        assignRealmRole(adminToken, userId, "Brigadista");
+        return RegisterResponse.builder().userId(userId).username(request.getUsername()).build();
+    }
+
+    private UUID crearUsuario(String adminToken, RegisterRequest request) {
         Map<String, Object> body = new HashMap<>();
         body.put("username", request.getUsername());
         body.put("enabled", true);
@@ -58,10 +74,7 @@ public class KeycloakAdminService {
             throw new BusinessRuleException("REGISTER_FAILED", "No se pudo crear el usuario", HttpStatus.BAD_REQUEST);
         }
 
-        UUID userId = extractUserId(createResponse.getHeaders().getLocation());
-        assignRealmRole(adminToken, userId, "Ciudadano");
-
-        return RegisterResponse.builder().userId(userId).username(request.getUsername()).build();
+        return extractUserId(createResponse.getHeaders().getLocation());
     }
 
     private void assignRealmRole(String adminToken, UUID userId, String roleName) {

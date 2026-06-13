@@ -9,7 +9,8 @@ type LoginTab = 'ingresar' | 'reportar';
 
 const DEV_USERS = [
   { user: 'despachador', role: 'Despachador' },
-  { user: 'brigadista', role: 'Brigadista' },
+  { user: 'maria.gonzalez', role: 'Brigadista jefe' },
+  { user: 'luis.rojas', role: 'Brigadista' },
   { user: 'admin', role: 'Admin' },
 ] as const;
 

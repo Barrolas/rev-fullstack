@@ -44,7 +44,7 @@ export default function TerritorialMapLayers({
         const selected = selectedZoneId === z.id;
         return (
           <Circle
-            key={`zona-${z.id}`}
+            key={`zona-${z.id}-${z.nivelRiesgo}`}
             center={[z.centerLat, z.centerLng]}
             radius={z.radioMetros}
             pathOptions={zonaMapStyle(z.nivelRiesgo, selected)}

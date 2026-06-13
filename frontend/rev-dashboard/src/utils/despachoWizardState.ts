@@ -39,6 +39,50 @@ export function createDraftFromDetalle(detalle: BrigadaDetalle): DespachoBrigada
   };
 }
 
+export function resolveVehiculos(draft: DespachoBrigadaDraft) {
+  if (draft.detalle.vehiculos?.length) return draft.detalle.vehiculos;
+  if (draft.detalle.vehiculo) {
+    const vehiculoId = draft.detalle.vehiculoId ?? draft.detalle.vehiculo.id;
+    return [
+      {
+        id: vehiculoId,
+        vehiculoId,
+        patente: draft.detalle.vehiculo.patente,
+        tipo: draft.detalle.vehiculo.tipo,
+        capacidadPasajeros: draft.detalle.vehiculo.capacidadPasajeros,
+        principal: true,
+        activa: true,
+      },
+    ];
+  }
+  return [];
+}
+
+/** Suma plazas de todos los vehículos marcados en la composición. */
+export function selectedVehiclesCapacity(draft: DespachoBrigadaDraft): number {
+  return resolveVehiculos(draft)
+    .filter((v) => draft.vehiculoIds.has(v.vehiculoId))
+    .reduce((sum, v) => sum + (v.capacidadPasajeros ?? 0), 0);
+}
+
+/** Mensaje de error si la composición no puede despacharse; null si está OK. */
+export function validateDraftForDespacho(draft: DespachoBrigadaDraft): string | null {
+  if (draft.brigadistaIds.size === 0) {
+    return `${draft.nombre}: seleccione al menos un integrante.`;
+  }
+  if (draft.vehiculoIds.size === 0) {
+    return `${draft.nombre}: seleccione al menos un vehículo.`;
+  }
+  if (draft.principalVehiculoId == null || !draft.vehiculoIds.has(draft.principalVehiculoId)) {
+    return `${draft.nombre}: indique el vehículo prioritario de salida.`;
+  }
+  const plazasTotales = selectedVehiclesCapacity(draft);
+  if (plazasTotales > 0 && draft.brigadistaIds.size > plazasTotales) {
+    return `${draft.nombre}: integrantes (${draft.brigadistaIds.size}) superan plazas de los vehículos seleccionados (${plazasTotales}).`;
+  }
+  return null;
+}
+
 export function draftToAsignarItem(draft: DespachoBrigadaDraft) {
   return {
     brigadaId: draft.brigadaId,

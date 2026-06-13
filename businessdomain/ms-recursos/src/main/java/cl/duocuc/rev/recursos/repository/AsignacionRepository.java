@@ -19,4 +19,6 @@ public interface AsignacionRepository extends JpaRepository<Asignacion, Long> {
     List<Asignacion> findAllByIncidenteIdAndActivaTrue(UUID incidenteId);
 
     List<Asignacion> findByActivaTrueOrderByCreatedAtDesc();
+
+    List<Asignacion> findByBrigadaIdAndActivaTrueOrderByCreatedAtDesc(Long brigadaId);
 }

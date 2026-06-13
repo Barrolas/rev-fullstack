@@ -271,6 +271,54 @@
   align-items: center;
 }
 
+.rev-public-location__manual-coords {
+  margin-bottom: 0.75rem;
+}
+
+.rev-public-location__manual-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.35rem;
+}
+
+.rev-public-location__manual-input {
+  flex: 1 1 7rem;
+  min-width: 0;
+  padding: 0.45rem 0.65rem;
+  font-size: var(--rev-text-sm);
+  color: var(--rev-text);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--rev-border);
+  border-radius: var(--rev-radius-sm);
+}
+
+.rev-public-location__manual-input:focus {
+  outline: none;
+  border-color: var(--rev-orange-border);
+}
+
+.rev-public-location__manual-apply {
+  padding: 0.45rem 0.85rem;
+  font-size: var(--rev-text-xs);
+  font-weight: 600;
+  color: var(--rev-text);
+  background: var(--rev-orange-muted);
+  border: 1px solid var(--rev-orange-border);
+  border-radius: var(--rev-radius-sm);
+  cursor: pointer;
+}
+
+.rev-public-location__manual-apply:hover:not(:disabled) {
+  background: rgba(249, 115, 22, 0.2);
+}
+
+.rev-public-location__manual-apply:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .rev-public-location__gps {
   display: inline-flex;
   align-items: center;

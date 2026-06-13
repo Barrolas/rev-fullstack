@@ -5,6 +5,126 @@
 
 .rev-despacho-wizard-cola .list-group-item {
   cursor: pointer;
+  background: var(--rev-surface, #1e293b);
+  border-color: var(--rev-border, rgba(148, 163, 184, 0.22));
+  color: var(--rev-text, #e2e8f0);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.rev-despacho-wizard-cola .list-group-item:hover {
+  background: var(--rev-surface-elevated, #243044);
+  border-color: var(--rev-orange-border, rgba(251, 146, 60, 0.45));
+  color: var(--rev-text, #e2e8f0);
+}
+
+.rev-despacho-wizard-cola-item--selected {
+  background: var(--rev-orange-muted, rgba(251, 146, 60, 0.14)) !important;
+  border-color: var(--rev-orange, #fb923c) !important;
+  box-shadow: inset 3px 0 0 var(--rev-orange, #fb923c);
+  color: var(--rev-text, #e2e8f0) !important;
+}
+
+.rev-despacho-wizard-cola-item__head {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.rev-despacho-wizard-cola-item__desc {
+  font-size: 0.8125rem;
+  color: var(--rev-text-secondary, #94a3b8);
+  margin-top: 0.2rem;
+}
+
+.rev-despacho-wizard-cola-item--selected .rev-despacho-wizard-cola-item__desc {
+  color: var(--rev-text, #cbd5e1);
+}
+
+.rev-despacho-wizard-confirm__incidente {
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  background: var(--rev-surface-elevated, #243044);
+  border: 1px solid var(--rev-border, rgba(148, 163, 184, 0.22));
+}
+
+.rev-despacho-wizard-confirm__incidente-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--rev-text-secondary, #94a3b8);
+  margin-bottom: 0.35rem;
+}
+
+.rev-despacho-wizard-confirm__incidente-folio {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--rev-text, #e2e8f0);
+}
+
+.rev-despacho-wizard-confirm__incidente-desc {
+  font-size: 0.8125rem;
+  color: var(--rev-text-secondary, #94a3b8);
+  margin-top: 0.35rem;
+}
+
+.rev-despacho-summary {
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.75rem;
+  border-radius: 8px;
+  background: var(--rev-surface, #1e293b);
+  border: 1px solid var(--rev-border, rgba(148, 163, 184, 0.22));
+}
+
+.rev-despacho-summary__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.65rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--rev-border, rgba(148, 163, 184, 0.18));
+}
+
+.rev-despacho-summary__title {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--rev-text, #e2e8f0);
+}
+
+.rev-despacho-summary__block + .rev-despacho-summary__block {
+  margin-top: 0.6rem;
+}
+
+.rev-despacho-summary__label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--rev-orange, #fb923c);
+  margin-bottom: 0.25rem;
+}
+
+.rev-despacho-summary__list {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.8125rem;
+  color: var(--rev-text, #cbd5e1);
+}
+
+.rev-despacho-summary__list li + li {
+  margin-top: 0.15rem;
+}
+
+.rev-despacho-summary__tag {
+  display: inline-block;
+  margin-left: 0.4rem;
+  padding: 0.05rem 0.4rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  border-radius: 4px;
+  color: var(--rev-cyan, #22d3ee);
+  background: rgba(34, 211, 238, 0.12);
 }
 
 .rev-despacho-tree {
@@ -47,21 +167,51 @@
   margin-bottom: 0.15rem;
 }
 
+.rev-despacho-tree__veh-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  margin-bottom: 0.2rem;
+}
+
+.rev-despacho-tree__principal {
+  font-size: 0.75rem;
+  margin-bottom: 0;
+}
+
+.rev-despacho-tree__principal-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--rev-cyan, #22d3ee);
+}
+
+.rev-despacho-tree__warn {
+  margin-top: 0.35rem;
+  padding-left: 1rem;
+}
+
 .rev-brigada-bulk-bar {
   position: sticky;
   bottom: 0;
   z-index: 20;
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
+  flex-direction: column;
+  gap: 0.65rem;
   margin-top: 1rem;
   padding: 0.75rem 1rem;
   background: var(--rev-surface-elevated, #1e293b);
-  border: 1px solid var(--rev-cyan, #22d3ee);
+  border: 1px solid var(--rev-orange-border);
   border-radius: 8px;
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.rev-brigada-bulk-bar__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
 }
 
 .rev-brigada-bulk-bar__count {
@@ -69,14 +219,97 @@
   font-size: 0.875rem;
 }
 
+.rev-brigada-bulk-bar__info {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: 1px solid var(--rev-border);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--rev-text-secondary);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.rev-brigada-bulk-bar__info:hover {
+  color: var(--rev-orange);
+  border-color: var(--rev-orange-border);
+  background: var(--rev-orange-muted);
+}
+
+.rev-brigada-bulk-bar__info:focus-visible {
+  outline: 2px solid var(--rev-orange);
+  outline-offset: 2px;
+}
+
+.rev-despacho-modes-help {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.rev-despacho-modes-help__block {
+  padding: 1rem;
+  border: 1px solid var(--rev-border);
+  border-radius: var(--rev-radius-sm, 8px);
+  background: var(--rev-bg-secondary, #0b172a);
+}
+
+.rev-despacho-modes-help__block--muted {
+  background: transparent;
+}
+
+.rev-despacho-modes-help__title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.rev-despacho-modes-help__lead {
+  color: var(--rev-text-secondary);
+  margin-bottom: 0.75rem;
+}
+
+.rev-despacho-modes-help ul {
+  margin-bottom: 0.75rem;
+  padding-left: 1.25rem;
+  color: var(--rev-text-secondary);
+}
+
+.rev-despacho-modes-help li + li {
+  margin-top: 0.35rem;
+}
+
 .rev-brigada-bulk-bar__actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
   align-items: center;
+  width: 100%;
 }
 
 .rev-despacho-brigada-card__check {
   flex-shrink: 0;
   margin-right: 0.35rem;
+}
+
+.rev-despacho-brigada-card__check .form-check-input {
+  background-color: var(--rev-bg);
+  border-color: var(--rev-border);
+  cursor: pointer;
+}
+
+.rev-despacho-brigada-card__check .form-check-input:checked {
+  background-color: var(--rev-orange);
+  border-color: var(--rev-orange);
+}
+
+.rev-despacho-brigada-card__check .form-check-input:focus {
+  border-color: var(--rev-orange-border);
+  box-shadow: 0 0 0 0.2rem rgba(249, 115, 22, 0.18);
 }

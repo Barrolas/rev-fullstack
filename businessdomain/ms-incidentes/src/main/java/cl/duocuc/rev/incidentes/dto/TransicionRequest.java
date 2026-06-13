@@ -6,4 +6,6 @@ import lombok.Data;
 @Data
 public class TransicionRequest {
     private EstadoIncidente estadoDestino;
+    private String realizadoPor;
+    private String origen;
 }

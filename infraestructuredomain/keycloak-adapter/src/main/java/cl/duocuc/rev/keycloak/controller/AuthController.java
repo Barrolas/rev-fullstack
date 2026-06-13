@@ -97,4 +97,9 @@ public class AuthController {
     public ResponseEntity<RegisterResponse> register(@RequestBody RegisterRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(keycloakAdminService.registerCiudadano(request));
     }
+
+    @PostMapping(value = "/register/brigadista", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<RegisterResponse> registerBrigadista(@RequestBody RegisterRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(keycloakAdminService.registerBrigadista(request));
+    }
 }

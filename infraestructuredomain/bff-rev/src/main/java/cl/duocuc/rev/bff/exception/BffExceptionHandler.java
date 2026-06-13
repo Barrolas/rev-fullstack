@@ -1,6 +1,8 @@
 package cl.duocuc.rev.bff.exception;
 
+import cl.duocuc.rev.bff.security.AuthorizationException;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +15,19 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 
 @RestControllerAdvice
 public class BffExceptionHandler {
+
+    @ExceptionHandler(AuthorizationException.class)
+    public ResponseEntity<Map<String, Object>> handleAuthorization(AuthorizationException ex) {
+        return ResponseEntity.status(ex.getStatus()).body(errorBody(ex.getStatus(), ex.getMessage()));
+    }
+
+    @ExceptionHandler(CorrelacionBloqueadaException.class)
+    public ResponseEntity<Map<String, Object>> handleCorrelacionBloqueada(CorrelacionBloqueadaException ex) {
+        Map<String, Object> body = new HashMap<>(errorBody(ex.getStatus(), ex.getMessage()));
+        body.put("code", "CORRELACION_BLOQUEADA_DESPACHO");
+        body.put("asignacionesActivas", ex.getAsignacionesActivas());
+        return ResponseEntity.status(ex.getStatus()).body(body);
+    }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException ex) {

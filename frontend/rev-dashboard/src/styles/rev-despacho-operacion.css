@@ -386,8 +386,9 @@
 }
 
 .rev-despacho-brigada-card.selected {
-  border-color: var(--rev-success, #4ade80);
-  box-shadow: 0 0 0 1px rgba(74, 222, 128, 0.2);
+  background: var(--rev-orange-muted);
+  border-color: var(--rev-orange);
+  box-shadow: inset 3px 0 0 var(--rev-orange);
 }
 
 .rev-despacho-brigada-card__row {

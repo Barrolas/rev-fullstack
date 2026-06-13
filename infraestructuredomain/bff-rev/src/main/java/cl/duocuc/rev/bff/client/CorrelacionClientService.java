@@ -24,12 +24,41 @@ public class CorrelacionClientService {
     private final WebClient.Builder webClientBuilder;
 
     public Mono<List<CorrelacionDto>> listarPendientes() {
+        return listarPorEstado("PENDIENTE");
+    }
+
+    public Mono<List<CorrelacionDto>> listarPorEstado(String estado) {
+        String segment = switch (estado != null ? estado.toUpperCase() : "PENDIENTE") {
+            case "CONFIRMADA" -> "confirmadas";
+            case "DESCARTADA" -> "descartadas";
+            case "PENDIENTE" -> "pendientes";
+            default -> null;
+        };
+        if (segment != null) {
+            return webClient()
+                    .get()
+                    .uri("/incidentes/correlaciones/{segment}", segment)
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<>() {
+                    });
+        }
         return webClient()
                 .get()
-                .uri("/incidentes/correlaciones/pendientes")
+                .uri(uriBuilder -> uriBuilder
+                        .path("/incidentes/correlaciones")
+                        .queryParam("estado", estado)
+                        .build())
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<>() {
                 });
+    }
+
+    public Mono<CorrelacionDto> obtener(UUID correlacionId) {
+        return webClient()
+                .get()
+                .uri("/incidentes/correlaciones/{id}", correlacionId)
+                .retrieve()
+                .bodyToMono(CorrelacionDto.class);
     }
 
     public Mono<List<CorrelacionResumenDto>> resumenes(List<UUID> incidenteIds) {
@@ -92,6 +121,24 @@ public class CorrelacionClientService {
                 .uri("/incidentes/correlaciones/{id}/descartar", correlacionId)
                 .header("X-REV-Usuario", usuario != null ? usuario : "sistema")
                 .bodyValue(request != null ? request : new DescartarCorrelacionDto())
+                .retrieve()
+                .bodyToMono(CorrelacionDto.class);
+    }
+
+    public Mono<CorrelacionDto> revertir(UUID correlacionId, String usuario) {
+        return webClient()
+                .post()
+                .uri("/incidentes/correlaciones/{id}/revertir", correlacionId)
+                .header("X-REV-Usuario", usuario != null ? usuario : "sistema")
+                .retrieve()
+                .bodyToMono(CorrelacionDto.class);
+    }
+
+    public Mono<CorrelacionDto> reabrir(UUID correlacionId, String usuario) {
+        return webClient()
+                .post()
+                .uri("/incidentes/correlaciones/{id}/reabrir", correlacionId)
+                .header("X-REV-Usuario", usuario != null ? usuario : "sistema")
                 .retrieve()
                 .bodyToMono(CorrelacionDto.class);
     }

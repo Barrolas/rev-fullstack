@@ -32,19 +32,6 @@
       "realmRoles": ["Despachador"]
     },
     {
-      "username": "brigadista",
-      "enabled": true,
-      "email": "brigadista@valle.local",
-      "emailVerified": true,
-      "firstName": "Luis",
-      "lastName": "Brigada",
-      "requiredActions": [],
-      "credentials": [
-        { "type": "password", "value": "rev123", "temporary": false }
-      ],
-      "realmRoles": ["Brigadista"]
-    },
-    {
       "username": "admin",
       "enabled": true,
       "email": "admin@valle.local",
@@ -59,6 +46,110 @@
       "clientRoles": {
         "realm-management": ["realm-admin"]
       }
+    },
+    {
+      "username": "brigadista",
+      "enabled": true,
+      "email": "brigadista@valle.local",
+      "emailVerified": true,
+      "firstName": "Cuenta",
+      "lastName": "Huérfana",
+      "requiredActions": [],
+      "credentials": [
+        { "type": "password", "value": "rev123", "temporary": false }
+      ],
+      "realmRoles": ["Brigadista"]
+    },
+    {
+      "username": "maria.gonzalez",
+      "enabled": true,
+      "email": "maria.gonzalez@valle.local",
+      "emailVerified": true,
+      "firstName": "María",
+      "lastName": "González",
+      "requiredActions": [],
+      "credentials": [
+        { "type": "password", "value": "rev123", "temporary": false }
+      ],
+      "realmRoles": ["Brigadista"]
+    },
+    {
+      "username": "pedro.soto",
+      "enabled": true,
+      "email": "pedro.soto@valle.local",
+      "emailVerified": true,
+      "firstName": "Pedro",
+      "lastName": "Soto",
+      "requiredActions": [],
+      "credentials": [
+        { "type": "password", "value": "rev123", "temporary": false }
+      ],
+      "realmRoles": ["Brigadista"]
+    },
+    {
+      "username": "ana.munoz",
+      "enabled": true,
+      "email": "ana.munoz@valle.local",
+      "emailVerified": true,
+      "firstName": "Ana",
+      "lastName": "Muñoz",
+      "requiredActions": [],
+      "credentials": [
+        { "type": "password", "value": "rev123", "temporary": false }
+      ],
+      "realmRoles": ["Brigadista"]
+    },
+    {
+      "username": "luis.rojas",
+      "enabled": true,
+      "email": "luis.rojas@valle.local",
+      "emailVerified": true,
+      "firstName": "Luis",
+      "lastName": "Rojas",
+      "requiredActions": [],
+      "credentials": [
+        { "type": "password", "value": "rev123", "temporary": false }
+      ],
+      "realmRoles": ["Brigadista"]
+    },
+    {
+      "username": "patricia.nunez",
+      "enabled": true,
+      "email": "patricia.nunez@valle.local",
+      "emailVerified": true,
+      "firstName": "Patricia",
+      "lastName": "Núñez",
+      "requiredActions": [],
+      "credentials": [
+        { "type": "password", "value": "rev123", "temporary": false }
+      ],
+      "realmRoles": ["Brigadista"]
+    },
+    {
+      "username": "marco.ibanez",
+      "enabled": true,
+      "email": "marco.ibanez@valle.local",
+      "emailVerified": true,
+      "firstName": "Marco",
+      "lastName": "Ibáñez",
+      "requiredActions": [],
+      "credentials": [
+        { "type": "password", "value": "rev123", "temporary": false }
+      ],
+      "realmRoles": ["Brigadista"]
+    },
+    {
+      "username": "carlos.mendez",
+      "enabled": true,
+      "email": "carlos.mendez@valle.local",
+      "emailVerified": true,
+      "firstName": "Carlos",
+      "lastName": "Méndez",
+      "requiredActions": [],
+      "credentials": [
+        { "type": "password", "value": "rev123", "temporary": false }
+      ],
+      "realmRoles": ["Brigadista"]
     }
   ],
   "clients": [

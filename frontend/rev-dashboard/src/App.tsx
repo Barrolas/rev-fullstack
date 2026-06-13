@@ -9,6 +9,8 @@ import IncidentDetailPage from './pages/IncidentDetailPage';
 import IncidentesPage from './pages/IncidentesPage';
 import InicioPage from './pages/InicioPage';
 import LoginPage from './pages/LoginPage';
+import MisIncidentesPage from './pages/MisIncidentesPage';
+import RoleGuard from './components/RoleGuard';
 import NewIncidentPage from './pages/NewIncidentPage';
 import PortalPage from './pages/PortalPage';
 import RecursosPage from './pages/RecursosPage';
@@ -47,11 +49,26 @@ export default function App() {
           <Route path="/login" element={<LoginRedirect />} />
           <Route element={<ProtectedLayout />}>
             <Route path="inicio" element={<InicioPage />} />
-            <Route index element={<Navigate to="/despacho/operacion" replace />} />
-            <Route path="despacho/operacion" element={<DespachoOperacionPage />} />
+            <Route index element={<Navigate to="/inicio" replace />} />
+            <Route path="mis-incidentes" element={<MisIncidentesPage />} />
+            <Route
+              path="despacho/operacion"
+              element={(
+                <RoleGuard requireOperador redirectTo="/mis-incidentes">
+                  <DespachoOperacionPage />
+                </RoleGuard>
+              )}
+            />
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="incidentes" element={<IncidentesPage />} />
-            <Route path="incidentes/nuevo" element={<NewIncidentPage />} />
+            <Route
+              path="incidentes/nuevo"
+              element={(
+                <RoleGuard requireOperador>
+                  <NewIncidentPage />
+                </RoleGuard>
+              )}
+            />
             <Route path="incidentes/:id" element={<IncidentDetailPage />} />
             <Route path="zonas" element={<ZonasPage />} />
             <Route path="recursos" element={<RecursosPage />} />

@@ -36,6 +36,9 @@ public class ZonaResolverClient {
                 return Optional.empty();
             }
             throw ex;
+        } catch (RuntimeException ex) {
+            // No bloquear reporte público si ms-zonas no responde (timeout / caída).
+            return Optional.empty();
         }
     }
 

@@ -21,6 +21,7 @@ interface ZonasMapProps {
   selectedIncidenteId?: string | null;
   onSelectZone?: (id: number) => void;
   onSelectIncidente?: (id: string) => void;
+  showIncidentes?: boolean;
   showLegend?: boolean;
   className?: string;
 }
@@ -98,15 +99,18 @@ export default function ZonasMap({
   selectedIncidenteId,
   onSelectZone,
   onSelectIncidente,
+  showIncidentes = true,
   showLegend = true,
   className,
 }: ZonasMapProps) {
   const zonaCircles = useMemo(() => toZonaCircleViews(zonas), [zonas]);
-  const hasSelection = selectedZoneId != null || selectedIncidenteId != null;
+  const incidentesVisibles = showIncidentes ? incidentes : [];
+  const hasSelection =
+    selectedZoneId != null || (showIncidentes && selectedIncidenteId != null);
   const mapDataKey = useMemo(
     () =>
-      `${zonaCircles.map((z) => z.id).join(',')}|${incidentes.map((i) => i.id).join(',')}`,
-    [zonaCircles, incidentes],
+      `${zonaCircles.map((z) => `${z.id}:${z.nivelRiesgo}`).join(',')}|${incidentesVisibles.map((i) => i.id).join(',')}`,
+    [zonaCircles, incidentesVisibles],
   );
 
   return (
@@ -121,24 +125,24 @@ export default function ZonasMap({
         <TileLayer attribution={OSM_ATTRIBUTION} url={OSM_TILE_URL} />
         <FitBounds
           zonas={zonaCircles}
-          incidentes={incidentes}
+          incidentes={incidentesVisibles}
           enabled={!hasSelection}
           dataKey={mapDataKey}
         />
         <FocusSelection
           zonas={zonaCircles}
-          incidentes={incidentes}
+          incidentes={incidentesVisibles}
           selectedZoneId={selectedZoneId}
-          selectedIncidenteId={selectedIncidenteId}
+          selectedIncidenteId={showIncidentes ? selectedIncidenteId : null}
         />
         <TerritorialMapLayers
           zonas={zonaCircles}
-          incidentes={incidentes}
+          incidentes={incidentesVisibles}
           radioCorrelacionMetros={radioCorrelacionMetros}
           selectedZoneId={selectedZoneId}
-          selectedIncidenteId={selectedIncidenteId}
+          selectedIncidenteId={showIncidentes ? selectedIncidenteId : null}
           onSelectZone={onSelectZone}
-          onSelectIncidente={onSelectIncidente}
+          onSelectIncidente={showIncidentes ? onSelectIncidente : undefined}
         />
       </MapContainer>
       {showLegend && (
@@ -146,8 +150,12 @@ export default function ZonasMap({
         <span className="rev-zones-map__legend-item rev-zones-map__legend-item--high">Zona alto</span>
         <span className="rev-zones-map__legend-item rev-zones-map__legend-item--medium">Zona medio</span>
         <span className="rev-zones-map__legend-item rev-zones-map__legend-item--low">Zona bajo</span>
-        <span className="rev-zones-map__legend-item rev-zones-map__legend-item--incident">Incidente</span>
-        <span className="rev-zones-map__legend-item rev-zones-map__legend-item--cluster">Agrupado</span>
+        {showIncidentes && (
+          <>
+            <span className="rev-zones-map__legend-item rev-zones-map__legend-item--incident">Incidente</span>
+            <span className="rev-zones-map__legend-item rev-zones-map__legend-item--cluster">Agrupado</span>
+          </>
+        )}
       </div>
       )}
     </div>

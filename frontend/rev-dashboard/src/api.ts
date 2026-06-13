@@ -24,6 +24,8 @@ export interface DashboardItem {
     zonaId?: number;
     zonaNombre?: string;
     zonaNivelRiesgo?: string;
+    createdAt?: string;
+    updatedAt?: string;
   };
   zonaRiesgo: {
     nivel: string;
@@ -263,6 +265,7 @@ export interface DespachoColaItem {
   zonaNivelRiesgo?: string;
   conBrigadaAsignada: boolean;
   prioridad: number;
+  createdAt?: string;
 }
 
 export interface DespachoBrigadaCard {
@@ -737,12 +740,35 @@ export async function fetchDashboardItem(id: string): Promise<DashboardItem> {
   return apiFetch(`/api/dashboard/incidente/${id}`);
 }
 
-export async function createIncidente(data: IncidenteCreate): Promise<void> {
-  await apiFetch('/api/incidentes', {
+export async function createIncidente(data: IncidenteCreate): Promise<{ id: string }> {
+  return apiFetch('/api/incidentes', {
     method: 'POST',
     body: JSON.stringify(data),
     authFailureMode: 'throw',
   });
+}
+
+export async function uploadIncidenteAdjunto(
+  incidenteId: string,
+  tipo: 'FOTO' | 'VIDEO',
+  file: File,
+): Promise<void> {
+  const form = new FormData();
+  form.append('tipo', tipo);
+  form.append('file', file, file.name);
+  const res = await fetch(`/api/incidentes/${incidenteId}/adjuntos`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: form,
+    signal: AbortSignal.timeout(60_000),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    if (res.status === 401 || res.status === 403) {
+      handleAuthFailure(text, res.status);
+    }
+    throw new Error(formatApiError(text, res.status));
+  }
 }
 
 export async function createPublicIncidente(data: IncidenteCreate): Promise<{ id: string }> {
@@ -783,6 +809,7 @@ export async function submitPublicReport(options: SubmitPublicReportOptions): Pr
   const res = await fetch('/api/public/incidentes', {
     method: 'POST',
     body: form,
+    signal: AbortSignal.timeout(30_000),
   });
   if (!res.ok) {
     const text = await res.text();
@@ -1056,6 +1083,8 @@ export interface IncidenteResumen {
   createdAt?: string;
 }
 
+export type CorrelacionEstado = 'PENDIENTE' | 'CONFIRMADA' | 'DESCARTADA';
+
 export interface CorrelacionItem {
   id: string;
   incidenteA: IncidenteResumen;
@@ -1064,9 +1093,32 @@ export interface CorrelacionItem {
   distanciaMetros: number;
   deltaMinutos: number;
   motivo: Record<string, unknown>;
-  estado: string;
+  estado: CorrelacionEstado | string;
   incidenteCanonicoId?: string;
+  decididoPor?: string;
+  decididoAt?: string;
   createdAt?: string;
+}
+
+export interface AsignacionActivaItem {
+  id: number;
+  incidenteId: string;
+  brigadaId: number;
+  brigadaNombre?: string;
+  vehiculoId?: number;
+  vehiculoPatente?: string;
+  estadoDespacho?: string;
+  despachadoPor?: string;
+  createdAt?: string;
+}
+
+export interface RevertirCorrelacionPreview {
+  correlacion: CorrelacionItem;
+  canonico: IncidenteResumen;
+  reporteDesvinculado: IncidenteResumen;
+  incidenteDestinoSugerido: string;
+  bloqueado: boolean;
+  asignacionesActivas: AsignacionActivaItem[];
 }
 
 export interface GrupoIncidente {
@@ -1079,6 +1131,20 @@ export interface GrupoIncidente {
 
 export async function fetchCorrelacionesPendientes(): Promise<CorrelacionItem[]> {
   return apiFetch('/api/incidentes/correlaciones/pendientes');
+}
+
+const CORRELACIONES_PATH: Record<CorrelacionEstado, string> = {
+  PENDIENTE: '/api/incidentes/correlaciones/pendientes',
+  CONFIRMADA: '/api/incidentes/correlaciones/confirmadas',
+  DESCARTADA: '/api/incidentes/correlaciones/descartadas',
+};
+
+export async function fetchCorrelaciones(estado: CorrelacionEstado = 'PENDIENTE'): Promise<CorrelacionItem[]> {
+  return apiFetch(CORRELACIONES_PATH[estado]);
+}
+
+export async function fetchCorrelacionesPorIncidente(incidenteId: string): Promise<CorrelacionItem[]> {
+  return apiFetch(`/api/incidentes/${incidenteId}/correlaciones`);
 }
 
 export async function fetchCorrelacionesPendientesCount(): Promise<number> {
@@ -1111,5 +1177,84 @@ export async function descartarCorrelacion(
   return apiFetch(`/api/incidentes/correlaciones/${correlacionId}/descartar`, {
     method: 'POST',
     body: JSON.stringify(motivo ? { motivo } : {}),
+  });
+}
+
+export async function fetchRevertirCorrelacionPreview(
+  correlacionId: string,
+): Promise<RevertirCorrelacionPreview> {
+  return apiFetch(`/api/incidentes/correlaciones/${correlacionId}/revertir/preview`);
+}
+
+export async function revertirCorrelacion(
+  correlacionId: string,
+  opts?: { reasignarAsignacionesA?: string },
+): Promise<CorrelacionItem> {
+  return apiFetch(`/api/incidentes/correlaciones/${correlacionId}/revertir`, {
+    method: 'POST',
+    body: JSON.stringify(opts ?? {}),
+  });
+}
+
+export async function reabrirCorrelacion(correlacionId: string): Promise<CorrelacionItem> {
+  return apiFetch(`/api/incidentes/correlaciones/${correlacionId}/reabrir`, {
+    method: 'POST',
+    body: JSON.stringify({}),
+  });
+}
+
+export interface PerfilOperativo {
+  operador?: boolean;
+  brigadistaId?: number;
+  brigadaId?: number;
+  brigadaNombre?: string;
+  brigadaCodigo?: string;
+  rolCodigo?: string;
+  rolNombre?: string;
+  esJefe?: boolean;
+  puedeTransicionarIncidente?: boolean;
+  username?: string;
+  nombre?: string;
+  apellido?: string;
+}
+
+export interface IncidenteTimelineItem {
+  tipo: 'REGISTRO' | 'TRANSICION' | string;
+  estado?: string;
+  estadoAnterior?: string;
+  fechaHora?: string;
+  realizadoPor?: string;
+  origen?: string;
+}
+
+export async function fetchPerfilOperativo(): Promise<PerfilOperativo> {
+  return apiFetch('/api/perfil/operativo', { authFailureMode: 'throw' });
+}
+
+export async function fetchBrigadistaAsignaciones(): Promise<AsignacionActiva[]> {
+  return apiFetch('/api/brigadista/mis-asignaciones');
+}
+
+export async function fetchBrigadistaIncidente(id: string): Promise<DashboardItem> {
+  return apiFetch(`/api/brigadista/incidentes/${id}`);
+}
+
+export async function fetchIncidenteTimeline(id: string): Promise<IncidenteTimelineItem[]> {
+  return apiFetch(`/api/incidentes/${id}/timeline`);
+}
+
+export async function brigadistaTransicionIncidente(id: string, estadoDestino: string): Promise<void> {
+  await apiFetch(`/api/brigadista/incidentes/${id}/transicion`, {
+    method: 'PUT',
+    body: JSON.stringify({ estadoDestino }),
+    authFailureMode: 'throw',
+  });
+}
+
+export async function brigadistaAvanzarEstadoDespacho(asignacionId: number, estadoDespacho: string): Promise<void> {
+  await apiFetch(`/api/brigadista/asignaciones/${asignacionId}/estado-despacho`, {
+    method: 'PUT',
+    body: JSON.stringify({ estadoDespacho }),
+    authFailureMode: 'throw',
   });
 }

@@ -1,9 +1,20 @@
 import { useCallback, useState } from 'react';
 import { Badge, Button, Col, ListGroup, Row } from 'react-bootstrap';
 import { Link, useParams } from 'react-router-dom';
-import { DashboardItem, fetchDashboardItem } from '../api';
+import {
+  AsignacionActiva,
+  DashboardItem,
+  fetchBrigadistaAsignaciones,
+  fetchDashboardItem,
+  fetchIncidenteTimeline,
+  IncidenteTimelineItem,
+} from '../api';
+import BrigadistaIncidentActions from '../components/incidentes/BrigadistaIncidentActions';
+import IncidentTimeline from '../components/incidentes/IncidentTimeline';
+import { formatFechaRev, tiempoRelativo } from '../utils/formatFecha';
+import { usePerfilOperativo } from '../hooks/usePerfilOperativo';
 import { useToast } from '../contexts/ToastContext';
-import AssignResourceModal from '../components/incidentes/AssignResourceModal';
+import IncidenteDespachoModal from '../components/incidentes/IncidenteDespachoModal';
 import IncidenteOperacionPanel from '../components/incidentes/IncidenteOperacionPanel';
 import IncidentAdjuntoGallery from '../components/incidentes/IncidentAdjuntoGallery';
 import IncidentCorrelationSection from '../components/incidentes/IncidentCorrelationSection';
@@ -28,7 +39,8 @@ function origenLabel(origen?: string): string | null {
 export default function IncidentDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { showToast } = useToast();
-  const { canManageIncidents } = useAuth();
+  const { canManageIncidents, isBrigadistaOnly } = useAuth();
+  const { perfil } = usePerfilOperativo();
   const [assignModalOpen, setAssignModalOpen] = useState(false);
 
   const fetchFn = useCallback(async () => {
@@ -40,6 +52,28 @@ export default function IncidentDetailPage() {
     fetchFn,
     enabled: !!id,
   });
+
+  const timelineFetch = useCallback(async () => {
+    if (!id) return [];
+    return fetchIncidenteTimeline(id);
+  }, [id]);
+
+  const { data: timeline } = useApiQuery<IncidenteTimelineItem[]>({
+    fetchFn: timelineFetch,
+    enabled: !!id && !!item,
+  });
+
+  const asignacionFetch = useCallback(async () => {
+    if (!isBrigadistaOnly || !perfil?.esJefe) return [];
+    return fetchBrigadistaAsignaciones();
+  }, [isBrigadistaOnly, perfil?.esJefe]);
+
+  const { data: asignaciones } = useApiQuery<AsignacionActiva[]>({
+    fetchFn: asignacionFetch,
+    enabled: !!id && isBrigadistaOnly && !!perfil?.esJefe,
+  });
+
+  const asignacionActiva = asignaciones?.find((a) => a.incidenteId === id);
 
   const viewState = loading ? 'loading' : error || !item ? 'error' : 'idle';
   const inc = item?.incidente;
@@ -95,8 +129,9 @@ export default function IncidentDetailPage() {
         ]}
         actions={
           item && canManageIncidents && !linkedReport && (
-            <Button variant="outline-primary" size="sm" onClick={() => setAssignModalOpen(true)}>
-              Despachar brigada
+            <Button variant="primary" size="sm" onClick={() => setAssignModalOpen(true)}>
+              <i className="bi bi-list-check me-1" aria-hidden />
+              Despachar brigada…
             </Button>
           )
         }
@@ -137,6 +172,13 @@ export default function IncidentDetailPage() {
                   <p className="mb-2">
                     <small className="text-muted d-block">Folio</small>
                     <strong>{inc.folio}</strong>
+                  </p>
+                )}
+
+                {inc.createdAt && (
+                  <p className="mb-3 text-muted small">
+                    <i className="bi bi-clock me-1" aria-hidden="true" />
+                    Registrado {tiempoRelativo(inc.createdAt)} · {formatFechaRev(inc.createdAt)}
                   </p>
                 )}
 
@@ -192,6 +234,26 @@ export default function IncidentDetailPage() {
                   <IncidentAdjuntoGallery incidenteId={id} adjuntos={inc.adjuntos} />
                 )}
 
+                {isBrigadistaOnly && perfil?.esJefe && inc && (
+                  <div className="rev-card p-3 mb-3">
+                    <h3 className="h6 mb-2">Acciones de terreno</h3>
+                    <BrigadistaIncidentActions
+                      incidenteId={inc.id}
+                      incidenteEstado={inc.estado}
+                      asignacionId={asignacionActiva?.id}
+                      estadoDespacho={asignacionActiva?.estadoDespacho}
+                      onUpdated={refetch}
+                    />
+                  </div>
+                )}
+
+                {timeline && timeline.length > 0 && (
+                  <div className="rev-card p-3 mb-3">
+                    <h3 className="h6 mb-3">Línea de tiempo</h3>
+                    <IncidentTimeline items={timeline} />
+                  </div>
+                )}
+
                 {canManageIncidents && !linkedReport && inc && (
                   <div className="rev-card p-3 mb-3 rev-incidente-ops-wrap">
                     <IncidenteOperacionPanel
@@ -220,12 +282,15 @@ export default function IncidentDetailPage() {
       </AppPage>
 
       {dispatchIncidenteId && (
-        <AssignResourceModal
+        <IncidenteDespachoModal
           show={assignModalOpen}
           incidenteId={dispatchIncidenteId}
+          incidenteFolio={inc?.folio}
+          incidenteTipo={inc?.tipo}
+          incidenteDescripcion={inc?.descripcion}
           onHide={() => setAssignModalOpen(false)}
-          onAssigned={() => {
-            showToast('Recurso asignado correctamente', 'success');
+          onSuccess={() => {
+            showToast('Brigada despachada correctamente', 'success');
             refetch();
           }}
         />

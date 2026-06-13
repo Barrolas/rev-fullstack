@@ -19,6 +19,7 @@ import cl.duocuc.rev.bff.dto.InstitucionDto;
 import cl.duocuc.rev.bff.dto.RecursosCatalogoDto;
 import cl.duocuc.rev.bff.dto.RecursosDisponiblesDto;
 import cl.duocuc.rev.bff.dto.RecursoDto;
+import cl.duocuc.rev.bff.dto.TransferirIncidenteRequest;
 import cl.duocuc.rev.bff.dto.VehiculoCreateRequest;
 import java.util.List;
 import java.util.UUID;
@@ -195,6 +196,16 @@ public class RecursosClientService {
                 .bodyToMono(AsignacionDto.class);
     }
 
+    public Mono<List<AsignacionActivaDto>> transferirIncidente(TransferirIncidenteRequest request) {
+        return webClient()
+                .post()
+                .uri("/recursos/asignar/transferir-incidente")
+                .bodyValue(request)
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<>() {
+                });
+    }
+
     public Mono<Void> desasignar(Long asignacionId) {
         return webClient()
                 .delete()
@@ -218,6 +229,71 @@ public class RecursosClientService {
                 .uri("/recursos/incidente/{incidenteId}/asignaciones", incidenteId)
                 .retrieve()
                 .bodyToMono(Void.class);
+    }
+
+    public Mono<RecursosCatalogoDto.BrigadistaItemDto> obtenerBrigadistaPorSub(UUID sub) {
+        return webClient()
+                .get()
+                .uri("/recursos/brigadistas/por-keycloak/{sub}", sub)
+                .retrieve()
+                .bodyToMono(RecursosCatalogoDto.BrigadistaItemDto.class);
+    }
+
+    public Mono<RecursosCatalogoDto.BrigadistaItemDto> obtenerBrigadistaPorUsername(String username) {
+        return webClient()
+                .get()
+                .uri("/recursos/brigadistas/por-username/{username}", username)
+                .retrieve()
+                .bodyToMono(RecursosCatalogoDto.BrigadistaItemDto.class);
+    }
+
+    public Mono<List<AsignacionActivaDto>> listarAsignacionesPorBrigada(Long brigadaId) {
+        return webClient()
+                .get()
+                .uri("/recursos/brigadas/{id}/asignaciones-activas", brigadaId)
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<>() {
+                });
+    }
+
+    public Mono<List<UUID>> listarIncidenteIdsPorBrigada(Long brigadaId) {
+        return webClient()
+                .get()
+                .uri("/recursos/brigadas/{id}/incidentes-activos", brigadaId)
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<>() {
+                });
+    }
+
+    public Mono<AsignacionActivaDto> obtenerAsignacionActiva(Long asignacionId) {
+        return webClient()
+                .get()
+                .uri("/recursos/asignaciones/{id}", asignacionId)
+                .retrieve()
+                .bodyToMono(AsignacionActivaDto.class);
+    }
+
+    public boolean brigadaAsignadaAIncidente(Long brigadaId, UUID incidenteId) {
+        List<UUID> ids = listarIncidenteIdsPorBrigada(brigadaId).block();
+        return ids != null && ids.contains(incidenteId);
+    }
+
+    public RecursosDisponiblesDto.BrigadaItemDto obtenerBrigadaResumen(Long brigadaId) {
+        RecursosCatalogoDto catalogo = listarCatalogo().block();
+        if (catalogo == null || catalogo.getBrigadas() == null) {
+            return null;
+        }
+        return catalogo.getBrigadas().stream()
+                .filter(b -> brigadaId.equals(b.getId()))
+                .findFirst()
+                .map(b -> RecursosDisponiblesDto.BrigadaItemDto.builder()
+                        .id(b.getId())
+                        .nombre(b.getNombre())
+                        .codigo(b.getCodigo())
+                        .capacidad(b.getCapacidad())
+                        .estado(b.getEstado())
+                        .build())
+                .orElse(null);
     }
 
     private WebClient webClient() {

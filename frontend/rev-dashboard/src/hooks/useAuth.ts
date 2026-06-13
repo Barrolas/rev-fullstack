@@ -14,7 +14,14 @@ export function useAuth() {
     : username;
   const role = getPrimaryRole(roles);
   const isAdmin = roles.includes('Admin');
-  const canManageIncidents = roles.some((r) => ['Admin', 'Despachador'].includes(r));
+  const isDespachador = roles.includes('Despachador');
+  const isBrigadista = roles.includes('Brigadista');
+  const isOperador = isAdmin || isDespachador;
+  const isBrigadistaOnly = isBrigadista && !isOperador;
+  const canManageIncidents = isOperador;
+  const canDispatch = isOperador;
+  const canEditZonas = isOperador;
+  const canManageCorrelaciones = isOperador;
 
   return {
     isAuthenticated: !!token,
@@ -23,7 +30,14 @@ export function useAuth() {
     role,
     roles,
     isAdmin,
+    isDespachador,
+    isBrigadista,
+    isBrigadistaOnly,
+    isOperador,
     canManageIncidents,
+    canDispatch,
+    canEditZonas,
+    canManageCorrelaciones,
     keycloakAdminUrl: KEYCLOAK_ADMIN_URL,
   };
 }

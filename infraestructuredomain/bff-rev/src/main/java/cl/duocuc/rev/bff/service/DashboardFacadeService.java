@@ -9,11 +9,16 @@ import cl.duocuc.rev.bff.dto.DashboardResponse;
 import cl.duocuc.rev.bff.dto.IncidenteDto;
 import cl.duocuc.rev.bff.dto.RecursoDto;
 import cl.duocuc.rev.bff.dto.ZonaRiesgoDto;
+import cl.duocuc.rev.bff.dto.BrigadistaOperativoDto;
+import cl.duocuc.rev.bff.security.AuthorizationService;
+import cl.duocuc.rev.bff.security.RevAuthContext;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -28,6 +33,7 @@ public class DashboardFacadeService {
     private final RecursosClientService recursosClientService;
     private final CorrelacionFacadeService correlacionFacadeService;
     private final ZonaRiesgoCache zonaRiesgoCache;
+    private final AuthorizationService authorizationService;
 
     private DashboardFacadeService self;
 
@@ -43,9 +49,25 @@ public class DashboardFacadeService {
     }
 
     public List<DashboardResponse> listarDashboards() {
+        return listarDashboards(null);
+    }
+
+    public List<DashboardResponse> listarDashboards(RevAuthContext auth) {
         List<IncidenteDto> incidentes = incidenteClientService.listar().block();
         if (incidentes == null || incidentes.isEmpty()) {
             return Collections.emptyList();
+        }
+        if (auth != null && auth.isBrigadista() && !auth.isOperador()) {
+            BrigadistaOperativoDto perfil = authorizationService.requireBrigadista(auth);
+            Set<UUID> permitidos = recursosClientService.listarIncidenteIdsPorBrigada(perfil.getBrigadaId()).block()
+                    .stream().collect(Collectors.toSet());
+            incidentes = incidentes.stream()
+                    .filter(i -> permitidos.contains(i.getId())
+                            || (i.getIncidenteCanonicoId() != null && permitidos.contains(i.getIncidenteCanonicoId())))
+                    .toList();
+            if (incidentes.isEmpty()) {
+                return Collections.emptyList();
+            }
         }
         List<UUID> ids = incidentes.stream().map(IncidenteDto::getId).toList();
         Map<UUID, CorrelacionResumenDto> resumenes = correlacionFacadeService.cargarResumenes(ids);

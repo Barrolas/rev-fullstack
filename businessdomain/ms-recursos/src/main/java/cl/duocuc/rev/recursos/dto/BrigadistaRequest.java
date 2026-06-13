@@ -9,4 +9,7 @@ public class BrigadistaRequest {
     private String rut;
     private String especialidad;
     private Long idRolBrigadista;
+    private java.util.UUID keycloakSub;
+    private String keycloakUsername;
+    private String email;
 }

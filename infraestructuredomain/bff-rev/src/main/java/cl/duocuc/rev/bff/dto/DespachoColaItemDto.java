@@ -1,5 +1,6 @@
 package cl.duocuc.rev.bff.dto;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.Builder;
 import lombok.Data;
@@ -18,4 +19,5 @@ public class DespachoColaItemDto {
     private String zonaNivelRiesgo;
     private boolean conBrigadaAsignada;
     private int prioridad;
+    private LocalDateTime createdAt;
 }

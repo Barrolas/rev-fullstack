@@ -9,6 +9,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -49,4 +50,13 @@ public class Brigadista {
 
     @Column(name = "id_rol_brigadista")
     private Long idRolBrigadista;
+
+    @Column(name = "keycloak_sub")
+    private UUID keycloakSub;
+
+    @Column(name = "keycloak_username", length = 80)
+    private String keycloakUsername;
+
+    @Column(length = 120)
+    private String email;
 }

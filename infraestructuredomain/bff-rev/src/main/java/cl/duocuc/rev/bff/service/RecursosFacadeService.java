@@ -1,6 +1,9 @@
 package cl.duocuc.rev.bff.service;
 
+import cl.duocuc.rev.bff.client.KeycloakRegisterClient;
 import cl.duocuc.rev.bff.client.RecursosClientService;
+import cl.duocuc.rev.bff.dto.RegisterCiudadanoRequest;
+import cl.duocuc.rev.bff.dto.RegisterCiudadanoResponse;
 import cl.duocuc.rev.bff.dto.AsignacionDto;
 import cl.duocuc.rev.bff.dto.AsignarRecursoRequest;
 import cl.duocuc.rev.bff.dto.BrigadaComposicionRequest;
@@ -29,6 +32,7 @@ public class RecursosFacadeService {
 
     private final RecursosClientService recursosClientService;
     private final CorrelacionFacadeService correlacionFacadeService;
+    private final KeycloakRegisterClient keycloakRegisterClient;
 
     public List<InstitucionDto> listarInstituciones() {
         List<InstitucionDto> list = recursosClientService.listarInstituciones().block();
@@ -82,6 +86,34 @@ public class RecursosFacadeService {
     }
 
     public RecursosCatalogoDto.BrigadistaItemDto crearBrigadista(BrigadistaCreateRequest request) {
+        String username = request.getKeycloakUsername();
+        if (username == null || username.isBlank()) {
+            username = (request.getNombre() + "." + request.getApellido())
+                    .toLowerCase()
+                    .replaceAll("\\s+", ".")
+                    .replaceAll("[^a-z0-9.]", "");
+        }
+        String email = request.getEmail() != null && !request.getEmail().isBlank()
+                ? request.getEmail()
+                : username + "@valle.local";
+        String password = request.getPassword() != null && request.getPassword().length() >= 6
+                ? request.getPassword()
+                : "rev123";
+
+        RegisterCiudadanoRequest kcRequest = new RegisterCiudadanoRequest();
+        kcRequest.setUsername(username);
+        kcRequest.setPassword(password);
+        kcRequest.setEmail(email);
+        kcRequest.setFirstName(request.getNombre());
+        kcRequest.setLastName(request.getApellido());
+        kcRequest.setRut(request.getRut());
+        RegisterCiudadanoResponse kcUser = keycloakRegisterClient.registrarBrigadista(kcRequest).block();
+
+        request.setKeycloakUsername(username);
+        request.setEmail(email);
+        if (kcUser != null && kcUser.getUserId() != null) {
+            request.setKeycloakSub(kcUser.getUserId());
+        }
         return recursosClientService.crearBrigadista(request).block();
     }
 

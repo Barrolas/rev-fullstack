@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from 'react-bootstrap';
-import { Link, useSearchParams } from 'react-router-dom';
-import { fetchMapaTerritorial } from '../api';
+import { fetchZonas } from '../api';
 import AppPage from '../components/layout/AppPage';
 import ModuleHub from '../components/layout/ModuleHub';
 import Topbar from '../components/layout/Topbar';
@@ -11,44 +10,32 @@ import ZonasAdminPanel from '../components/zonas/ZonasAdminPanel';
 import ZonasFilters from '../components/zonas/ZonasFilters';
 import ZonasMap from '../components/zonas/ZonasMap';
 import ZonasModuleTabs, { type ZonasModuleView } from '../components/zonas/ZonasModuleTabs';
-import ZonaIncidentePopup from '../components/zonas/ZonaIncidentePopup';
 import { useApiQuery } from '../hooks/useApiQuery';
+import { useAuth } from '../hooks/useAuth';
 import {
   countZonasByLevel,
   sortZonasByRisk,
   zonasRiskPercentages,
 } from '../utils/dashboardAggregates';
 import { filterZonas, hasActiveFilters, type RiskFilter } from '../utils/zonasFilters';
-import { findIncidentePunto } from '../utils/territorialMapUtils';
-
-function ZonasKpiStrip({
-  counts,
-  incidentesMapa,
-  sinUbicacion,
-}: {
-  counts: ReturnType<typeof countZonasByLevel>;
-  incidentesMapa: number;
-  sinUbicacion: number;
-}) {
+function ZonasKpiStrip({ counts }: { counts: ReturnType<typeof countZonasByLevel> }) {
   return (
     <div className="rev-zones-kpi-strip" aria-label="Resumen de zonas">
       <span className="rev-zones-kpi rev-zones-kpi--total">
         <i className="bi bi-map" aria-hidden="true" />
         <strong>{counts.total}</strong> zonas
       </span>
-      <span className="rev-zones-kpi rev-zones-kpi--incident">
-        <i className="bi bi-fire" aria-hidden="true" />
-        <strong>{incidentesMapa}</strong> en mapa
-      </span>
-      {sinUbicacion > 0 && (
-        <span className="rev-zones-kpi rev-zones-kpi--muted">
-          <i className="bi bi-geo-alt-fill" aria-hidden="true" />
-          <strong>{sinUbicacion}</strong> sin GPS
-        </span>
-      )}
       <span className="rev-zones-kpi rev-zones-kpi--high">
         <i className="bi bi-exclamation-triangle" aria-hidden="true" />
         <strong>{counts.high}</strong> alto
+      </span>
+      <span className="rev-zones-kpi rev-zones-kpi--muted">
+        <i className="bi bi-dash-circle" aria-hidden="true" />
+        <strong>{counts.medium}</strong> medio
+      </span>
+      <span className="rev-zones-kpi rev-zones-kpi--muted">
+        <i className="bi bi-check-circle" aria-hidden="true" />
+        <strong>{counts.low}</strong> bajo
       </span>
     </div>
   );
@@ -83,22 +70,16 @@ function ZonaListItem({
 }
 
 export default function ZonasPage() {
+  const { canEditZonas } = useAuth();
   const [moduleView, setModuleView] = useState<ZonasModuleView>('mapa');
-  const [searchParams] = useSearchParams();
-  const incidenteQuery = searchParams.get('incidente');
-
-  const fetchFn = useCallback(() => fetchMapaTerritorial(), []);
-  const { data: mapa, loading, error, refetch } = useApiQuery({ fetchFn });
+  const fetchFn = useCallback(() => fetchZonas(), []);
+  const { data: zonasData, loading, error, refetch } = useApiQuery({ fetchFn });
+  const moduleViewRef = useRef(moduleView);
 
   const [search, setSearch] = useState('');
   const [riskFilter, setRiskFilter] = useState<RiskFilter>('ALL');
   const [selectedZoneId, setSelectedZoneId] = useState<number | null>(null);
-  const [selectedIncidenteId, setSelectedIncidenteId] = useState<string | null>(null);
-
-  const list = mapa?.zonas ?? [];
-  const incidentes = mapa?.incidentes ?? [];
-  const radioCorrelacion = mapa?.radioCorrelacionMetros ?? 500;
-  const sinUbicacion = mapa?.incidentesSinUbicacion ?? 0;
+  const list = zonasData ?? [];
 
   const filteredList = useMemo(
     () => filterZonas(list, search, riskFilter),
@@ -109,24 +90,23 @@ export default function ZonasPage() {
   const percentages = zonasRiskPercentages(counts);
   const filtersActive = hasActiveFilters(search, riskFilter);
   const selectedZone = filteredList.find((z) => z.id === selectedZoneId) ?? null;
-  const selectedIncidente = findIncidentePunto(incidentes, selectedIncidenteId);
   const highRiskZones = useMemo(
     () => filteredList.filter((z) => z.nivelRiesgo?.toUpperCase() === 'HIGH'),
     [filteredList],
   );
 
   useEffect(() => {
-    if (incidenteQuery) {
-      setSelectedIncidenteId(incidenteQuery);
-      setSelectedZoneId(null);
-    }
-  }, [incidenteQuery]);
-
-  useEffect(() => {
     if (selectedZoneId != null && !filteredList.some((z) => z.id === selectedZoneId)) {
       setSelectedZoneId(null);
     }
   }, [filteredList, selectedZoneId]);
+
+  useEffect(() => {
+    if (moduleView === 'mapa' && moduleViewRef.current === 'administracion') {
+      void refetch();
+    }
+    moduleViewRef.current = moduleView;
+  }, [moduleView, refetch]);
 
   const viewState = loading ? 'loading' : error ? 'error' : list.length === 0 ? 'empty' : 'idle';
   const showFilteredEmpty = viewState === 'idle' && filteredList.length === 0;
@@ -139,11 +119,7 @@ export default function ZonasPage() {
 
   const toolbar = (
     <div className="rev-zones-command-bar">
-      <ZonasKpiStrip
-        counts={counts}
-        incidentesMapa={incidentes.length}
-        sinUbicacion={sinUbicacion}
-      />
+      <ZonasKpiStrip counts={counts} />
       <div className="rev-zones-command-bar__controls">
         <ZonasFilters
           search={search}
@@ -171,10 +147,10 @@ export default function ZonasPage() {
         breadcrumbs={[{ label: 'Despacho', to: '/' }, { label: 'Zonas' }]}
       />
       <AppPage>
-        <ZonasModuleTabs active={moduleView} onChange={setModuleView} />
-        {moduleView === 'administracion' ? (
+        <ZonasModuleTabs active={moduleView} onChange={setModuleView} showAdmin={canEditZonas} />
+        {moduleView === 'administracion' && canEditZonas ? (
           <div className="mt-3">
-            <ZonasAdminPanel />
+            <ZonasAdminPanel onChanged={() => void refetch()} />
           </div>
         ) : (
         <ModuleHub toolbar={toolbar}>
@@ -205,26 +181,18 @@ export default function ZonasPage() {
                       <div>
                         <h2 className="rev-zones-section__title">Mapa territorial</h2>
                         <p className="rev-zones-section__desc">
-                          {filteredList.length} zona{filteredList.length !== 1 ? 's' : ''} ·{' '}
-                          {incidentes.length} incidente{incidentes.length !== 1 ? 's' : ''} · radio{' '}
-                          {radioCorrelacion} m
+                          {filteredList.length} zona{filteredList.length !== 1 ? 's' : ''} de riesgo
+                          territorial · buffers FSGDM / NENA
                         </p>
                       </div>
                     </div>
                     <ZonasMap
                       zonas={filteredList}
-                      incidentes={incidentes}
-                      radioCorrelacionMetros={radioCorrelacion}
+                      incidentes={[]}
+                      radioCorrelacionMetros={500}
+                      showIncidentes={false}
                       selectedZoneId={selectedZoneId}
-                      selectedIncidenteId={selectedIncidenteId}
-                      onSelectZone={(id) => {
-                        setSelectedZoneId(id);
-                        setSelectedIncidenteId(null);
-                      }}
-                      onSelectIncidente={(id) => {
-                        setSelectedIncidenteId(id);
-                        setSelectedZoneId(null);
-                      }}
+                      onSelectZone={setSelectedZoneId}
                     />
                   </section>
 
@@ -253,17 +221,13 @@ export default function ZonasPage() {
                               <tr
                                 key={z.id}
                                 className={`rev-data-table__row--${variant}${selectedZoneId === z.id ? ' rev-data-table__row--selected' : ''}`}
-                                onClick={() => {
-                                  setSelectedZoneId(z.id);
-                                  setSelectedIncidenteId(null);
-                                }}
+                                onClick={() => setSelectedZoneId(z.id)}
                                 role="button"
                                 tabIndex={0}
                                 onKeyDown={(e) => {
                                   if (e.key === 'Enter' || e.key === ' ') {
                                     e.preventDefault();
                                     setSelectedZoneId(z.id);
-                                    setSelectedIncidenteId(null);
                                   }
                                 }}
                               >
@@ -283,13 +247,6 @@ export default function ZonasPage() {
                 </div>
 
                 <aside className="rev-zones-layout__aside rev-card">
-                  {selectedIncidente && (
-                    <div className="rev-zones-rail__block rev-zones-selected rev-zones-selected--incident">
-                      <h3 className="rev-zones-rail__title">Incidente en mapa</h3>
-                      <ZonaIncidentePopup punto={selectedIncidente} />
-                    </div>
-                  )}
-
                   <div className="rev-zones-rail__block">
                     <h3 className="rev-zones-rail__title">Composición</h3>
                     <div className="rev-risk-distribution__bar" role="img" aria-label="Distribución por nivel">
@@ -328,7 +285,7 @@ export default function ZonasPage() {
                     </div>
                   </div>
 
-                  {selectedZone && !selectedIncidente && (
+                  {selectedZone && (
                     <div className="rev-zones-rail__block rev-zones-selected">
                       <h3 className="rev-zones-rail__title">Zona seleccionada</h3>
                       <p className="rev-zones-selected__name">{selectedZone.nombre}</p>
@@ -348,10 +305,7 @@ export default function ZonasPage() {
                             <button
                               type="button"
                               className="rev-zones-rail__list-btn"
-                              onClick={() => {
-                                setSelectedZoneId(z.id);
-                                setSelectedIncidenteId(null);
-                              }}
+                              onClick={() => setSelectedZoneId(z.id)}
                             >
                               <i className="bi bi-exclamation-triangle-fill" aria-hidden="true" />
                               {z.nombre}
@@ -363,44 +317,6 @@ export default function ZonasPage() {
                   )}
 
                   <div className="rev-zones-rail__block rev-zones-rail__block--list">
-                    <h3 className="rev-zones-rail__title">Incidentes georreferenciados</h3>
-                    <div className="rev-zones-list">
-                      {incidentes.length === 0 ? (
-                        <p className="text-muted small mb-0">Sin incidentes con coordenadas.</p>
-                      ) : (
-                        incidentes.map((p) => (
-                          <button
-                            key={p.grupoId}
-                            type="button"
-                            className={`rev-zones-list-item rev-zones-list-item--incident${selectedIncidenteId === p.id ? ' rev-zones-list-item--selected' : ''}`}
-                            onClick={() => {
-                              setSelectedIncidenteId(p.id);
-                              setSelectedZoneId(null);
-                            }}
-                          >
-                            <span className="rev-zones-list-item__icon" aria-hidden="true">
-                              <i className="bi bi-fire" />
-                            </span>
-                            <span className="rev-zones-list-item__body">
-                              <span className="rev-zones-list-item__name">
-                                {p.folio ?? p.tipo}
-                              </span>
-                              <span className="rev-zones-list-item__coords">
-                                {p.reportesEnGrupo > 1
-                                  ? `${p.reportesEnGrupo} reportes`
-                                  : 'Reporte único'}
-                              </span>
-                            </span>
-                          </button>
-                        ))
-                      )}
-                    </div>
-                    <p className="small text-muted mt-2 mb-0">
-                      <Link to="/incidentes?vista=correlaciones">Revisar correlaciones</Link>
-                    </p>
-                  </div>
-
-                  <div className="rev-zones-rail__block rev-zones-rail__block--list">
                     <h3 className="rev-zones-rail__title">Listado rápido de zonas</h3>
                     <div className="rev-zones-list">
                       {sortedList.map((z) => (
@@ -408,10 +324,7 @@ export default function ZonasPage() {
                           key={z.id}
                           zona={z}
                           selected={selectedZoneId === z.id}
-                          onSelect={(id) => {
-                            setSelectedZoneId(id);
-                            setSelectedIncidenteId(null);
-                          }}
+                          onSelect={setSelectedZoneId}
                         />
                       ))}
                     </div>

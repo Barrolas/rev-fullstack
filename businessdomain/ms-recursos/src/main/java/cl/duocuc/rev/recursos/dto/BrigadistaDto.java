@@ -17,4 +17,7 @@ public class BrigadistaDto {
     private Long idRolBrigadista;
     private String rolCodigo;
     private String rolNombre;
+    private String keycloakUsername;
+    private String email;
+    private Boolean esJefe;
 }

@@ -1,9 +1,11 @@
 package cl.duocuc.rev.gateway.filter;
 
 import cl.duocuc.rev.gateway.config.RevGatewayProperties;
+import cl.duocuc.rev.gateway.util.JwtPayloadDecoder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.OrderedGatewayFilter;
@@ -23,15 +25,18 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
     private final WebClient.Builder webClientBuilder;
     private final ObjectMapper objectMapper;
     private final RevGatewayProperties gatewayProperties;
+    private final RouteAuthorizationPolicy routeAuthorizationPolicy;
 
     public AuthenticationFilter(
             WebClient.Builder webClientBuilder,
             ObjectMapper objectMapper,
-            RevGatewayProperties gatewayProperties) {
+            RevGatewayProperties gatewayProperties,
+            RouteAuthorizationPolicy routeAuthorizationPolicy) {
         super(Config.class);
         this.webClientBuilder = webClientBuilder;
         this.objectMapper = objectMapper;
         this.gatewayProperties = gatewayProperties;
+        this.routeAuthorizationPolicy = routeAuthorizationPolicy;
     }
 
     @Override
@@ -47,13 +52,14 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bad Authorization structure");
             }
 
+            String bearerToken = parts[1];
             return webClientBuilder.build()
                     .get()
                     .uri(gatewayProperties.getKeycloakRolesUrl())
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + parts[1])
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken)
                     .retrieve()
                     .bodyToMono(String.class)
-                    .map(json -> parseRoles(json, exchange))
+                    .map(json -> enrichExchange(json, bearerToken, exchange))
                     .onErrorMap(this::mapAuthError)
                     .flatMap(chain::filter);
         }, 1);
@@ -82,20 +88,33 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
         return new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Auth service unavailable", error);
     }
 
-    private ServerWebExchange parseRoles(String json, ServerWebExchange exchange) {
+    private ServerWebExchange enrichExchange(String json, String bearerToken, ServerWebExchange exchange) {
         try {
             JsonNode response = objectMapper.readTree(json);
             if (response == null || response.isEmpty()) {
                 throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Roles missing");
             }
-            boolean authorized = response.has("Despachador")
-                    || response.has("Admin")
-                    || response.has("Brigadista");
+            List<String> roles = JwtPayloadDecoder.extractRoles(bearerToken);
+            boolean authorized = roles.contains("Despachador")
+                    || roles.contains("Admin")
+                    || roles.contains("Brigadista");
             if (!authorized) {
                 throw new ResponseStatusException(
                         HttpStatus.UNAUTHORIZED, "Role Despachador, Admin or Brigadista required");
             }
-            return exchange;
+
+            String path = exchange.getRequest().getURI().getPath();
+            String method = exchange.getRequest().getMethod().name();
+            routeAuthorizationPolicy.checkWriteAccess(method, path, roles);
+
+            String sub = JwtPayloadDecoder.extractSub(bearerToken);
+            String username = JwtPayloadDecoder.extractUsername(bearerToken);
+            var mutated = exchange.mutate().request(exchange.getRequest().mutate()
+                    .header("X-REV-Sub", sub != null ? sub : "")
+                    .header("X-REV-Username", username != null ? username : "")
+                    .header("X-REV-Roles", String.join(",", roles))
+                    .build()).build();
+            return mutated;
         } catch (JsonProcessingException ex) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid roles response", ex);
         }

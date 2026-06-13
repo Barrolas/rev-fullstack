@@ -80,10 +80,12 @@ public class DespachoFacadeService {
                             : dash.getZonaRiesgo() != null ? dash.getZonaRiesgo().getNivel() : null)
                     .conBrigadaAsignada(false)
                     .prioridad(prioridad(inc.getEstado(), inc.getZonaNivelRiesgo()))
+                    .createdAt(inc.getCreatedAt())
                     .build());
         }
 
-        cola.sort(Comparator.comparingInt(DespachoColaItemDto::getPrioridad).reversed());
+        cola.sort(Comparator.comparingInt(DespachoColaItemDto::getPrioridad).reversed()
+                .thenComparing(DespachoColaItemDto::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder())));
 
         List<DespachoBrigadaCardDto> brigadas = construirBrigadasDisponibles();
         if (brigadas.isEmpty() && !cola.isEmpty()) {

@@ -12,12 +12,14 @@ import cl.duocuc.rev.incidentes.service.CorrelacionService;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import cl.duocuc.rev.incidentes.model.EstadoCorrelacion;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -37,6 +39,27 @@ public class CorrelacionController {
     @GetMapping("/correlaciones/pendientes")
     public List<CorrelacionResponse> listarPendientes() {
         return correlacionService.listarPendientes();
+    }
+
+    @GetMapping("/correlaciones/confirmadas")
+    public List<CorrelacionResponse> listarConfirmadas() {
+        return correlacionService.listarPorEstado(EstadoCorrelacion.CONFIRMADA);
+    }
+
+    @GetMapping("/correlaciones/descartadas")
+    public List<CorrelacionResponse> listarDescartadas() {
+        return correlacionService.listarPorEstado(EstadoCorrelacion.DESCARTADA);
+    }
+
+    @GetMapping("/correlaciones")
+    public List<CorrelacionResponse> listarPorEstado(
+            @RequestParam(defaultValue = "PENDIENTE") EstadoCorrelacion estado) {
+        return correlacionService.listarPorEstado(estado);
+    }
+
+    @GetMapping("/correlaciones/{correlacionId}")
+    public CorrelacionResponse obtener(@PathVariable UUID correlacionId) {
+        return correlacionService.obtener(correlacionId);
     }
 
     @PostMapping("/correlaciones/resumen")
@@ -69,6 +92,20 @@ public class CorrelacionController {
             @RequestBody(required = false) DescartarCorrelacionRequest request,
             @RequestHeader(value = HEADER_USUARIO, required = false) String usuario) {
         return correlacionService.descartar(correlacionId, request, usuarioOrDefault(usuario));
+    }
+
+    @PostMapping("/correlaciones/{correlacionId}/revertir")
+    public CorrelacionResponse revertir(
+            @PathVariable UUID correlacionId,
+            @RequestHeader(value = HEADER_USUARIO, required = false) String usuario) {
+        return correlacionService.revertir(correlacionId, usuarioOrDefault(usuario));
+    }
+
+    @PostMapping("/correlaciones/{correlacionId}/reabrir")
+    public CorrelacionResponse reabrir(
+            @PathVariable UUID correlacionId,
+            @RequestHeader(value = HEADER_USUARIO, required = false) String usuario) {
+        return correlacionService.reabrir(correlacionId, usuarioOrDefault(usuario));
     }
 
     @PostMapping("/{id}/vincular")
