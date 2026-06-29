@@ -3,7 +3,7 @@
 | Campo | Valor |
 |-------|-------|
 | **Proyecto** | REV — Red de Emergencia Valle |
-| **Versión matriz** | 1.0 |
+| **Versión matriz** | 2.0 (segunda pasada 2026-06-29) |
 | **Referencia** | [plan-de-pruebas-eva3.md](./plan-de-pruebas-eva3.md) |
 
 **Instrucciones:** completar columna **Resultado obtenido** y **Evidencia** al ejecutar cada prueba. Exportar a Excel para Blackboard si el docente lo solicita.
@@ -52,6 +52,31 @@
 | E2E-05 | E2E | Correlaciones | Dos reportes cercanos generan sugerencia pendiente | — | Reportes A+C sembrados | `/incidentes` → Correlaciones → Pendientes | ≥ 1 correlación pendiente | Pendiente | Video plataforma §Incidentes | Geo + scorer |
 | E2E-06 | E2E | Resiliencia UI | Dashboard muestra alerta si BFF degraded | Circuit Breaker | Simular fallo zonas (opcional) o mencionar en demo | Login → inicio con flag degraded | `DegradedAlert` visible | Pendiente | Video arquitectura / plataforma | Modo degradado |
 
+### Segunda pasada v2 (2026-06-29) — ampliación cobertura
+
+| ID | Tipo | Área crítica | Caso de prueba | Patrón | Resultado obtenido | Evidencia |
+|----|------|--------------|----------------|--------|-------------------|-----------|
+| UT-09 | Unit | Incidentes | Reporte público sin ubicación rechazado | — | PASS | resumen-ejecucion v2 |
+| UT-10 | Unit | Incidentes | crearPublico con coords + correlación | — | PASS | IncidenteServiceTest |
+| UT-11 | Unit | Incidentes | obtener NOT_FOUND | — | PASS | IncidenteServiceTest |
+| UT-12 | Unit | Incidentes | transicionar guarda historial | Factory + State | PASS | IncidenteServiceTest |
+| UT-13 | Unit | Incidentes | timeline REGISTRO+TRANSICION | — | PASS | IncidenteServiceTest |
+| UT-14 | Unit | Estado | EN_PROGRESO → CONTROLADO/ESCALADO | Factory + State | PASS | IncidentStateFactoryTest |
+| UT-15 | Unit | Estado | REPORTADO no salta a CONTROLADO | Factory + State | PASS | IncidentStateFactoryTest |
+| UT-16 | Unit | Estado | CONTROLADO solo → CERRADO | Factory + State | PASS | IncidentStateFactoryTest |
+| UT-17 | Unit | Recursos | desasignar libera brigada | — | PASS | RecursoServiceDespachoTest |
+| UT-18 | Unit | Recursos | ASIGNADA → EN_CAMINO | — | PASS | RecursoServiceDespachoTest |
+| UT-19 | Unit | Recursos | transición despacho inválida | — | PASS | RecursoServiceDespachoTest |
+| UT-20 | Unit | Zonas | consultarRiesgo + clima Adapter | Adapter | PASS | ZonaServiceTest |
+| UT-21 | Unit | Zonas | actualizar zona | — | PASS | ZonaServiceTest |
+| UT-22 | Unit | BFF seguridad | requireOperador sin rol | — | PASS | AuthorizationServiceTest |
+| UT-23 | Unit | BFF seguridad | resolverPerfil brigadista jefe | — | PASS | AuthorizationServiceTest |
+| UT-24 | Unit | BFF operaciones | crearZona sin nombre | Facade | PASS | OperacionesFacadeServiceTest |
+| UT-25 | Unit | BFF dashboard | listarDashboards vacío | Facade | PASS | DashboardFacadeServiceTest |
+| IT-07 | Integración | ms-incidentes | State factory transiciones v2 en Spring | Factory + State | PASS | IncidentStateFactoryTest |
+
+Detalle de cambios: [registro-cambios-pruebas-v2.md](./registro-cambios-pruebas-v2.md).
+
 ---
 
 ## Registro de bugs y mejoras detectados por pruebas
@@ -77,21 +102,41 @@
 | UT-08, IT-04 | `CorrelacionFacadeServiceTest` | `infraestructuredomain/bff-rev/src/test/java/.../CorrelacionFacadeServiceTest.java` |
 | IT-01 | `MsIncidentesApplicationTests` | `businessdomain/ms-incidentes/src/test/java/.../MsIncidentesApplicationTests.java` |
 | IT-03 | `ApplicationTests` (bff) | `infraestructuredomain/bff-rev/src/test/java/.../ApplicationTests.java` |
+| IT-05 | `ApplicationTests` (recursos) | `businessdomain/ms-recursos/src/test/java/.../ApplicationTests.java` |
+| IT-06 | `ApplicationTests` (zonas) | `businessdomain/ms-zonas-riesgo/src/test/java/.../ApplicationTests.java` |
+| UT-09…UT-13 | `IncidenteServiceTest` | `businessdomain/ms-incidentes/src/test/java/.../service/IncidenteServiceTest.java` |
+| UT-14…UT-16, IT-07 | `IncidentStateFactoryTest` | `businessdomain/ms-incidentes/src/test/java/.../IncidentStateFactoryTest.java` |
+| UT-17…UT-19 | `RecursoServiceDespachoTest` | `businessdomain/ms-recursos/src/test/java/.../RecursoServiceDespachoTest.java` |
+| UT-20, UT-21 | `ZonaServiceTest` | `businessdomain/ms-zonas-riesgo/src/test/java/.../ZonaServiceTest.java` |
+| UT-22, UT-23 | `AuthorizationServiceTest` | `infraestructuredomain/bff-rev/src/test/java/.../security/AuthorizationServiceTest.java` |
+| UT-24 | `OperacionesFacadeServiceTest` | `infraestructuredomain/bff-rev/src/test/java/.../OperacionesFacadeServiceTest.java` |
+| UT-25 | `DashboardFacadeServiceTest` | `infraestructuredomain/bff-rev/src/test/java/.../DashboardFacadeServiceTest.java` |
 
 ---
 
-## Cobertura JaCoCo (completar tras ejecución)
+## Cobertura JaCoCo
 
-| Módulo | Instrucciones % | Branches % | Fecha ejecución | Reporte |
-|--------|-----------------|------------|-----------------|---------|
-| ms-incidentes | 29.9% | _ver paquetes_ | 2026-06-28 | `target/site/jacoco/index.html` |
-| bff-rev | 5.4% | — | 2026-06-28 | idem |
-| ms-recursos | 16.7% | — | 2026-06-28 | idem |
-| ms-zonas-riesgo | 57.0% | — | 2026-06-28 | idem |
-| **Paquetes críticos ms-incidentes** | | | | |
-| `correlacion` | 78.0% | — | | |
-| `state` | 64.4% | — | | |
-| **Meta rúbrica (global)** | **≥ 60 %** | Cobertura global baja por controllers/config sin tests; paquetes de negocio prioritarios en plan de mejora | | |
+### v2.0 (2026-06-29)
+
+| Módulo | Instrucciones % | Δ vs v1 | Fecha | Reporte |
+|--------|-----------------|---------|-------|---------|
+| ms-incidentes | **41.8%** | +11.9 pp | 2026-06-29 | `target/site/jacoco/index.html` |
+| bff-rev | **8.9%** | +3.5 pp | 2026-06-29 | idem |
+| ms-recursos | **22.3%** | +5.6 pp | 2026-06-29 | idem |
+| ms-zonas-riesgo | **69.7%** | +12.7 pp ✓ | 2026-06-29 | idem |
+| `incidentes.state` | 79.5% | +15.1 pp | | |
+| `incidentes.service` | 33.3% | +16.5 pp | | |
+| `zonas.service` | 83.6% | +24.9 pp | | |
+| `bff.security` | 42.9% | nuevo | | |
+
+### v1.0 (referencia 2026-06-28)
+
+| Módulo | Instrucciones % |
+|--------|-----------------|
+| ms-incidentes | 29.9% |
+| bff-rev | 5.4% |
+| ms-recursos | 16.7% |
+| ms-zonas-riesgo | 57.0% |
 
 ---
 

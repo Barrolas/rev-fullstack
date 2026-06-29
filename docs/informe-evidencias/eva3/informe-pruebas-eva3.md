@@ -6,7 +6,7 @@
 | **Asignatura** | DSY1106 — Desarrollo Fullstack III |
 | **Integrantes** | Nicolás Barra · Giannina Guerrero |
 | **Sección** | 306-V |
-| **Versión** | 1.0 — Junio 2026 |
+| **Versión** | 2.0 — Junio 2026 (v1.0 + segunda pasada cobertura 2026-06-29) |
 | **Tipo documento** | Informe de pruebas unitarias, integración y end-to-end |
 
 > Exportar a PDF desde VS Code / navegador / Word antes de subir a Blackboard.
@@ -21,11 +21,12 @@ Este informe documenta la estrategia, ejecución y resultados de las pruebas **u
 
 **Hallazgos principales:**
 
-- Se ejecutaron **14 pruebas automatizadas PASS** (8 unitarias + 6 integración/smoke) en 4 módulos Java el 2026-06-28.
-- Casos negativos validados: georreferenciación obligatoria, correlación no revertible, asignación duplicada.
-- Cobertura JaCoCo global moderada (29.9% ms-incidentes); paquetes críticos `correlacion` 78%, `state` 64.4%, `ms-zonas-riesgo` 57%.
-- Bug detectado en ejecución: test UT-05 con mock incompleto — corregido.
+- **v1.0 (2026-06-28):** 14 casos trazados PASS (UT-01…UT-08, IT-01…IT-06).
+- **v2.0 (2026-06-29):** +18 tests (UT-09…UT-25, IT-07) — suite ampliada sin regresiones.
+- Cobertura JaCoCo mejorada: ms-zonas-riesgo **69.7%** (cumple ≥60%); ms-incidentes **41.8%** (+11.9 pp).
+- Casos negativos ampliados: validación reporte público, transiciones despacho, RBAC brigadista.
 - E2E manuales pendientes de grabación en video plataforma.
+- Registro de cambios v2: [registro-cambios-pruebas-v2.md](./registro-cambios-pruebas-v2.md).
 
 ---
 
@@ -106,9 +107,13 @@ cd businessdomain\ms-incidentes
 | ms-zonas-riesgo | 10+ | 0 | 0 | 0 | PASS |
 | bff-rev | 8+ | 0 | 0 | 0 | PASS |
 
-Evidencia: `evidencias/resumen-ejecucion.txt` (2026-06-29).
+Evidencia: `evidencias/resumen-ejecucion.txt` (v2 — 2026-06-29).
 
 ![Resumen ejecución mvn test](evidencias/mvn-test-resumen.png)
+
+### 5.4 Segunda pasada v2 (2026-06-29)
+
+18 tests nuevos en `IncidenteServiceTest`, `IncidentStateFactoryTest`, `RecursoServiceDespachoTest`, `ZonaServiceTest`, `AuthorizationServiceTest`, `DashboardFacadeServiceTest`. Ver [registro-cambios-pruebas-v2.md](./registro-cambios-pruebas-v2.md).
 
 ### 5.3 Ejemplos representativos
 
@@ -211,16 +216,16 @@ curl.exe -s -w "\nHTTP:%{http_code}" "http://localhost:18080/api/incidentes"
 
 ## 10. Métricas de cobertura (JaCoCo)
 
-| Módulo | Instrucciones | Branches | Cumple ≥60 % global |
-|--------|---------------|----------|---------------------|
-| ms-incidentes | 29.9% | — | No (paquete `state` 64.4%, `correlacion` 78%) |
-| bff-rev | 5.4% | — | No — plan: tests Facade |
-| ms-recursos | 16.7% | — | No |
-| ms-zonas-riesgo | 57.0% | — | Cercano |
+| Módulo | Instrucciones v1 | Instrucciones v2 | Cumple ≥60 % global |
+|--------|------------------|------------------|---------------------|
+| ms-incidentes | 29.9% | **41.8%** | No (`state` 79.5%, `correlacion` 78%) |
+| bff-rev | 5.4% | **8.9%** | No — plan: más Facade tests |
+| ms-recursos | 16.7% | **22.3%** | No |
+| ms-zonas-riesgo | 57.0% | **69.7%** | **Sí** (`service` 83.6%) |
 
 **Nota:** JaCoCo global incluye controllers, config y DTOs sin tests. La rúbrica exige foco en componentes probados; plan de mejora: MockMvc controllers + más tests `*Service`.
 
-### Capturas JaCoCo (2026-06-29)
+### Capturas JaCoCo (v2 — 2026-06-29)
 
 ![JaCoCo ms-incidentes](evidencias/jacoco-ms-incidentes.png)
 
@@ -278,7 +283,7 @@ Ver también: `docs/repositorios.txt`
 
 ## 13. Conclusiones
 
-REV cumple la estrategia de pruebas EVA3 en flujos críticos con 14 tests automatizados PASS y 6 escenarios E2E planificados para el video de plataforma. La ejecución del 2026-06-28 detectó y corrigió un test incompleto en ms-recursos (BUG-05). La cobertura global JaCoCo está por debajo del 60% en algunos módulos; los paquetes de reglas de negocio (`state`, `correlacion`, `zonas`) se acercan o superan la meta. Próximo paso: ampliar tests en services/controllers y completar E2E en grabación del video checklist.
+REV cumple la estrategia de pruebas EVA3 en flujos críticos con **32 casos automatizados trazados PASS** (v1 + v2) y 6 escenarios E2E planificados para el video de plataforma. La segunda pasada (v2) elevó ms-zonas-riesgo por sobre el 60% y mejoró ms-incidentes en +11.9 pp sin regresiones. Próximo paso: tests MockMvc en controllers, más Facade BFF y E2E en grabación del video checklist.
 
 ---
 

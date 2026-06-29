@@ -198,6 +198,23 @@ Comando: `.\scripts\run-eva3-tests.ps1` · Evidencia: [evidencias/resumen-ejecuc
 
 ---
 
+## 14. Resultados de ejecución v2 (2026-06-29)
+
+**Segunda pasada** orientada a mejorar cobertura tras veredicto v1. Registro detallado: [registro-cambios-pruebas-v2.md](./registro-cambios-pruebas-v2.md).
+
+| Módulo | Exit | Cobertura v1 | Cobertura v2 | Δ |
+|--------|------|--------------|--------------|---|
+| ms-incidentes | 0 | 29.9% | **41.8%** | +11.9 pp |
+| ms-zonas-riesgo | 0 | 57.0% | **69.7%** | +12.7 pp ✓ ≥60% |
+| ms-recursos | 0 | 16.7% | **22.3%** | +5.6 pp |
+| bff-rev | 0 | 5.4% | **8.9%** | +3.5 pp |
+
+**Nuevos tests:** 18 métodos (UT-09…UT-25, IT-07) — todos PASS.
+
+**Sin cambios en código de producción** en v2; solo suite de tests y documentación.
+
+---
+
 ## 11. Riesgos y mitigación
 
 | Riesgo | Probabilidad | Mitigación |
