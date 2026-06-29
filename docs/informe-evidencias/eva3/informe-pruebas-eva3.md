@@ -106,7 +106,9 @@ cd businessdomain\ms-incidentes
 | ms-zonas-riesgo | 10+ | 0 | 0 | 0 | PASS |
 | bff-rev | 8+ | 0 | 0 | 0 | PASS |
 
-Evidencia: `docs/informe-evidencias/eva3/evidencias/resumen-ejecucion.txt` (2026-06-28).
+Evidencia: `evidencias/resumen-ejecucion.txt` (2026-06-29).
+
+![Resumen ejecución mvn test](evidencias/mvn-test-resumen.png)
 
 ### 5.3 Ejemplos representativos
 
@@ -189,7 +191,7 @@ curl.exe -s -w "\nHTTP:%{http_code}" "http://localhost:18080/api/incidentes"
 | BUG-02 | UT-05 | Doble asignación brigada | Media | Excepción `ASIGNACION_DUPLICADA` |
 | BUG-03 | UT-08 | Revertir correlación con asignaciones activas | Alta | Bloqueo + flujo reasignación en BFF |
 | BUG-04 | E2E-03 | Endpoints operativos sin autenticación | Alta | Filtro JWT en Gateway |
-| BUG-05 | UT-05 (ejecución EVA3) | Test NPE por mock faltante `BrigadaBrigadistaRepository` | Media | Mock agregado en `RecursoServiceAsignarMultiTest` | 2026-06-28 |
+| BUG-05 | UT-05 (ejecución EVA3) | Test NPE por mock faltante `BrigadaBrigadistaRepository` | Media | Mock agregado en `RecursoServiceAsignarMultiTest` (2026-06-28) |
 
 ---
 
@@ -218,7 +220,17 @@ curl.exe -s -w "\nHTTP:%{http_code}" "http://localhost:18080/api/incidentes"
 
 **Nota:** JaCoCo global incluye controllers, config y DTOs sin tests. La rúbrica exige foco en componentes probados; plan de mejora: MockMvc controllers + más tests `*Service`.
 
-**Capturas:** incluir en ZIP `Evidencias/jacoco-*/index.html` o PNG de pantalla.
+### Capturas JaCoCo (2026-06-29)
+
+![JaCoCo ms-incidentes](evidencias/jacoco-ms-incidentes.png)
+
+![JaCoCo ms-zonas-riesgo](evidencias/jacoco-ms-zonas-riesgo.png)
+
+![JaCoCo ms-recursos](evidencias/jacoco-ms-recursos.png)
+
+![JaCoCo bff-rev](evidencias/jacoco-bff-rev.png)
+
+**E2E curl (401/200):** pendiente de captura con `.\scripts\dev-up.ps1 -DockerApps` al grabar video plataforma — ver §7.1.
 
 ### Frontend
 

@@ -56,8 +56,8 @@ Solo lo exigido por **CHECKLIST.xlsx** y PDF EVA3:
 
 | Tarea | Documento guía | Tiempo estimado |
 |-------|----------------|-----------------|
-| Ejecutar tests + capturas JaCoCo | [guion-video-ejecucion-pruebas-eva3.md](./guion-video-ejecucion-pruebas-eva3.md) | 1 h |
-| Completar informe PDF con resultados reales | [informe-pruebas-eva3.md](./informe-pruebas-eva3.md) | 2 h |
+| Ejecutar tests + capturas JaCoCo | `.\scripts\run-eva3-tests.ps1` luego `cd docs && npm run capture:jacoco-eva3` | 1 h |
+| Completar informe PDF con resultados reales | `cd docs && npm run build:eva3-pdfs` → `informe-pruebas-eva3.pdf` | 2 h |
 | Grabar video plataforma (9 ítems checklist) | [guion-video-plataforma-eva3.md](./guion-video-plataforma-eva3.md) | 2–3 h |
 | Ejecutar plan pruebas (automático) | `.\scripts\run-eva3-tests.ps1` | 15 min |
 | Diapositivas PPT bloque pruebas | guion-presentacion-oral-eva3.md § Nicolás | 1 h (defensa) |

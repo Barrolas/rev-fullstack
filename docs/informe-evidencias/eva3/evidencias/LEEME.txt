@@ -1,8 +1,20 @@
-# Colocar capturas de evidencia EVA3 aquí antes de empaquetar.
+# Evidencias EVA3 — capturas generadas automáticamente
 
-Ver guion: guion-video-ejecucion-pruebas-eva3.md
+## Generadas (npm run capture:jacoco-eva3)
 
 - jacoco-ms-incidentes.png
-- mvn-test-incidentes.png
-- curl-401.png
-- curl-200.png
+- jacoco-ms-zonas-riesgo.png
+- jacoco-ms-recursos.png
+- jacoco-bff-rev.png
+- mvn-test-resumen.png
+- resumen-ejecucion.txt
+
+## Pendientes (video plataforma / dev-up)
+
+- curl-401.png — Gateway sin JWT (E2E-03)
+- curl-200.png — Gateway con JWT válido (E2E-04)
+
+Comando E2E-03:
+  curl.exe -s -w "\nHTTP:%{http_code}" "http://localhost:18080/api/incidentes"
+
+Requiere: .\scripts\dev-up.ps1 -DockerApps -Build

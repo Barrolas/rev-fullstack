@@ -27,8 +27,11 @@ New-Item -ItemType Directory -Path $docDst -Force | Out-Null
 $eva3Docs = Join-Path (Join-Path $root 'docs') 'informe-evidencias\eva3'
 foreach ($f in @(
   'plan-de-pruebas-eva3.md',
+  'plan-de-pruebas-eva3.pdf',
   'matriz-de-pruebas-eva3.md',
+  'matriz-de-pruebas-eva3.pdf',
   'informe-pruebas-eva3.md',
+  'informe-pruebas-eva3.pdf',
   'instrucciones-equipo-eva3.md',
   'eva3-fullstack-rubrica.md',
   'guion-video-arquitectura-eva3.md',
@@ -81,4 +84,4 @@ Copy-Item (Join-Path $root 'README.md') (Join-Path $staging 'README.md') -Force
 if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
 Compress-Archive -Path $staging -DestinationPath $zipPath -Force
 Write-Host "Listo: $zipPath"
-Write-Host "Recuerda: exportar informe-pruebas-eva3.md a PDF y agregar capturas en Evidencias/"
+Write-Host "PDFs: docs/informe-evidencias/eva3/*.pdf (npm run build:eva3-pdfs en docs/)"
