@@ -37,7 +37,8 @@ foreach ($f in @(
   'guion-video-arquitectura-eva3.md',
   'guion-video-plataforma-eva3.md',
   'guion-video-ejecucion-pruebas-eva3.md',
-  'guion-presentacion-oral-eva3.md'
+  'guion-presentacion-oral-eva3.md',
+  'registro-cambios-pruebas-v2.md'
 )) {
   $p = Join-Path $eva3Docs $f
   if (Test-Path $p) { Copy-Item $p (Join-Path $docDst $f) -Force }
