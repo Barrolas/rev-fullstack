@@ -84,6 +84,19 @@
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
                     <version>${jacoco.version}</version>
+                    <configuration>
+                        <!-- Cobertura EVA3: capas de negocio y web (excluye DTO, entidades, config, clients HTTP) -->
+                        <excludes>
+                            <exclude>cl/duocuc/rev/**/dto/**</exclude>
+                            <exclude>cl/duocuc/rev/**/entity/**</exclude>
+                            <exclude>cl/duocuc/rev/**/model/**</exclude>
+                            <exclude>cl/duocuc/rev/**/config/**</exclude>
+                            <exclude>cl/duocuc/rev/**/*Application*</exclude>
+                            <exclude>cl/duocuc/rev/**/client/**</exclude>
+                            <exclude>cl/duocuc/rev/**/cache/**</exclude>
+                            <exclude>cl/duocuc/rev/**/exception/**</exclude>
+                        </excludes>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>

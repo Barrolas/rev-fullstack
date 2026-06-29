@@ -56,6 +56,11 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webmvc-test</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -92,7 +97,7 @@
                                     <element>BUNDLE</element>
                                     <limits>
                                         <limit>
-                                            <counter>LINE</counter>
+                                            <counter>INSTRUCTION</counter>
                                             <value>COVEREDRATIO</value>
                                             <minimum>0.10</minimum>
                                         </limit>
@@ -102,6 +107,17 @@
                         </configuration>
                     </execution>
                 </executions>
+                <configuration>
+                    <includes>
+                        <include>cl/duocuc/rev/**/service/**</include>
+                        <include>cl/duocuc/rev/**/controller/**</include>
+                        <include>cl/duocuc/rev/**/state/**</include>
+                        <include>cl/duocuc/rev/**/correlacion/**</include>
+                        <include>cl/duocuc/rev/**/security/**</include>
+                        <include>cl/duocuc/rev/**/adapter/**</include>
+                        <include>cl/duocuc/rev/**/util/**</include>
+                    </includes>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

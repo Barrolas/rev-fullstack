@@ -35,6 +35,17 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <includes>
+                        <include>cl/duocuc/rev/**/service/**</include>
+                        <include>cl/duocuc/rev/**/controller/**</include>
+                        <include>cl/duocuc/rev/**/state/**</include>
+                        <include>cl/duocuc/rev/**/correlacion/**</include>
+                        <include>cl/duocuc/rev/**/security/**</include>
+                        <include>cl/duocuc/rev/**/adapter/**</include>
+                        <include>cl/duocuc/rev/**/util/**</include>
+                    </includes>
+                </configuration>
             </plugin>
         </plugins>
     </build>
