@@ -114,6 +114,40 @@ class ZonaServiceTest {
         assertTrue(list.get(0).isActiva());
     }
 
+    @Test
+    void consultarRiesgo_conClima_retornaDatosAdapter() {
+        Zona zona = zonaActiva(3L, "Centro", "HIGH", CENTRO_LAT, CENTRO_LNG, 1000);
+        when(zonaRepository.findByActivaTrueOrderByNombreAsc()).thenReturn(List.of(zona));
+        when(weatherDataPort.obtenerCondiciones(CENTRO_LAT, CENTRO_LNG))
+                .thenReturn(cl.duocuc.rev.zonas.dto.WeatherDataDto.builder()
+                        .temperaturaC(28.5)
+                        .humedadPct(40)
+                        .vientoKmh(12.0)
+                        .descripcion("Soleado")
+                        .build());
+
+        var riesgo = zonaService.consultarRiesgo(CENTRO_LAT, CENTRO_LNG);
+
+        assertEquals(3L, riesgo.getZonaId());
+        assertEquals("HIGH", riesgo.getNivelRiesgo());
+        assertEquals(28.5, riesgo.getTemperaturaC());
+        assertEquals("Soleado", riesgo.getCondicionClimatica());
+    }
+
+    @Test
+    void actualizar_zonaExistente_aplicaCambios() {
+        ZonaRequest request = requestBase("Actualizada", "MEDIUM", 900);
+        Zona existente = zonaActiva(4L, "Vieja", "LOW", CENTRO_LAT, CENTRO_LNG, 1200);
+        when(zonaRepository.findById(4L)).thenReturn(Optional.of(existente));
+        when(zonaRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        ZonaResponse response = zonaService.actualizar(4L, request);
+
+        assertEquals("Actualizada", response.getNombre());
+        assertEquals("MEDIUM", response.getNivelRiesgo());
+        assertEquals(900, response.getRadioMetros());
+    }
+
     private static ZonaRequest requestBase(String nombre, String nivel, double radio) {
         ZonaRequest request = new ZonaRequest();
         request.setNombre(nombre);

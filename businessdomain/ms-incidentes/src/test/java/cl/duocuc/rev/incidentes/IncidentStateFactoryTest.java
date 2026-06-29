@@ -38,4 +38,39 @@ class IncidentStateFactoryTest {
 
         assertDoesNotThrow(() -> stateFactory.validarTransicion(incidente, EstadoIncidente.EN_PROGRESO));
     }
+
+    @Test
+    void enProgresoPermiteControladoOEscalado() {
+        Incidente incidente = Incidente.builder()
+                .estado(EstadoIncidente.EN_PROGRESO)
+                .lat(-33.45)
+                .lng(-70.66)
+                .build();
+
+        assertDoesNotThrow(() -> stateFactory.validarTransicion(incidente, EstadoIncidente.CONTROLADO));
+        assertDoesNotThrow(() -> stateFactory.validarTransicion(incidente, EstadoIncidente.ESCALADO));
+    }
+
+    @Test
+    void reportadoNoSaltaDirectoAControlado() {
+        Incidente incidente = Incidente.builder()
+                .estado(EstadoIncidente.REPORTADO)
+                .lat(-33.45)
+                .lng(-70.66)
+                .build();
+
+        assertThrows(Exception.class,
+                () -> stateFactory.validarTransicion(incidente, EstadoIncidente.CONTROLADO));
+    }
+
+    @Test
+    void controladoSoloPermiteCerrado() {
+        Incidente incidente = Incidente.builder()
+                .estado(EstadoIncidente.CONTROLADO)
+                .build();
+
+        assertDoesNotThrow(() -> stateFactory.validarTransicion(incidente, EstadoIncidente.CERRADO));
+        assertThrows(Exception.class,
+                () -> stateFactory.validarTransicion(incidente, EstadoIncidente.EN_PROGRESO));
+    }
 }

@@ -16,6 +16,7 @@ import cl.duocuc.rev.recursos.model.EstadoRecurso;
 import cl.duocuc.rev.recursos.repository.AsignacionBrigadistaRepository;
 import cl.duocuc.rev.recursos.repository.AsignacionHerramientaRepository;
 import cl.duocuc.rev.recursos.repository.AsignacionRepository;
+import cl.duocuc.rev.recursos.repository.BrigadaBrigadistaRepository;
 import cl.duocuc.rev.recursos.repository.BrigadaHerramientaRepository;
 import cl.duocuc.rev.recursos.repository.BrigadaRepository;
 import cl.duocuc.rev.recursos.repository.BrigadaVehiculoRepository;
@@ -75,6 +76,9 @@ class RecursoServiceCatalogoTest {
 
     @Mock
     private BrigadaVehiculoRepository brigadaVehiculoRepository;
+
+    @Mock
+    private BrigadaBrigadistaRepository brigadaBrigadistaRepository;
 
     @InjectMocks
     private RecursoService recursoService;
@@ -138,5 +142,79 @@ class RecursoServiceCatalogoTest {
         request.setCapacidad(5);
 
         assertThrows(BusinessRuleException.class, () -> recursoService.crearBrigada(request));
+    }
+
+    @Test
+    void crearBrigada_capacidadInvalida_lanzaExcepcion() {
+        BrigadaRequest request = new BrigadaRequest();
+        request.setNombre("Brigada Delta");
+        request.setCapacidad(0);
+
+        BusinessRuleException ex =
+                assertThrows(BusinessRuleException.class, () -> recursoService.crearBrigada(request));
+        assertEquals("CAPACIDAD_INVALIDA", ex.getCode());
+    }
+
+    @Test
+    void crearBrigada_conCodigo_normalizaMayusculas() {
+        BrigadaRequest request = new BrigadaRequest();
+        request.setNombre("Brigada Epsilon");
+        request.setCapacidad(8);
+        request.setCodigo("be-01");
+
+        Brigada saved = Brigada.builder()
+                .id(4L)
+                .nombre("Brigada Epsilon")
+                .codigo("BE-01")
+                .capacidad(8)
+                .estado(EstadoRecurso.DISPONIBLE)
+                .build();
+        when(brigadaRepository.save(any())).thenReturn(saved);
+        when(brigadaVehiculoRepository.findByIdBrigadaAndActivaTrue(4L)).thenReturn(List.of());
+
+        BrigadaDto dto = recursoService.crearBrigada(request);
+
+        assertEquals("BE-01", dto.getCodigo());
+    }
+
+    @Test
+    void crearHerramienta_sinNombre_lanzaExcepcion() {
+        HerramientaRequest request = new HerramientaRequest();
+        request.setCantidadTotal(5);
+
+        BusinessRuleException ex =
+                assertThrows(BusinessRuleException.class, () -> recursoService.crearHerramienta(request));
+        assertEquals("NOMBRE_REQUERIDO", ex.getCode());
+    }
+
+    @Test
+    void crearHerramienta_cantidadInvalida_lanzaExcepcion() {
+        HerramientaRequest request = new HerramientaRequest();
+        request.setNombre("Hacha");
+        request.setCantidadTotal(0);
+
+        BusinessRuleException ex =
+                assertThrows(BusinessRuleException.class, () -> recursoService.crearHerramienta(request));
+        assertEquals("CANTIDAD_INVALIDA", ex.getCode());
+    }
+
+    @Test
+    void crearHerramienta_estadoDefault_activa() {
+        HerramientaRequest request = new HerramientaRequest();
+        request.setNombre("Pala");
+        request.setCantidadTotal(3);
+
+        Herramienta saved = Herramienta.builder()
+                .id(2L)
+                .nombre("Pala")
+                .cantidadTotal(3)
+                .cantidadDisponible(3)
+                .estado("ACTIVA")
+                .build();
+        when(herramientaRepository.save(any())).thenReturn(saved);
+
+        var dto = recursoService.crearHerramienta(request);
+
+        assertEquals("ACTIVA", dto.getEstado());
     }
 }

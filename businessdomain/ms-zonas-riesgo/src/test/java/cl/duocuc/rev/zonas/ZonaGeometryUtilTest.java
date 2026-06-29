@@ -44,6 +44,41 @@ class ZonaGeometryUtilTest {
         assertEquals(0, ZonaGeometryUtil.haversineMetros(-33.44, -70.58, -33.44, -70.58), 0.5);
     }
 
+    @Test
+    void haversineMetros_puntosDistintos_retornaDistanciaPositiva() {
+        double metros = ZonaGeometryUtil.haversineMetros(-33.44, -70.58, -33.45, -70.59);
+        assertTrue(metros > 1000);
+    }
+
+    @Test
+    void centerLat_legacySinCenter_usaBbox() {
+        Zona zona = Zona.builder().minLat(-33.5).maxLat(-33.3).build();
+        assertEquals(-33.4, ZonaGeometryUtil.centerLat(zona), 0.001);
+    }
+
+    @Test
+    void centerLng_legacySinCenter_usaBbox() {
+        Zona zona = Zona.builder().minLng(-70.7).maxLng(-70.5).build();
+        assertEquals(-70.6, ZonaGeometryUtil.centerLng(zona), 0.001);
+    }
+
+    @Test
+    void radioMetros_legacySinRadio_derivaDesdeBbox() {
+        Zona zona = Zona.builder()
+                .minLat(-33.5)
+                .maxLat(-33.3)
+                .minLng(-70.7)
+                .maxLng(-70.5)
+                .build();
+        assertTrue(ZonaGeometryUtil.radioMetros(zona) > 0);
+    }
+
+    @Test
+    void centerLat_conCenterExplicito_loUsa() {
+        Zona zona = Zona.builder().centerLat(-33.44).minLat(-33.5).maxLat(-33.3).build();
+        assertEquals(-33.44, ZonaGeometryUtil.centerLat(zona), 0.001);
+    }
+
     private static Zona zonaCircular(double lat, double lng, double radio) {
         return Zona.builder()
                 .centerLat(lat)
