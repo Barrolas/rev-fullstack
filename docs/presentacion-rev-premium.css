@@ -1,0 +1,162 @@
+/* REV — Capa premium · glass, glow, micro-interacciones (solo HTML viewer) */
+
+@media screen {
+  /* Barra de progreso Marp — acento REV */
+  body[data-bespoke-view=""] .bespoke-progress-parent {
+    background: rgba(7, 17, 31, 0.95);
+    height: 3px;
+  }
+
+  body[data-bespoke-view=""] .bespoke-progress-parent .bespoke-progress-bar {
+    background: linear-gradient(90deg, #ea580c 0%, #f97316 45%, #fb923c 100%);
+    box-shadow: 0 0 12px rgba(249, 115, 22, 0.55);
+  }
+
+  /* Controles flotantes */
+  body[data-bespoke-view=""] .bespoke-marp-parent > .bespoke-marp-osc,
+  body[data-bespoke-view=next] .bespoke-marp-parent > .bespoke-marp-osc {
+    backdrop-filter: blur(14px);
+    background: rgba(7, 17, 31, 0.82) !important;
+    border: 1px solid rgba(249, 115, 22, 0.18);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  }
+
+  svg.bespoke-marp-slide.bespoke-marp-active {
+    filter: drop-shadow(0 12px 40px rgba(0, 0, 0, 0.38));
+  }
+
+  /* Títulos con brillo sutil */
+  section:not(.cover-official):not(.closing-premium) h1 {
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+
+  section:not(.cover-official):not(.closing-premium) h1::after {
+    background: linear-gradient(90deg, rgba(249, 115, 22, 0.35), transparent 70%);
+    bottom: 0;
+    content: '';
+    height: 1px;
+    left: 14px;
+    position: absolute;
+    right: 0;
+  }
+
+  section:not(.cover-official):not(.closing-premium) h1 {
+    position: relative;
+  }
+
+  /* Subtítulos con icono — ocultar barra duplicada */
+  .rev-sub:has(.rev-ico)::before {
+    display: none !important;
+  }
+
+  .rev-sub .rev-ico {
+    filter: drop-shadow(0 0 6px rgba(249, 115, 22, 0.35));
+  }
+
+  /* Glass cards premium */
+  .rev-kpi,
+  .rev-ms-card,
+  .rev-card,
+  .rev-panel,
+  .rev-result-card,
+  .rev-tech-card,
+  .rev-pattern-row {
+    backdrop-filter: blur(8px);
+  }
+
+  .rev-kpi {
+    background: linear-gradient(
+      145deg,
+      rgba(20, 44, 78, 0.55) 0%,
+      rgba(11, 23, 42, 0.88) 100%
+    ) !important;
+    border-color: rgba(255, 255, 255, 0.1);
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .rev-kpi:hover {
+    border-color: rgba(249, 115, 22, 0.28);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(249, 115, 22, 0.08);
+  }
+
+  .rev-ms-card {
+    background: linear-gradient(
+      165deg,
+      rgba(20, 44, 78, 0.78) 0%,
+      rgba(11, 23, 42, 0.94) 100%
+    ) !important;
+  }
+
+  .rev-panel {
+    box-shadow:
+      0 12px 32px rgba(0, 0, 0, 0.28),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  .rev-callout {
+    background: linear-gradient(
+      135deg,
+      rgba(249, 115, 22, 0.1) 0%,
+      rgba(249, 115, 22, 0.04) 100%
+    ) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+
+  .rev-chip {
+    backdrop-filter: blur(6px);
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+
+  .rev-chip:hover {
+    border-color: rgba(249, 115, 22, 0.45);
+    background: rgba(249, 115, 22, 0.12) !important;
+  }
+
+  .rev-diagram-img {
+    box-shadow:
+      0 16px 40px rgba(0, 0, 0, 0.32),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+
+  .rev-pattern-row {
+    background: linear-gradient(
+      90deg,
+      rgba(11, 23, 42, 0.96) 0%,
+      rgba(16, 35, 62, 0.72) 100%
+    ) !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .rev-pattern-row:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
+    transform: translateX(2px);
+  }
+
+  .rev-pattern-badge {
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  }
+
+  section:not(.cover-official) footer {
+    backdrop-filter: blur(10px);
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Icono en filas de patrón */
+  .rev-pattern-row__label {
+    align-items: center;
+    display: flex;
+    gap: 6px;
+  }
+
+  .rev-pattern-row__icon {
+    flex-shrink: 0;
+    height: 11px;
+    opacity: 0.9;
+    stroke: var(--rev-orange-hover);
+    width: 11px;
+  }
+
+  section.closing-premium .rev-closing-copy {
+    backdrop-filter: blur(2px);
+  }
+}

@@ -44,14 +44,19 @@ foreach ($f in @(
   if (Test-Path $p) { Copy-Item $p (Join-Path $docDst $f) -Force }
 }
 
-# Arquitectura EVA2 (reutilizada)
+# Arquitectura EVA3
 foreach ($f in @(
-  'Presentacion-REV-EVA2-v5.pdf',
+  'Presentacion-REV-EVA3.pdf',
+  'Presentacion-REV-EVA3.html',
   'patrones-y-arquitectura-rev.md',
   'informe-sistema-rev.md',
   'repositorios.txt'
 )) {
-  $p = Join-Path (Join-Path $root 'docs') $f
+  if ($f -match '^Presentacion-REV-EVA3') {
+    $p = Join-Path $eva3Docs $f
+  } else {
+    $p = Join-Path (Join-Path $root 'docs') $f
+  }
   if (Test-Path $p) { Copy-Item $p (Join-Path $docDst $f) -Force }
 }
 

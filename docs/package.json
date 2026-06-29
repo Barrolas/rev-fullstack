@@ -10,6 +10,9 @@
     "build:presentacion": "node build-presentacion-pdf.mjs",
     "sync:presentacion-images": "node sync-presentacion-images.mjs",
     "build:presentacion:html": "node build-presentacion-html.mjs",
+    "build:presentacion:eva3:html": "node build-presentacion-eva3-html.mjs",
+    "build:presentacion:eva3:pdf": "node build-presentacion-eva3-pdf.mjs",
+    "build:presentacion:eva3": "npm run build:presentacion:eva3:html && npm run build:presentacion:eva3:pdf",
     "build:presentacion:all": "npm run build:presentacion:html && npm run audit:presentacion && npm run build:presentacion",
     "capture:jacoco-eva3": "node capture-jacoco-eva3.mjs",
     "build:eva3-pdfs": "node build-eva3-pdfs.mjs"

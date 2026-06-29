@@ -1,0 +1,369 @@
+/* REV — Splash v3 · cinematic minimal + fondo ambiental del sistema */
+
+@keyframes rev-splash-logo-reveal {
+  0% {
+    opacity: 0;
+    transform: scale(0.94) translateY(24px);
+    filter: blur(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes rev-splash-line-draw {
+  0% {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes rev-splash-text-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rev-splash-bar-fill {
+  0% { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
+}
+
+@keyframes rev-splash-exit {
+  0% { opacity: 1; visibility: visible; }
+  100% { opacity: 0; visibility: hidden; }
+}
+
+@keyframes rev-splash-radar-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes rev-splash-pin-ring {
+  0% {
+    opacity: 0.5;
+    transform: scale(0.6);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.2);
+  }
+}
+
+body.rev-splash-active {
+  overflow: hidden !important;
+}
+
+body.rev-splash-active .bespoke-marp-parent,
+body.rev-splash-active .bespoke-progress-parent,
+body.rev-splash-active .bespoke-marp-osc {
+  opacity: 0;
+  pointer-events: none;
+}
+
+body.rev-splash-done .bespoke-marp-parent,
+body.rev-splash-done .bespoke-progress-parent {
+  animation: rev-splash-text-rise 0.55s ease forwards;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ── Contenedor ── */
+.rev-splash {
+  align-items: center;
+  background: #07111f;
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  overflow: hidden;
+  position: fixed;
+  z-index: 99999;
+}
+
+.rev-splash.is-hiding {
+  animation: rev-splash-exit 0.55s ease forwards;
+  pointer-events: none;
+}
+
+/* ── Fondo ambiental REV (OperationalAmbient) ── */
+.rev-splash__canvas {
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  position: absolute;
+}
+
+.rev-splash__layer {
+  inset: 0;
+  position: absolute;
+}
+
+/* Base — profundidad y viñeta (ambient.css) */
+.rev-splash__layer--base {
+  background:
+    radial-gradient(ellipse 120% 95% at 50% 48%, transparent 32%, rgba(4, 10, 20, 0.72) 100%),
+    radial-gradient(ellipse 50% 40% at 98% 2%, rgba(249, 115, 22, 0.09), transparent 58%),
+    radial-gradient(ellipse 55% 45% at -2% 98%, rgba(20, 44, 78, 0.55), transparent 52%),
+    radial-gradient(ellipse 80% 50% at 50% -15%, rgba(16, 35, 62, 0.42), transparent 62%),
+    linear-gradient(168deg, #0d1a2e 0%, #07111f 38%, #050a14 72%, #040810 100%);
+}
+
+/* Cuadrícula cartográfica */
+.rev-splash__layer--grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(rgba(249, 115, 22, 0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(249, 115, 22, 0.018) 1px, transparent 1px);
+  background-size:
+    72px 72px,
+    72px 72px,
+    288px 288px,
+    288px 288px;
+  mask-image: radial-gradient(ellipse 92% 78% at 48% 28%, black 0%, transparent 78%);
+  opacity: 0.55;
+}
+
+/* Curvas topográficas */
+.rev-splash__layer--topo {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='480' height='480' viewBox='0 0 480 480'%3E%3Cg fill='none' stroke='rgba(167%2C180%2C199%2C0.07)' stroke-width='0.65'%3E%3Cpath d='M0 120 Q120 80 240 120 T480 120'/%3E%3Cpath d='M0 200 Q160 160 320 200 T480 200'/%3E%3Cpath d='M0 280 Q100 240 200 280 T400 280 T480 280'/%3E%3Cpath d='M0 360 Q180 320 360 360 T480 360'/%3E%3Cpath d='M80 0 Q120 120 80 240 T80 480'/%3E%3Cpath d='M200 0 Q240 160 200 320 T200 480'/%3E%3Cpath d='M320 0 Q360 140 320 280 T320 480'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 480px 480px;
+  mask-image:
+    radial-gradient(ellipse 88% 72% at 55% 35%, black 0%, transparent 75%),
+    linear-gradient(180deg, black 0%, transparent 92%);
+  mask-composite: intersect;
+  opacity: 0.35;
+}
+
+/* Radar operacional — esquina inferior derecha */
+.rev-splash__layer--radar {
+  align-items: flex-end;
+  display: flex;
+  inset: 0;
+  justify-content: flex-end;
+  opacity: 0.7;
+  padding: 0 5% 7% 0;
+}
+
+.rev-splash__radar-svg {
+  filter: drop-shadow(0 0 24px rgba(249, 115, 22, 0.06));
+  height: min(24vw, 240px);
+  width: min(24vw, 240px);
+}
+
+.rev-splash__radar-sweep {
+  animation: rev-splash-radar-rotate 14s linear infinite;
+  transform-origin: 100px 100px;
+}
+
+/* Puntos de incidente en el mapa */
+.rev-splash__layer--pins {
+  inset: -5%;
+}
+
+.rev-splash__pin {
+  background: #f97316;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 2px rgba(249, 115, 22, 0.15),
+    0 0 12px rgba(249, 115, 22, 0.35);
+  height: 6px;
+  opacity: 0.4;
+  position: absolute;
+  width: 6px;
+}
+
+.rev-splash__pin::after {
+  animation: rev-splash-pin-ring 3.5s ease-out infinite;
+  border: 1px solid rgba(249, 115, 22, 0.2);
+  border-radius: 50%;
+  content: '';
+  inset: -8px;
+  position: absolute;
+}
+
+.rev-splash__pin--1 { animation-delay: 0s; left: 38%; opacity: 0.45; top: 22%; }
+.rev-splash__pin--2 { animation-delay: 1.2s; left: 62%; opacity: 0.3; top: 48%; }
+.rev-splash__pin--3 { animation-delay: 2.1s; left: 28%; opacity: 0.36; top: 68%; }
+.rev-splash__pin--4 { animation-delay: 0.7s; left: 78%; opacity: 0.26; top: 35%; }
+
+.rev-splash__pin--1::after { animation-delay: 0s; }
+.rev-splash__pin--2::after { animation-delay: 1.2s; }
+.rev-splash__pin--3::after { animation-delay: 2.1s; }
+.rev-splash__pin--4::after { animation-delay: 0.7s; }
+
+/* Coordenadas — consola de despacho */
+.rev-splash__layer--coords {
+  color: rgba(167, 180, 199, 0.22);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+}
+
+.rev-splash__coord {
+  position: absolute;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.rev-splash__coord--tl { left: 8%; top: 12%; }
+.rev-splash__coord--tr { right: 6%; text-align: right; top: 14%; }
+.rev-splash__coord--br { bottom: 8%; left: 10%; }
+
+/* Viñeta central — legibilidad del logo */
+.rev-splash__fade {
+  background: radial-gradient(
+    ellipse 52% 48% at 50% 44%,
+    transparent 0%,
+    rgba(7, 17, 31, 0.25) 50%,
+    rgba(4, 10, 20, 0.72) 100%
+  );
+  inset: 0;
+  position: absolute;
+}
+
+/* ── Composición central ── */
+.rev-splash__content {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  max-width: 520px;
+  padding: 0 32px;
+  position: relative;
+  text-align: center;
+  z-index: 2;
+}
+
+.rev-splash__logo {
+  animation: rev-splash-logo-reveal 1.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  display: block;
+  filter: drop-shadow(0 20px 48px rgba(0, 0, 0, 0.65))
+    drop-shadow(0 0 60px rgba(249, 115, 22, 0.18));
+  height: auto;
+  opacity: 0;
+  width: min(200px, 38vw);
+}
+
+.rev-splash__accent {
+  animation: rev-splash-line-draw 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.55s forwards;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #f97316 20%,
+    #fb923c 50%,
+    #f97316 80%,
+    transparent
+  );
+  height: 2px;
+  margin: 28px 0 22px;
+  opacity: 0;
+  transform: scaleX(0);
+  transform-origin: center;
+  width: min(160px, 36vw);
+}
+
+.rev-splash__brand {
+  animation: rev-splash-text-rise 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.7s forwards;
+  color: #ffffff;
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  font-size: clamp(1.05rem, 2vw, 1.42rem);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.35;
+  margin: 0;
+  opacity: 0;
+}
+
+.rev-splash__brand em {
+  color: #f97316;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.rev-splash__tagline {
+  animation: rev-splash-text-rise 0.75s ease 0.88s forwards;
+  color: rgba(167, 180, 199, 0.75);
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  font-size: clamp(0.62rem, 1.05vw, 0.72rem);
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  margin: 10px 0 0;
+  opacity: 0;
+  text-transform: uppercase;
+}
+
+/* ── Barra inferior full-bleed ── */
+.rev-splash__track {
+  background: rgba(255, 255, 255, 0.04);
+  bottom: 0;
+  height: 3px;
+  left: 0;
+  overflow: hidden;
+  position: absolute;
+  right: 0;
+  z-index: 3;
+}
+
+.rev-splash__track-fill {
+  animation: rev-splash-bar-fill 2.6s cubic-bezier(0.4, 0, 0.15, 1) 0.4s forwards;
+  background: linear-gradient(90deg, #ea580c, #f97316);
+  box-shadow: 0 0 20px rgba(249, 115, 22, 0.45);
+  height: 100%;
+  transform: scaleX(0);
+  transform-origin: left center;
+  width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rev-splash__radar-sweep {
+    animation: none;
+    opacity: 0.35;
+  }
+
+  .rev-splash__pin::after {
+    animation: none;
+    opacity: 0;
+  }
+
+  .rev-splash__logo,
+  .rev-splash__accent,
+  .rev-splash__brand,
+  .rev-splash__tagline {
+    animation: none !important;
+    filter: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .rev-splash__track-fill {
+    animation: none !important;
+    transform: scaleX(1) !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .rev-splash__coord--tr {
+    display: none;
+  }
+
+  .rev-splash__layer--radar {
+    opacity: 0.45;
+    padding-bottom: 12%;
+  }
+
+  .rev-splash__radar-svg {
+    height: min(34vw, 160px);
+    width: min(34vw, 160px);
+  }
+}

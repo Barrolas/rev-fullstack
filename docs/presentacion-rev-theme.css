@@ -755,6 +755,152 @@ section.closing .rev-caption { margin-top: 0.2em; }
 
 .columns { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
+/* ── Slide 31: patrones validados — filas compactas ── */
+.rev-pattern-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.rev-pattern-row {
+  align-items: center;
+  background: rgba(11, 23, 42, 0.92) !important;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 9px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  display: grid;
+  grid-template-columns: 0.78fr 1fr 0.92fr;
+  gap: 8px;
+  min-height: 34px;
+  padding: 7px 10px 7px 0;
+  position: relative;
+}
+
+.rev-pattern-row::before {
+  background: var(--rev-orange);
+  border-radius: 9px 0 0 9px;
+  bottom: 0;
+  content: '';
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 4px;
+}
+
+.rev-pattern-row--muted::before {
+  background: rgba(167, 180, 199, 0.45);
+}
+
+.rev-pattern-row--accent::before {
+  background: var(--rev-orange-hover);
+}
+
+.rev-pattern-row__label {
+  color: var(--rev-text) !important;
+  font-size: 0.48em;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.25;
+  padding-left: 10px;
+}
+
+.rev-pattern-row__impl {
+  color: var(--rev-text-tertiary) !important;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.4em;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rev-pattern-row__tests {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+.rev-pattern-badge {
+  background: rgba(249, 115, 22, 0.1) !important;
+  border: 1px solid rgba(249, 115, 22, 0.22);
+  border-radius: 999px;
+  color: var(--rev-orange-hover) !important;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.36em;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.15;
+  padding: 3px 7px;
+  white-space: nowrap;
+}
+
+.rev-pattern-badge--it {
+  background: rgba(20, 44, 78, 0.65) !important;
+  border-color: rgba(255, 255, 255, 0.12);
+  color: var(--rev-text-secondary) !important;
+}
+
+.rev-pattern-badge--e2e {
+  background: rgba(249, 115, 22, 0.18) !important;
+  border-color: rgba(249, 115, 22, 0.35);
+}
+
+section.slide-patterns-validated h1 {
+  font-size: 1.1em !important;
+  margin-bottom: 0.1em !important;
+  padding-bottom: 0.24em !important;
+}
+
+section.slide-patterns-validated h2.rev-sub {
+  font-size: 0.52em !important;
+  margin-bottom: 0.28em !important;
+}
+
+section.slide-patterns-validated .slide-workspace {
+  gap: 4px;
+  max-height: 620px;
+}
+
+section.slide-patterns-validated .rev-stack {
+  gap: 6px;
+}
+
+section.slide-patterns-validated .rev-chips {
+  gap: 4px;
+  margin-top: 1px;
+}
+
+section.slide-patterns-validated .rev-chip {
+  font-size: 0.42em;
+  padding: 2px 8px;
+}
+
+section.slide-patterns-validated .rev-callout--compact {
+  font-size: 0.46em !important;
+  line-height: 1.32;
+  padding: 4px 8px !important;
+}
+
+section.slide-patterns-validated .rev-diagram-col > .rev-diagram-img {
+  min-height: 150px;
+  padding: 6px 8px;
+}
+
+section.slide-patterns-validated .rev-diagram-col > .rev-diagram-img img {
+  max-height: 200px;
+}
+
+section.slide-patterns-validated .rev-diagram-col .rev-panel table {
+  font-size: 0.38em;
+}
+
+section.slide-patterns-validated .rev-diagram-col .rev-panel th,
+section.slide-patterns-validated .rev-diagram-col .rev-panel td {
+  padding: 3px 6px;
+}
+
 .highlight {
   background: var(--rev-orange-muted) !important;
   border: 1px solid var(--rev-orange-border);
@@ -762,4 +908,109 @@ section.closing .rev-caption { margin-top: 0.2em; }
   color: var(--rev-text-secondary) !important;
   font-size: 0.62em;
   padding: 8px 11px;
+}
+
+/* ── Slide valor operacional (slide 2) ── */
+section.slide-value-premium h1 {
+  margin-bottom: 0.32em !important;
+}
+
+section.slide-value-premium .rev-sub {
+  margin-bottom: 0.55em !important;
+}
+
+.rev-value-layout {
+  align-items: stretch;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(210px, 33%) 1fr;
+  height: 100%;
+}
+
+.rev-value-aside {
+  background: linear-gradient(165deg, rgba(20, 44, 78, 0.78) 0%, rgba(7, 17, 31, 0.94) 100%);
+  border: 1px solid rgba(249, 115, 22, 0.2);
+  border-radius: var(--rev-radius-card);
+  box-shadow:
+    0 14px 36px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: hidden;
+  padding: 16px 14px;
+  position: relative;
+}
+
+.rev-value-aside::before {
+  background: linear-gradient(90deg, transparent, rgba(249, 115, 22, 0.75), transparent);
+  content: '';
+  height: 2px;
+  left: 0;
+  opacity: 0.65;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.rev-value-aside__logo {
+  align-self: center;
+  filter: drop-shadow(0 8px 22px rgba(249, 115, 22, 0.32));
+  height: 76px;
+  object-fit: contain;
+  width: auto;
+}
+
+.rev-value-aside__pitch {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rev-value-aside__eyebrow {
+  color: var(--rev-orange-hover) !important;
+  font-size: 0.46em;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.rev-value-aside__pitch p {
+  color: var(--rev-text-secondary) !important;
+  font-size: 0.56em;
+  line-height: 1.48;
+  margin: 0;
+}
+
+.rev-value-aside__pitch strong {
+  color: var(--rev-text) !important;
+}
+
+.rev-value-aside__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: auto;
+  padding-top: 4px;
+}
+
+.rev-value-grid {
+  display: grid;
+  gap: 7px;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: repeat(3, 1fr);
+}
+
+section.slide-value-premium .rev-kpi {
+  justify-content: flex-start;
+  min-height: 0;
+  padding: 8px 10px;
+}
+
+section.slide-value-premium .rev-kpi__value {
+  font-size: 0.54em;
+}
+
+section.slide-value-premium .rev-kpi__meta {
+  font-size: 0.44em;
 }
