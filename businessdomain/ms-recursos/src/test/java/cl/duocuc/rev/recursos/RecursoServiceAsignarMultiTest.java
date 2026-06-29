@@ -12,6 +12,7 @@ import cl.duocuc.rev.recursos.model.EstadoRecurso;
 import cl.duocuc.rev.recursos.repository.AsignacionBrigadistaRepository;
 import cl.duocuc.rev.recursos.repository.AsignacionHerramientaRepository;
 import cl.duocuc.rev.recursos.repository.AsignacionRepository;
+import cl.duocuc.rev.recursos.repository.BrigadaBrigadistaRepository;
 import cl.duocuc.rev.recursos.repository.BrigadaHerramientaRepository;
 import cl.duocuc.rev.recursos.repository.BrigadaRepository;
 import cl.duocuc.rev.recursos.repository.BrigadaVehiculoRepository;
@@ -74,6 +75,9 @@ class RecursoServiceAsignarMultiTest {
     @Mock
     private BrigadaVehiculoRepository brigadaVehiculoRepository;
 
+    @Mock
+    private BrigadaBrigadistaRepository brigadaBrigadistaRepository;
+
     @InjectMocks
     private RecursoService recursoService;
 
@@ -94,6 +98,9 @@ class RecursoServiceAsignarMultiTest {
                         .capacidad(4)
                         .estado(EstadoRecurso.DISPONIBLE)
                         .build()));
+        when(brigadaBrigadistaRepository.findByBrigadaIdAndActivaTrue(1L)).thenReturn(List.of());
+        when(brigadaVehiculoRepository.findByIdBrigadaAndActivaTrue(1L)).thenReturn(List.of());
+        when(brigadaHerramientaRepository.findByBrigadaId(1L)).thenReturn(List.of());
 
         BusinessRuleException ex =
                 assertThrows(BusinessRuleException.class, () -> recursoService.asignar(request));
@@ -124,7 +131,7 @@ class RecursoServiceAsignarMultiTest {
             a.setId(99L);
             return a;
         });
-        when(brigadistaRepository.findByIdBrigada(2L)).thenReturn(List.of());
+        when(brigadaBrigadistaRepository.findByBrigadaIdAndActivaTrue(2L)).thenReturn(List.of());
         when(brigadaVehiculoRepository.findByIdBrigadaAndActivaTrue(2L)).thenReturn(List.of());
         when(brigadaHerramientaRepository.findByBrigadaId(2L)).thenReturn(List.of());
 

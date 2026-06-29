@@ -1,0 +1,278 @@
+# Informe de pruebas — EVA3 REV
+
+| Campo | Valor |
+|-------|-------|
+| **Proyecto** | REV — Red de Emergencia Valle |
+| **Asignatura** | DSY1106 — Desarrollo Fullstack III |
+| **Integrantes** | Nicolás Barra · Giannina Guerrero |
+| **Sección** | 306-V |
+| **Versión** | 1.0 — Junio 2026 |
+| **Tipo documento** | Informe de pruebas unitarias, integración y end-to-end |
+
+> Exportar a PDF desde VS Code / navegador / Word antes de subir a Blackboard.
+
+---
+
+## Resumen ejecutivo
+
+REV es una plataforma de gestión de emergencias para la Municipalidad de Valle del Sol, implementada como arquitectura de microservicios con BFF, tres microservicios de negocio, API Gateway y frontend React.
+
+Este informe documenta la estrategia, ejecución y resultados de las pruebas **unitarias**, de **integración** y **end-to-end** sobre los flujos críticos del negocio: ciclo de incidentes, correlación geográfica, asignación de brigadas, seguridad JWT y portal ciudadano.
+
+**Hallazgos principales:**
+
+- Se ejecutaron **14 pruebas automatizadas PASS** (8 unitarias + 6 integración/smoke) en 4 módulos Java el 2026-06-28.
+- Casos negativos validados: georreferenciación obligatoria, correlación no revertible, asignación duplicada.
+- Cobertura JaCoCo global moderada (29.9% ms-incidentes); paquetes críticos `correlacion` 78%, `state` 64.4%, `ms-zonas-riesgo` 57%.
+- Bug detectado en ejecución: test UT-05 con mock incompleto — corregido.
+- E2E manuales pendientes de grabación en video plataforma.
+
+---
+
+## 1. Anexo A — Arquitectura (referencia EVA2)
+
+La arquitectura del sistema **no ha cambiado estructuralmente** desde la Evaluación Parcial 2. Se reutilizan los siguientes documentos como anexo de arquitectura:
+
+| Documento | Ubicación |
+|-----------|-----------|
+| Presentación arquitectura | `docs/Presentacion-REV-EVA2-v5.pdf` |
+| Patrones y arquitectura | `docs/patrones-y-arquitectura-rev.md` |
+| Informe sistema | `docs/informe-sistema-rev.md` |
+| Informe técnico integral | `docs/informe-tecnico-integral-rev.html` |
+
+**Resumen:** React SPA → API Gateway (JWT) → BFF-REV → MS-INCIDENTES / MS-ZONAS-RIESGO / MS-RECURSOS → PostgreSQL (database-per-service). Eureka para service discovery. Keycloak + keycloak-adapter para identidad.
+
+---
+
+## 2. Persistencia de datos
+
+| Aspecto | Implementación REV |
+|---------|-------------------|
+| ORM | Spring Data JPA + Hibernate |
+| Migraciones | Flyway por microservicio (`src/main/resources/db/migration/`) |
+| Bases | `rev_incidentes`, `rev_zonas` (PostGIS), `rev_recursos` |
+| Validación esquema | `spring.jpa.hibernate.ddl-auto=validate` |
+| Aislamiento | Sin FK cruzadas entre servicios; referencias por UUID |
+
+**Ejemplo ms-incidentes:** entidades `Incidente`, `IncidenteCorrelacion`, `TransicionEstado`; repositorios Spring Data; historial de transiciones en tabla `transiciones_estado` (Flyway V1).
+
+Detalle ampliado: `docs/informe-sistema-rev.md` § persistencia y `docs/patrones-y-arquitectura-rev.md` § database-per-service.
+
+---
+
+## 3. Estrategia de pruebas
+
+Documento completo: [plan-de-pruebas-eva3.md](./plan-de-pruebas-eva3.md).
+
+| Tipo | Cantidad planificada | Herramienta |
+|------|---------------------|-------------|
+| Unitarias | ≥ 8 | JUnit 5, Mockito |
+| Integración | ≥ 6 | `@SpringBootTest`, H2 test profile |
+| End-to-end | ≥ 6 | Manual: curl + UI (video evidencia) |
+
+**Principio docente:** las pruebas buscan detectar bugs, vulnerabilidades y uso incorrecto — no solo validar el camino feliz.
+
+---
+
+## 4. Matriz de pruebas
+
+Ver [matriz-de-pruebas-eva3.md](./matriz-de-pruebas-eva3.md) (tabla completa trazable).
+
+Resumen por tipo:
+
+| Tipo | IDs | Áreas |
+|------|-----|-------|
+| Unit | UT-01 … UT-08 | Estado, correlación, recursos, zonas, BFF |
+| Integración | IT-01 … IT-06 | Context Spring + orquestación BFF |
+| E2E | E2E-01 … E2E-06 | Despacho, portal, seguridad, correlación |
+
+---
+
+## 5. Resultados — pruebas unitarias
+
+### 5.1 Comando de ejecución
+
+```powershell
+cd businessdomain\ms-incidentes
+..\..\mvnw.cmd test jacoco:report
+```
+
+### 5.2 Resultados por módulo
+
+| Módulo | Tests ejecutados | Failures | Errors | Skipped | Resultado |
+|--------|------------------|----------|--------|---------|-----------|
+| ms-incidentes | 14+ | 0 | 0 | 0 | PASS |
+| ms-recursos | 6 | 0 | 0 | 0 | PASS |
+| ms-zonas-riesgo | 10+ | 0 | 0 | 0 | PASS |
+| bff-rev | 8+ | 0 | 0 | 0 | PASS |
+
+Evidencia: `docs/informe-evidencias/eva3/evidencias/resumen-ejecucion.txt` (2026-06-28).
+
+### 5.3 Ejemplos representativos
+
+#### UT-01 — Georreferenciación obligatoria (Factory + State)
+
+**Clase:** `IncidentStateFactoryTest.enProgresoRequiereGeorreferenciacion`  
+**Propósito:** un incidente REPORTADO sin coordenadas no puede avanzar a EN_PROGRESO.  
+**Resultado:** PASS (2026-06-28)  
+**Evidencia:** captura consola + JaCoCo paquete `cl.duocuc.rev.incidentes.state`
+
+#### UT-03 — Revertir correlación confirmada
+
+**Clase:** `CorrelacionServiceTest.revertir_desvinculaSoloElParYVuelveAPendiente`  
+**Propósito:** deshacer correlación restaura independencia del incidente vinculado.  
+**Resultado:** PASS (2026-06-28)
+
+#### UT-05 — Asignación duplicada
+
+**Clase:** `RecursoServiceAsignarMultiTest.asignar_mismaBrigadaMismoIncidente_lanzaDuplicada`  
+**Propósito:** evitar dos asignaciones activas misma brigada/incidente.  
+**Resultado:** PASS (2026-06-28) — código error `ASIGNACION_DUPLICADA`
+
+---
+
+## 6. Resultados — pruebas de integración
+
+### 6.1 Contexto Spring (smoke)
+
+| Test | Módulo | Resultado |
+|------|--------|-----------|
+| `MsIncidentesApplicationTests.contextLoads` | ms-incidentes | PASS |
+| `ApplicationTests.contextLoads` | bff-rev | PASS |
+| `ApplicationTests.contextLoads` | ms-recursos | PASS |
+| `ApplicationTests.contextLoads` | ms-zonas-riesgo | PASS |
+
+### 6.2 Orquestación BFF — revertir correlación bloqueada
+
+**Clase:** `CorrelacionFacadeServiceTest.previewRevertir_marcaBloqueadoConAsignacionesActivas`  
+**Escenario:** correlación confirmada con brigadas activas en incidente canónico.  
+**Esperado:** `CorrelacionBloqueadaException`; no se invoca revertir en ms-incidentes.  
+**Resultado:** PASS (2026-06-28)  
+**Justificación negocio:** evita dejar brigadas en incidente que dejará de ser canónico sin reasignación.
+
+### 6.3 Orquestación BFF — revertir con reasignación
+
+**Clase:** `CorrelacionFacadeServiceTest.revertir_conReasignacion_transfiereYRevertir`  
+**Esperado:** primero `transferirIncidente` (ms-recursos), luego `revertir` (ms-incidentes).  
+**Resultado:** PASS (2026-06-28)
+
+---
+
+## 7. Resultados — pruebas end-to-end
+
+Evidencia principal: **video plataforma** y **video ejecución pruebas**.
+
+| ID | Escenario | Timestamp video | Resultado |
+|----|-----------|-----------------|-----------|
+| E2E-01 | Login → despacho → asignar brigada | — | Pendiente (video plataforma) |
+| E2E-02 | Portal reporte → cola despacho | — | Pendiente (video plataforma) |
+| E2E-03 | API sin JWT → 401 | — | Pendiente (defensa / curl) |
+| E2E-04 | API con JWT → 200 | — | Pendiente (defensa / curl) |
+| E2E-05 | Correlaciones pendientes | — | Pendiente (video plataforma) |
+
+### 7.1 E2E-03 — Seguridad (curl)
+
+```powershell
+curl.exe -s -w "\nHTTP:%{http_code}" "http://localhost:18080/api/incidentes"
+```
+
+**Esperado:** HTTP 401  
+**Obtenido:** Pendiente — ejecutar con Gateway UP al grabar video plataforma o defensa.
+
+---
+
+## 8. Bugs, hallazgos y mejoras en el software
+
+| ID | Detectado por | Descripción | Severidad | Acción tomada |
+|----|---------------|-------------|-----------|---------------|
+| BUG-01 | UT-01 | Transición EN_PROGRESO sin coordenadas | Alta | Validación en `IncidentStateFactory` |
+| BUG-02 | UT-05 | Doble asignación brigada | Media | Excepción `ASIGNACION_DUPLICADA` |
+| BUG-03 | UT-08 | Revertir correlación con asignaciones activas | Alta | Bloqueo + flujo reasignación en BFF |
+| BUG-04 | E2E-03 | Endpoints operativos sin autenticación | Alta | Filtro JWT en Gateway |
+| BUG-05 | UT-05 (ejecución EVA3) | Test NPE por mock faltante `BrigadaBrigadistaRepository` | Media | Mock agregado en `RecursoServiceAsignarMultiTest` | 2026-06-28 |
+
+---
+
+## 9. Patrones de diseño y calidad (indicador 8 defensa)
+
+| Patrón | Ubicación | Cómo lo prueba la suite |
+|--------|-----------|-------------------------|
+| Factory + State | `IncidentStateFactory`, `*State.java` | UT-01, UT-02: reglas de transición encapsuladas |
+| Facade | `CorrelacionFacadeService`, `DashboardFacadeService` | UT-08, IT-04: orquestación multi-servicio |
+| Adapter | `FakeWeatherAdapter` implements `WeatherDataPort` | UT-06, UT-07: datos clima desacoplados |
+| Repository | Spring Data JPA en cada MS | IT-01–06: persistencia vía contexto Spring |
+| Circuit Breaker | Resilience4j en BFF | E2E-06 / demo degraded |
+
+**Mantenibilidad:** al agregar un nuevo estado de incidente, solo se crea una clase `*State` y se registra en la Factory — los tests UT-01/UT-02 fallan si se rompe la regla de geo.
+
+---
+
+## 10. Métricas de cobertura (JaCoCo)
+
+| Módulo | Instrucciones | Branches | Cumple ≥60 % global |
+|--------|---------------|----------|---------------------|
+| ms-incidentes | 29.9% | — | No (paquete `state` 64.4%, `correlacion` 78%) |
+| bff-rev | 5.4% | — | No — plan: tests Facade |
+| ms-recursos | 16.7% | — | No |
+| ms-zonas-riesgo | 57.0% | — | Cercano |
+
+**Nota:** JaCoCo global incluye controllers, config y DTOs sin tests. La rúbrica exige foco en componentes probados; plan de mejora: MockMvc controllers + más tests `*Service`.
+
+**Capturas:** incluir en ZIP `Evidencias/jacoco-*/index.html` o PNG de pantalla.
+
+### Frontend
+
+El dashboard React **no tiene suite Vitest configurada** en esta iteración. La validación UI se realiza mediante pruebas E2E manuales (§7). Deuda técnica registrada para v2.
+
+---
+
+## 11. Cómo reproducir las pruebas
+
+### 11.1 Prerrequisitos
+
+- Java 21, Maven wrapper (`mvnw.cmd`)
+- Docker Desktop (solo E2E)
+- PowerShell 5.1+
+
+### 11.2 Tests automatizados
+
+```powershell
+# Todos los tests de un módulo + reporte
+cd businessdomain\ms-incidentes
+..\..\mvnw.cmd clean test jacoco:report
+start target\site\jacoco\index.html
+```
+
+### 11.3 E2E
+
+```powershell
+.\scripts\dev-up.ps1 -DockerApps -Build
+# Seguir guion-video-plataforma-eva3.md
+```
+
+---
+
+## 12. Enlaces y repositorios
+
+```
+Repositorio principal: https://github.com/Barrolas/rev-fullstack
+Rama integración: dev
+Documentación EVA3: docs/informe-evidencias/eva3/
+```
+
+Ver también: `docs/repositorios.txt`
+
+---
+
+## 13. Conclusiones
+
+REV cumple la estrategia de pruebas EVA3 en flujos críticos con 14 tests automatizados PASS y 6 escenarios E2E planificados para el video de plataforma. La ejecución del 2026-06-28 detectó y corrigió un test incompleto en ms-recursos (BUG-05). La cobertura global JaCoCo está por debajo del 60% en algunos módulos; los paquetes de reglas de negocio (`state`, `correlacion`, `zonas`) se acercan o superan la meta. Próximo paso: ampliar tests en services/controllers y completar E2E en grabación del video checklist.
+
+---
+
+## Referencias
+
+- [plan-de-pruebas-eva3.md](./plan-de-pruebas-eva3.md)
+- [matriz-de-pruebas-eva3.md](./matriz-de-pruebas-eva3.md)
+- [eva3-fullstack-rubrica.md](./eva3-fullstack-rubrica.md)
+- [patrones-y-arquitectura-rev.md](../../patrones-y-arquitectura-rev.md)

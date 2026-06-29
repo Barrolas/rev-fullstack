@@ -1,0 +1,19 @@
+﻿REV EVA3 - Resumen ejecucion pruebas
+Fecha: 2026-06-28 22:11:38
+
+[ms-incidentes] exit=0
+  Cobertura instrucciones: 29.9% (899/3003)
+  JaCoCo: businessdomain\ms-incidentes\target\site\jacoco\index.html
+
+[bff-rev] exit=0
+  Cobertura instrucciones: 5.4% (266/4884)
+  JaCoCo: infraestructuredomain\bff-rev\target\site\jacoco\index.html
+
+[ms-recursos] exit=0
+  Cobertura instrucciones: 16.7% (590/3537)
+  JaCoCo: businessdomain\ms-recursos\target\site\jacoco\index.html
+
+[ms-zonas-riesgo] exit=0
+  Cobertura instrucciones: 57% (474/832)
+  JaCoCo: businessdomain\ms-zonas-riesgo\target\site\jacoco\index.html
+

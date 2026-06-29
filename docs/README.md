@@ -6,6 +6,24 @@
 
 ## Informes y evaluación
 
+### EVA3 — Pruebas e integración (Parcial 3)
+
+| Documento | Descripción |
+|-----------|-------------|
+| [instrucciones-equipo-eva3.md](informe-evidencias/eva3/instrucciones-equipo-eva3.md) | Roles, cronograma y checklist entrega |
+| [plan-de-pruebas-eva3.md](informe-evidencias/eva3/plan-de-pruebas-eva3.md) | Estrategia unit / integración / E2E |
+| [matriz-de-pruebas-eva3.md](informe-evidencias/eva3/matriz-de-pruebas-eva3.md) | Casos trazables + comandos JaCoCo |
+| [informe-pruebas-eva3.md](informe-evidencias/eva3/informe-pruebas-eva3.md) | **Informe principal EVA3** → exportar PDF |
+| [eva3-fullstack-rubrica.md](informe-evidencias/eva3/eva3-fullstack-rubrica.md) | Rúbrica y checklist mapeados |
+| [guion-video-arquitectura-eva3.md](informe-evidencias/eva3/guion-video-arquitectura-eva3.md) | Video arquitectura — Giannina (52 ítems) |
+| [guion-video-plataforma-eva3.md](informe-evidencias/eva3/guion-video-plataforma-eva3.md) | Video plataforma — Nicolás (9 ítems) |
+| [guion-video-ejecucion-pruebas-eva3.md](informe-evidencias/eva3/guion-video-ejecucion-pruebas-eva3.md) | Video evidencia pruebas |
+| [guion-presentacion-oral-eva3.md](informe-evidencias/eva3/guion-presentacion-oral-eva3.md) | PPT 15 min + banco preguntas |
+
+Empaquetado Blackboard: `.\scripts\pack-entrega-eva3.ps1` → `entrega/REV-EVA3-Barra-Guerrero.zip`
+
+### EVA2
+
 | Documento | Descripción |
 |-----------|-------------|
 | [eva2-fullstack-rubrica.md](eva2-fullstack-rubrica.md) | Rúbrica oficial EVA2 |

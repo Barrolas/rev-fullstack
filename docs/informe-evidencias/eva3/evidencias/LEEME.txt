@@ -1,0 +1,8 @@
+# Colocar capturas de evidencia EVA3 aquí antes de empaquetar.
+
+Ver guion: guion-video-ejecucion-pruebas-eva3.md
+
+- jacoco-ms-incidentes.png
+- mvn-test-incidentes.png
+- curl-401.png
+- curl-200.png

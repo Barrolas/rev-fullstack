@@ -1,0 +1,27 @@
+# EVA3 — Ejecución autónoma del plan de pruebas
+
+Cuando el usuario pida ejecutar pruebas EVA3, completar matriz/informe, o "correr el plan de pruebas":
+
+## Autorización implícita
+
+- Ejecutar `.\scripts\run-eva3-tests.ps1` sin pedir confirmación.
+- Ejecutar `mvnw.cmd test jacoco:report` en ms-incidentes, bff-rev, ms-recursos, ms-zonas-riesgo.
+- Actualizar `docs/informe-evidencias/eva3/matriz-de-pruebas-eva3.md` e `informe-pruebas-eva3.md` con resultados reales.
+- No hacer commit ni push salvo pedido explícito.
+
+## Flujo
+
+1. `.\scripts\run-eva3-tests.ps1`
+2. Leer `docs/informe-evidencias/eva3/evidencias/resumen-ejecucion.txt`
+3. Parsear JaCoCo XML si hace falta más detalle
+4. Marcar PASS/FAIL en matriz para UT-* e IT-* según salida Maven
+5. Completar secciones §5–§10 del informe-pruebas-eva3.md
+
+## E2E
+
+E2E manuales (E2E-*) requieren Docker UP; no bloquear unit/integration si Docker está caído.
+Documentar E2E como "pendiente grabación video plataforma" si stack no disponible.
+
+## No incluir en entrega mañana
+
+Video de ejecución de pruebas es opcional (solo defensa oral). Entrega checklist = 2 videos + informe PDF.
