@@ -1,0 +1,111 @@
+{
+  "info": {
+    "name": "REV EVA3 — BFF (vía API Gateway)",
+    "description": "Colección Postman para probar endpoints REST del BFF-REV expuestos en el Gateway (:18080). Credenciales demo: despachador / rev123",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "gateway", "value": "http://localhost:18080" },
+    { "key": "access_token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth — Login",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            { "key": "username", "value": "despachador" },
+            { "key": "password", "value": "rev123" }
+          ]
+        },
+        "url": "{{gateway}}/auth/login"
+      }
+    },
+    {
+      "name": "E2E-03 — Incidentes sin JWT (401)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{gateway}}/api/incidentes"
+      }
+    },
+    {
+      "name": "E2E-04 — Dashboard incidentes con JWT (200)",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+        "url": "{{gateway}}/api/dashboard/incidentes"
+      }
+    },
+    {
+      "name": "Dashboard — listar incidentes agregados",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+        "url": "{{gateway}}/api/dashboard/incidentes"
+      }
+    },
+    {
+      "name": "Operaciones — crear incidente",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{access_token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"tipo\": \"FORESTAL\",\n  \"descripcion\": \"Humo sector norte\",\n  \"lat\": -33.45,\n  \"lng\": -70.66\n}"
+        },
+        "url": "{{gateway}}/api/incidentes"
+      }
+    },
+    {
+      "name": "Public — reporte ciudadano (sin JWT)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"tipo\": \"FORESTAL\",\n  \"descripcion\": \"Reporte portal\",\n  \"lat\": -33.44,\n  \"lng\": -70.58\n}"
+        },
+        "url": "{{gateway}}/api/public/incidentes"
+      }
+    },
+    {
+      "name": "Zonas — listar",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+        "url": "{{gateway}}/api/zonas"
+      }
+    },
+    {
+      "name": "Recursos — disponibles",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+        "url": "{{gateway}}/api/recursos/disponibles"
+      }
+    },
+    {
+      "name": "Despacho — cola",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+        "url": "{{gateway}}/api/despacho/cola"
+      }
+    },
+    {
+      "name": "Correlaciones — pendientes",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+        "url": "{{gateway}}/api/correlaciones/pendientes"
+      }
+    }
+  ]
+}

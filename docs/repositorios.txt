@@ -23,3 +23,4 @@ Documentación clave:
   docs/estrategia-ramas-commits-eva2.md   Historial de ramas EVA2
   docs/informe-evidencias/eva3/           Informes, guiones y presentación EVA3
   docs/informe-evidencias/eva3/Presentacion-REV-EVA3.pdf
+  docs/api/REV-EVA3-BFF.postman_collection.json   Colección Postman API REST (BFF vía Gateway)

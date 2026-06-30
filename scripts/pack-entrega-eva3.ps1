@@ -38,11 +38,18 @@ foreach ($f in @(
   'guion-video-plataforma-eva3.md',
   'guion-video-ejecucion-pruebas-eva3.md',
   'guion-presentacion-oral-eva3.md',
-  'registro-cambios-pruebas-v2.md'
+  'registro-cambios-pruebas-v2.md',
+  'registro-cambios-pruebas-v3.md'
 )) {
   $p = Join-Path $eva3Docs $f
   if (Test-Path $p) { Copy-Item $p (Join-Path $docDst $f) -Force }
 }
+
+# API REST (Postman)
+$apiDst = Join-Path $staging 'API'
+New-Item -ItemType Directory -Path $apiDst -Force | Out-Null
+$postman = Join-Path (Join-Path $root 'docs') 'api\REV-EVA3-BFF.postman_collection.json'
+if (Test-Path $postman) { Copy-Item $postman (Join-Path $apiDst 'REV-EVA3-BFF.postman_collection.json') -Force }
 
 # Arquitectura EVA3
 foreach ($f in @(
