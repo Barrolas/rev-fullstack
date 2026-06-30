@@ -194,7 +194,7 @@ Comando: `.\scripts\run-eva3-tests.ps1` · Evidencia: [evidencias/resumen-ejecuc
 
 **Bug corregido en ejecución:** BUG-05 — mock `BrigadaBrigadistaRepository` en `RecursoServiceAsignarMultiTest`.
 
-**Criterio cobertura ≥60% global:** no alcanzado en todos los módulos; paquetes de negocio críticos sí. Plan de mejora: tests MockMvc en controllers y ampliar `*ServiceTest`.
+**Criterio cobertura v3:** **≥80% cumplido** en los 4 módulos (capas críticas JaCoCo). Ver §15 y [registro-cambios-pruebas-v3.md](./registro-cambios-pruebas-v3.md).
 
 ---
 
@@ -212,6 +212,25 @@ Comando: `.\scripts\run-eva3-tests.ps1` · Evidencia: [evidencias/resumen-ejecuc
 **Nuevos tests:** 18 métodos (UT-09…UT-25, IT-07) — todos PASS.
 
 **Sin cambios en código de producción** en v2; solo suite de tests y documentación.
+
+---
+
+## 15. Resultados de ejecución v3 (2026-06-29)
+
+**Tercera pasada** orientada a ≥80 % JaCoCo en los 4 módulos. Registro: [registro-cambios-pruebas-v3.md](./registro-cambios-pruebas-v3.md).
+
+| Módulo | Exit | Cobertura v2 | Cobertura v3 | Tests v3 |
+|--------|------|--------------|--------------|----------|
+| ms-incidentes | 0 | 41.8% | **89.4%** | 78 |
+| ms-zonas-riesgo | 0 | 69.7% | **88.2%** | 28 |
+| ms-recursos | 0 | 22.3% | **83.6%** | 72 |
+| bff-rev | 0 | 8.9% | **80.2%** | 139 |
+
+**Total:** 317 tests PASS · 0 failures.
+
+**Entregables v3:** Postman `docs/api/REV-EVA3-BFF.postman_collection.json` · presentación `Presentacion-REV-EVA3.pdf` · script E2E `scripts/capture-e2e-curl-eva3.ps1`.
+
+**Criterio cobertura ≥80% (capas críticas):** **cumplido** en los 4 módulos.
 
 ---
 

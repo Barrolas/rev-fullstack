@@ -9,12 +9,15 @@
 - mvn-test-resumen.png
 - resumen-ejecucion.txt
 
-## Pendientes (video plataforma / dev-up)
+## E2E seguridad (scripts/capture-e2e-curl-eva3.ps1)
 
-- curl-401.png — Gateway sin JWT (E2E-03)
-- curl-200.png — Gateway con JWT válido (E2E-04)
+Requiere: `.\scripts\dev-up.ps1 -DockerApps`
 
-Comando E2E-03:
-  curl.exe -s -w "\nHTTP:%{http_code}" "http://localhost:18080/api/incidentes"
+- curl-401.txt — Gateway sin JWT (E2E-03, HTTP 401) ✓
+- curl-200.txt — Gateway con JWT válido (E2E-04, HTTP 200) ✓
+- curl-401.png / curl-200.png — opcional: captura de pantalla de la consola
 
-Requiere: .\scripts\dev-up.ps1 -DockerApps -Build
+Comando:
+  .\scripts\capture-e2e-curl-eva3.ps1
+
+Postman equivalente: docs/api/REV-EVA3-BFF.postman_collection.json

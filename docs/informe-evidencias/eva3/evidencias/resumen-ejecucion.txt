@@ -1,5 +1,5 @@
 ﻿REV EVA3 - Resumen ejecucion pruebas
-Fecha: 2026-06-29 04:13:48
+Fecha: 2026-06-29 20:16:00
 
 [ms-incidentes] exit=0
   Cobertura instrucciones: 89.4% (2393/2677)

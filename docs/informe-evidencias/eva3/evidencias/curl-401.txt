@@ -1,0 +1,2 @@
+﻿{"timestamp":"2026-06-30T00:23:35.245Z","path":"/api/incidentes","status":401,"error":"Unauthorized","requestId":"693868f9-21"}
+HTTP:401

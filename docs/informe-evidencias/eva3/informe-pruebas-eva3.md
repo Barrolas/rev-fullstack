@@ -6,7 +6,7 @@
 | **Asignatura** | DSY1106 — Desarrollo Fullstack III |
 | **Integrantes** | Nicolás Barra · Giannina Guerrero |
 | **Sección** | 306-V |
-| **Versión** | 2.0 — Junio 2026 (v1.0 + segunda pasada cobertura 2026-06-29) |
+| **Versión** | 3.0 — Junio 2026 (v3 cobertura ≥80% en 4 módulos, 2026-06-29) |
 | **Tipo documento** | Informe de pruebas unitarias, integración y end-to-end |
 
 > Exportar a PDF desde VS Code / navegador / Word antes de subir a Blackboard.
@@ -23,10 +23,11 @@ Este informe documenta la estrategia, ejecución y resultados de las pruebas **u
 
 - **v1.0 (2026-06-28):** 14 casos trazados PASS (UT-01…UT-08, IT-01…IT-06).
 - **v2.0 (2026-06-29):** +18 tests (UT-09…UT-25, IT-07) — suite ampliada sin regresiones.
-- Cobertura JaCoCo mejorada: ms-zonas-riesgo **69.7%** (cumple ≥60%); ms-incidentes **41.8%** (+11.9 pp).
-- Casos negativos ampliados: validación reporte público, transiciones despacho, RBAC brigadista.
-- E2E manuales pendientes de grabación en video plataforma.
-- Registro de cambios v2: [registro-cambios-pruebas-v2.md](./registro-cambios-pruebas-v2.md).
+- **v3.0 (2026-06-29):** **317 tests automatizados PASS** (0 failures) en 4 módulos.
+- Cobertura JaCoCo v3 (capas críticas): ms-incidentes **89.4%**, ms-zonas-riesgo **88.2%**, ms-recursos **83.6%**, bff-rev **80.2%** — **todos ≥80%**.
+- Casos negativos ampliados: validación reporte público, transiciones despacho, RBAC brigadista, adjuntos, correlación.
+- E2E manuales: E2E-03/E2E-04 documentados con script `capture-e2e-curl-eva3.ps1`; resto en video plataforma.
+- Registros: [registro-cambios-pruebas-v2.md](./registro-cambios-pruebas-v2.md) · [registro-cambios-pruebas-v3.md](./registro-cambios-pruebas-v3.md).
 
 ---
 
@@ -36,10 +37,12 @@ La arquitectura del sistema **no ha cambiado estructuralmente** desde la Evaluac
 
 | Documento | Ubicación |
 |-----------|-----------|
-| Presentación arquitectura | `docs/Presentacion-REV-EVA2-v5.pdf` |
+| Presentación arquitectura EVA3 | `docs/informe-evidencias/eva3/Presentacion-REV-EVA3.pdf` |
+| Presentación arquitectura EVA2 (referencia) | `docs/Presentacion-REV-EVA2-v5.pdf` |
 | Patrones y arquitectura | `docs/patrones-y-arquitectura-rev.md` |
 | Informe sistema | `docs/informe-sistema-rev.md` |
-| Informe técnico integral | `docs/informe-tecnico-integral-rev.html` |
+| API REST (Postman) | `docs/api/REV-EVA3-BFF.postman_collection.json` |
+| Swagger UI (runtime) | `http://localhost:18080/swagger-ui` (BFF vía Gateway) |
 
 **Resumen:** React SPA → API Gateway (JWT) → BFF-REV → MS-INCIDENTES / MS-ZONAS-RIESGO / MS-RECURSOS → PostgreSQL (database-per-service). Eureka para service discovery. Keycloak + keycloak-adapter para identidad.
 
@@ -94,28 +97,32 @@ Resumen por tipo:
 ### 5.1 Comando de ejecución
 
 ```powershell
-cd businessdomain\ms-incidentes
-..\..\mvnw.cmd test jacoco:report
+.\scripts\run-eva3-tests.ps1
 ```
 
-### 5.2 Resultados por módulo
+### 5.2 Resultados por módulo (v3 — 2026-06-29)
 
-| Módulo | Tests ejecutados | Failures | Errors | Skipped | Resultado |
-|--------|------------------|----------|--------|---------|-----------|
-| ms-incidentes | 14+ | 0 | 0 | 0 | PASS |
-| ms-recursos | 6 | 0 | 0 | 0 | PASS |
-| ms-zonas-riesgo | 10+ | 0 | 0 | 0 | PASS |
-| bff-rev | 8+ | 0 | 0 | 0 | PASS |
+| Módulo | Tests | Failures | Errors | Cobertura | Resultado |
+|--------|-------|----------|--------|-----------|-----------|
+| ms-incidentes | 78 | 0 | 0 | **89.4%** | PASS |
+| ms-recursos | 72 | 0 | 0 | **83.6%** | PASS |
+| ms-zonas-riesgo | 28 | 0 | 0 | **88.2%** | PASS |
+| bff-rev | 139 | 0 | 0 | **80.2%** | PASS |
+| **Total** | **317** | **0** | **0** | — | **PASS** |
 
-Evidencia: `evidencias/resumen-ejecucion.txt` (v2 — 2026-06-29).
+Evidencia: `evidencias/resumen-ejecucion.txt` (v3 — 2026-06-29 20:16).
 
 ![Resumen ejecución mvn test](evidencias/mvn-test-resumen.png)
 
+### 5.3 Tercera pasada v3 (2026-06-29)
+
+Suite ampliada con WebMvc tests, integración H2, facades BFF, `AdjuntoService`, `FolioService`, `CorrelacionService` completo. Ver [registro-cambios-pruebas-v3.md](./registro-cambios-pruebas-v3.md).
+
 ### 5.4 Segunda pasada v2 (2026-06-29)
 
-18 tests nuevos en `IncidenteServiceTest`, `IncidentStateFactoryTest`, `RecursoServiceDespachoTest`, `ZonaServiceTest`, `AuthorizationServiceTest`, `DashboardFacadeServiceTest`. Ver [registro-cambios-pruebas-v2.md](./registro-cambios-pruebas-v2.md).
+18 tests nuevos en v2. Ver [registro-cambios-pruebas-v2.md](./registro-cambios-pruebas-v2.md).
 
-### 5.3 Ejemplos representativos
+### 5.5 Ejemplos representativos
 
 #### UT-01 — Georreferenciación obligatoria (Factory + State)
 
@@ -169,22 +176,25 @@ Evidencia: `evidencias/resumen-ejecucion.txt` (v2 — 2026-06-29).
 
 Evidencia principal: **video plataforma** y **video ejecución pruebas**.
 
-| ID | Escenario | Timestamp video | Resultado |
-|----|-----------|-----------------|-----------|
-| E2E-01 | Login → despacho → asignar brigada | — | Pendiente (video plataforma) |
-| E2E-02 | Portal reporte → cola despacho | — | Pendiente (video plataforma) |
-| E2E-03 | API sin JWT → 401 | — | Pendiente (defensa / curl) |
-| E2E-04 | API con JWT → 200 | — | Pendiente (defensa / curl) |
-| E2E-05 | Correlaciones pendientes | — | Pendiente (video plataforma) |
+| ID | Escenario | Evidencia | Resultado |
+|----|-----------|-----------|-----------|
+| E2E-01 | Login → despacho → asignar brigada | Video plataforma | Pendiente grabación |
+| E2E-02 | Portal reporte → cola despacho | Video plataforma | Pendiente grabación |
+| E2E-03 | API sin JWT → 401 | `evidencias/curl-401.txt` | **PASS** (HTTP 401, 2026-06-30) |
+| E2E-04 | API con JWT → 200 | `evidencias/curl-200.txt` | **PASS** (HTTP 200, 2026-06-30) |
+| E2E-05 | Correlaciones pendientes | Video plataforma | Pendiente grabación |
 
-### 7.1 E2E-03 — Seguridad (curl)
+### 7.1 E2E-03 / E2E-04 — Seguridad (curl)
 
 ```powershell
-curl.exe -s -w "\nHTTP:%{http_code}" "http://localhost:18080/api/incidentes"
+.\scripts\dev-up.ps1 -DockerApps
+.\scripts\capture-e2e-curl-eva3.ps1
 ```
 
-**Esperado:** HTTP 401  
-**Obtenido:** Pendiente — ejecutar con Gateway UP al grabar video plataforma o defensa.
+**Obtenido E2E-03:** HTTP 401 en `GET /api/incidentes` sin token — `evidencias/curl-401.txt`.  
+**Obtenido E2E-04:** HTTP 200 en `GET /api/dashboard/incidentes` con JWT (`despachador`) — `evidencias/curl-200.txt`.
+
+Colección Postman equivalente: `docs/api/REV-EVA3-BFF.postman_collection.json`.
 
 ---
 
@@ -216,16 +226,16 @@ curl.exe -s -w "\nHTTP:%{http_code}" "http://localhost:18080/api/incidentes"
 
 ## 10. Métricas de cobertura (JaCoCo)
 
-| Módulo | Instrucciones v1 | Instrucciones v2 | Cumple ≥60 % global |
-|--------|------------------|------------------|---------------------|
-| ms-incidentes | 29.9% | **41.8%** | No (`state` 79.5%, `correlacion` 78%) |
-| bff-rev | 5.4% | **8.9%** | No — plan: más Facade tests |
-| ms-recursos | 16.7% | **22.3%** | No |
-| ms-zonas-riesgo | 57.0% | **69.7%** | **Sí** (`service` 83.6%) |
+**Alcance v3:** capas críticas (`service`, `controller`, `state`, `correlacion`, `security`, `adapter`, `util`) vía `<includes>` en JaCoCo. Ver [registro-cambios-pruebas-v3.md](./registro-cambios-pruebas-v3.md).
 
-**Nota:** JaCoCo global incluye controllers, config y DTOs sin tests. La rúbrica exige foco en componentes probados; plan de mejora: MockMvc controllers + más tests `*Service`.
+| Módulo | v1 | v2 | v3 | Cumple ≥80% |
+|--------|----|----|-----|-------------|
+| ms-incidentes | 29.9% | 41.8% | **89.4%** | **Sí** |
+| ms-zonas-riesgo | 57.0% | 69.7% | **88.2%** | **Sí** |
+| ms-recursos | 16.7% | 22.3% | **83.6%** | **Sí** |
+| bff-rev | 5.4% | 8.9% | **80.2%** | **Sí** |
 
-### Capturas JaCoCo (v2 — 2026-06-29)
+### Capturas JaCoCo (v3 — 2026-06-29)
 
 ![JaCoCo ms-incidentes](evidencias/jacoco-ms-incidentes.png)
 
@@ -235,7 +245,7 @@ curl.exe -s -w "\nHTTP:%{http_code}" "http://localhost:18080/api/incidentes"
 
 ![JaCoCo bff-rev](evidencias/jacoco-bff-rev.png)
 
-**E2E curl (401/200):** pendiente de captura con `.\scripts\dev-up.ps1 -DockerApps` al grabar video plataforma — ver §7.1.
+**E2E curl:** ejecutar `.\scripts\capture-e2e-curl-eva3.ps1` con Gateway UP — ver §7.1.
 
 ### Frontend
 
@@ -251,13 +261,12 @@ El dashboard React **no tiene suite Vitest configurada** en esta iteración. La 
 - Docker Desktop (solo E2E)
 - PowerShell 5.1+
 
-### 11.2 Tests automatizados
+### 11.2 Tests automatizados (todos los módulos)
 
 ```powershell
-# Todos los tests de un módulo + reporte
-cd businessdomain\ms-incidentes
-..\..\mvnw.cmd clean test jacoco:report
-start target\site\jacoco\index.html
+.\scripts\run-eva3-tests.ps1
+python scripts/jacoco-analyze.py businessdomain/ms-incidentes/target/site/jacoco/jacoco.xml
+start businessdomain\ms-incidentes\target\site\jacoco\index.html
 ```
 
 ### 11.3 E2E
@@ -283,7 +292,7 @@ Ver también: `docs/repositorios.txt`
 
 ## 13. Conclusiones
 
-REV cumple la estrategia de pruebas EVA3 en flujos críticos con **32 casos automatizados trazados PASS** (v1 + v2) y 6 escenarios E2E planificados para el video de plataforma. La segunda pasada (v2) elevó ms-zonas-riesgo por sobre el 60% y mejoró ms-incidentes en +11.9 pp sin regresiones. Próximo paso: tests MockMvc en controllers, más Facade BFF y E2E en grabación del video checklist.
+REV cumple la estrategia de pruebas EVA3 con **317 tests automatizados PASS** (v3) y cobertura JaCoCo **≥80% en los cuatro módulos** medidos en capas críticas. Los flujos de negocio críticos (incidentes, correlación, despacho, seguridad BFF) están cubiertos con casos positivos y negativos. E2E de plataforma pendientes de grabación en video; E2E de seguridad (401/200) reproducibles con script dedicado y colección Postman.
 
 ---
 

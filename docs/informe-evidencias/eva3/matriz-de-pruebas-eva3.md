@@ -3,7 +3,7 @@
 | Campo | Valor |
 |-------|-------|
 | **Proyecto** | REV — Red de Emergencia Valle |
-| **Versión matriz** | 2.0 (segunda pasada 2026-06-29) |
+| **Versión matriz** | 3.0 (tercera pasada 2026-06-29) |
 | **Referencia** | [plan-de-pruebas-eva3.md](./plan-de-pruebas-eva3.md) |
 
 **Instrucciones:** completar columna **Resultado obtenido** y **Evidencia** al ejecutar cada prueba. Exportar a Excel para Blackboard si el docente lo solicita.
@@ -47,8 +47,8 @@
 | IT-06 | Integración | ms-zonas | Contexto Spring levanta | — | Perfil test | `ApplicationTests.contextLoads` | Contexto OK | PASS | resumen-ejecucion 2026-06-28 | Smoke |
 | E2E-01 | E2E | Despacho | Login despachador → cola → asignar brigada → activos | — | Stack Docker UP; datos sembrados | 1. POST login 2. `/despacho/operacion` 3. Seleccionar incidente 4. Despacho rápido MUN-REFUERZO | Brigada en pestaña Activos; estado ASIGNADA en Recursos | Pendiente | Video plataforma §Despacho | Ver guion plataforma |
 | E2E-02 | E2E | Portal ciudadano | Reporte público sin login aparece en cola despacho | — | Ventana incógnito | 1. `/portal#reportar` 2. Enviar reporte GPS 3. Login despachador 4. Ver cola | Nuevo folio visible en cola | Pendiente | Video plataforma §Portal | Flujo crítico ciudadano |
-| E2E-03 | E2E | Seguridad | GET `/api/incidentes` sin JWT → 401 | — | Gateway UP | `curl` sin header Authorization | HTTP 401 Unauthorized | Pendiente | Video pruebas §5 | Perímetro Gateway |
-| E2E-04 | E2E | Seguridad | Login válido → GET incidentes con Bearer → 200 | — | Credenciales despachador | 1. POST `/auth/login` 2. GET con token | HTTP 200 + JSON | Pendiente | Video pruebas §5 | — |
+| E2E-03 | E2E | Seguridad | GET `/api/incidentes` sin JWT → 401 | **PASS** | Gateway UP | `curl` sin header Authorization | HTTP 401 Unauthorized | PASS | `evidencias/curl-401.txt` | Perímetro Gateway |
+| E2E-04 | E2E | Seguridad | Login válido → GET dashboard con Bearer → 200 | **PASS** | Credenciales despachador | 1. POST `/auth/login` 2. GET `/api/dashboard/incidentes` | HTTP 200 + JSON | PASS | `evidencias/curl-200.txt` | — |
 | E2E-05 | E2E | Correlaciones | Dos reportes cercanos generan sugerencia pendiente | — | Reportes A+C sembrados | `/incidentes` → Correlaciones → Pendientes | ≥ 1 correlación pendiente | Pendiente | Video plataforma §Incidentes | Geo + scorer |
 | E2E-06 | E2E | Resiliencia UI | Dashboard muestra alerta si BFF degraded | Circuit Breaker | Simular fallo zonas (opcional) o mencionar en demo | Login → inicio con flag degraded | `DegradedAlert` visible | Pendiente | Video arquitectura / plataforma | Modo degradado |
 
@@ -75,7 +75,7 @@
 | UT-25 | Unit | BFF dashboard | listarDashboards vacío | Facade | PASS | DashboardFacadeServiceTest |
 | IT-07 | Integración | ms-incidentes | State factory transiciones v2 en Spring | Factory + State | PASS | IncidentStateFactoryTest |
 
-Detalle de cambios: [registro-cambios-pruebas-v2.md](./registro-cambios-pruebas-v2.md).
+Detalle de cambios: [registro-cambios-pruebas-v2.md](./registro-cambios-pruebas-v2.md) · [registro-cambios-pruebas-v3.md](./registro-cambios-pruebas-v3.md).
 
 ---
 
@@ -115,6 +115,18 @@ Detalle de cambios: [registro-cambios-pruebas-v2.md](./registro-cambios-pruebas-
 ---
 
 ## Cobertura JaCoCo
+
+### v3.0 (2026-06-29) — capas críticas JaCoCo `<includes>`
+
+| Módulo | Instrucciones % | Tests | Fecha | Reporte |
+|--------|-----------------|-------|-------|---------|
+| ms-incidentes | **89.4%** | 78 | 2026-06-29 | `target/site/jacoco/index.html` |
+| ms-zonas-riesgo | **88.2%** | 28 | 2026-06-29 | idem |
+| ms-recursos | **83.6%** | 72 | 2026-06-29 | idem |
+| bff-rev | **80.2%** | 139 | 2026-06-29 | idem |
+| **Total automatizados** | — | **317** | | `evidencias/resumen-ejecucion.txt` |
+
+**Veredicto v3:** los cuatro módulos cumplen **≥80%** en bundle de capas críticas.
 
 ### v2.0 (2026-06-29)
 
