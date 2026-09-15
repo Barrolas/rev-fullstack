@@ -219,3 +219,10 @@ Tipos: `FEAT`, `FIX`, `REFACTOR`, `DOCS`, `TEST`, `INFRA`, `BUILD`, `CHORE`.
 ---
 
 *Proyecto académico DSY1106 — Duoc UC. Documentación verificada contra el código en `rev-fullstack`.*
+
+---
+
+## Aporte destacado — frontend / UX / identidad
+
+**Giannina Guerrero** ([@ninnarouge](https://github.com/ninnarouge)): experiencia de usuario, design system e identidad visual del producto REV, coherencia UI ↔ capacidades del backend y documentación de interfaz.
+
